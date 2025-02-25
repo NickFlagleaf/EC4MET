@@ -1,7 +1,5 @@
-
-
 # EC4MET
-## Multi-trait and multi-model ensemble Genomic Selection
+## Derive environmental covariates (ECs) for crop trial environments to model environmental effects and genotype by environment interactions
 
 ### Installation
 To install from Github using devtools:
@@ -20,12 +18,6 @@ data("CAIGE23_24envs")
 The example data set includes environment names, lat and lon values and sowing dates for 18 trial environments
 ```
 head(CAIGE23_24envs)
-```
-
-
-Load example dataset of CAIGE 2023 and 2024 environments
-```
-data("CAIGE23_24envs")
 ```
 
 Get daily weather data from SILO for each environment

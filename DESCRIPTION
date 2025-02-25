@@ -1,6 +1,6 @@
 Package: EC4MET
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Derive ECs for METs 
 Version: 0.1.0
 Authors@R: person("Nick", "Fradgley", email = "nick.fradgley@csiro.au",role = c("aut", "cre"))
 Description: Derive environmental covariates (ECs) for crop trial environments to model environmental effects and genotype by environment interactions
