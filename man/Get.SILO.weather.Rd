@@ -39,7 +39,7 @@ A list of weather data for each weather variable and a vector of units for each 
 The data list contains a a matrix or data values with environments as rows and days of the year as columns.
 }
 \description{
-Extract weather data from the SILO weather data resource (https://www.longpaddock.qld.gov.au/silo/)
+Extract weather data for Australia from the SILO weather data resource (https://www.longpaddock.qld.gov.au/silo/)
 for a set of environments with defined latitude and longitude coordinates
 }
 \examples{

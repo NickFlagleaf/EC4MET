@@ -31,11 +31,11 @@
 #' @export
 
 Get.W.ECs <- function(weather,
-                    sow.dates,
-                    cardT = c(0, 26, 34),
-                    stg.TT = c(500, 250, 250, 250, 400),
-                    DTH.TT = 1285,
-                    verbose = TRUE) {
+                      sow.dates,
+                      cardT = c(0, 26, 34),
+                      stg.TT = c(500, 250, 250, 250, 400),
+                      DTH.TT = 1285,
+                      verbose = TRUE) {
   TTfun <- function(Tci) {
     if (0 <= Tci & Tci <= 26) {
       out <- Tci
@@ -389,10 +389,12 @@ Get.W.ECs <- function(weather,
     AveSR.per.stage,
     AveVPD.per.stage,
     MmeanDLper.stage
-    )
+  )
   rownames(Wmat) <- Envs
 
-  if(verbose==TRUE){cat(paste("\n",sum(is.nan(unlist(Wmat)) | is.na(unlist(Wmat))),"missing values"))}
+  if (verbose == TRUE) {
+    cat(paste("\n", sum(is.nan(unlist(Wmat)) | is.na(unlist(Wmat))), "missing values"))
+  }
 
   return(Wmat)
 }

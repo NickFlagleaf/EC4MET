@@ -1,6 +1,6 @@
 #' @title Get weather data from SILO
 #'
-#' @description Extract weather data from the SILO weather data resource (https://www.longpaddock.qld.gov.au/silo/)
+#' @description Extract weather data for Australia from the SILO weather data resource (https://www.longpaddock.qld.gov.au/silo/)
 #' for a set of environments with defined latitude and longitude coordinates
 #'
 #' @param Envs Vector of environment names character strings.
@@ -75,6 +75,6 @@ Get.SILO.weather <- function(Envs, Lats, Lons, Years, vars = c("daily_rain", "ma
   }
   names(all.vars.weather) <- vars
   names(var.units) <- vars
-  out <- list("data" = all.vars.weather, "units" = var.units,"Env.info" = env.info)
+  out <- list("data" = all.vars.weather, "units" = var.units, "Env.info" = env.info)
   return(out)
 }
