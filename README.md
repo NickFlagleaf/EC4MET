@@ -1,5 +1,6 @@
 # EC4MET
-## Derive environmental covariates (ECs) for crop trial environments to model environmental effects and genotype by environment interactions
+## Derive ECs for METs 
+Derive environmental covariates (ECs) for crop trial environments to model environmental effects and genotype by environment interactions
 
 ### Installation
 To install from Github using devtools:
@@ -7,7 +8,6 @@ To install from Github using devtools:
   ```
 devtools::install_github("NickFlagleaf/EC4MET")
 ```
-
 
 ### Example work flow
 Load package and example dataset of info for trial environments
