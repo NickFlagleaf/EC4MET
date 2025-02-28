@@ -13,22 +13,32 @@ devtools::install_github("NickFlagleaf/EC4MET")
 Load package and example dataset of info for trial environments
   ```
 library(EC4MET)
-data("CAIGE23_24envs")
+data("CAIGE22_23envs")
 ```
-The example data set includes environment names, lat and lon values and sowing dates for 18 trial environments
+The example data set includes environment names, lat and lon values and sowing dates for 18 trial environments as well as fitted environmental main effects and 
+factor loadings from a factor analytic mixed model multi-environment trial analysis
+
 ```
-head(CAIGE23_24envs)
+head(CAIGE22_23envs)
 ```
 
 Get daily weather data from SILO for each environment
 ```
-wthr<-Get.SILO.weather(Envs = CAIGE23_24envs$Environment,
-                       Lats = CAIGE23_24envs$Lat,
-                       Lons = CAIGE23_24envs$Long,
-                       Years = CAIGE23_24envs$Year)
+wthr<-Get.SILO.weather(Envs = CAIGE22_23envs$Environment,
+                       Lats = CAIGE22_23envs$Lat,
+                       Lons = CAIGE22_23envs$Long,
+                       Years = CAIGE22_23envs$Year)
 ```
 
 Calculate ECs based on the daily weather data
 ```
-weatherECs<-Get.ECs(weather = wthr)
+weather.ECs<-Get.W.ECs(weather = wthr)
 ```
+
+Derive ECs based on SLGA soil data
+```
+soil.ECs<-Get.S.ECs(Envs = CAIGE22_23envs$Environment,
+                    Lats = CAIGE22_23envs$Lat,
+                    Lons = CAIGE22_23envs$Long)
+```
+

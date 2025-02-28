@@ -3,12 +3,7 @@
 #' @description Extract weather data for Australia from the SILO weather data resource (https://www.longpaddock.qld.gov.au/silo/)
 #' for a set of environments with defined latitude and longitude coordinates
 #'
-#' @param Envs Vector of environment names character strings.
-#' @param Lats Vector of latitude numeric values for each environment.
-#' @param Lons Vector of longitude numeric values for each environment.
-#' @param Years Vector of year integer values for each environment.
-#' @param vars Vector of weather variable names to get. Default is all.
-#' Options include:
+#' Weather varuiables include:
 #'
 #'    *daily_rain - Daily rainfall (mm)
 #'
@@ -20,12 +15,23 @@
 #'
 #'    *radiation - Solar exposure, consisting of both direct and diffuse components (MJ/m2)
 #'
+#' @param Envs Vector of environment names character strings.
+#' @param Lats Vector of latitude numeric values for each environment.
+#' @param Lons Vector of longitude numeric values for each environment.
+#' @param Years Vector of year integer values for each environment.
+#' @param verbose Logical. Should progress be printed?
+#'
 #' @returns A list of weather data for each weather variable and a vector of units for each variable.
 #' The data list contains a a matrix or data values with environments as rows and days of the year as columns.
 #'
 #' @examples
-#' data("CAIGE23_24envs")
-#' wthr <- Get.SILO.weather()
+#' data("CAIGE22_23envs")
+#' wthr <- Get.SILO.weather(
+#'   Envs = CAIGE22_23envs$Environment,
+#'   Lats = CAIGE22_23envs$Lat,
+#'   Lons = CAIGE22_23envs$Long,
+#'   Years = CAIGE22_23envs$Year
+#' )
 #'
 #' @references
 #' Jeffrey, S. J., Carter, J. O., Moodie, K. B., & Beswick, A. R. (2001).
@@ -34,22 +40,26 @@
 #'
 #' @export
 
-Get.SILO.weather <- function(Envs, Lats, Lons, Years, vars = c("daily_rain", "max_temp", "min_temp", "vp_deficit", "radiation")) {
+get.SILO.weather <- function(Envs, Lats, Lons, Years, verbose = TRUE) {
   Years <- as.integer(as.numeric(Years))
   years <- unique(Years)
-  var.units <- c()
   all.vars.weather <- list()
+
+  vars <- c("daily_rain", "max_temp", "min_temp", "vp_deficit", "radiation")
   for (v in seq_along(vars)) {
-    print(paste("Starting", vars[v]))
+    if (verbose) {
+      print(paste("Starting", vars[v]))
+    }
     all.yrs.weather <- matrix(NA, nrow = length(Envs), ncol = 365, dimnames = list(Envs, 1:365))
 
     for (y in seq_along(years)) {
-      cat(years[y], "|", sep = "")
+      if (verbose) {
+        cat(years[y], "|", sep = "")
+      }
       addrs <- paste("https://s3-ap-southeast-2.amazonaws.com/silo-open-data/Official/annual/", vars[v], "/", years[y], ".", vars[v], ".nc", sep = "")
       nc.rast <- terra::rast(addrs)
       xvals <- terra::xFromCol(nc.rast)
       yvals <- terra::yFromRow(nc.rast)
-      var.units[v] <- terra::units(nc.rast)[1]
       days <- terra::time(nc.rast)
       nc.data <- terra::as.array(nc.rast)
       dimnames(nc.data) <- list(yvals, xvals, as.character(days))
@@ -71,10 +81,13 @@ Get.SILO.weather <- function(Envs, Lats, Lons, Years, vars = c("daily_rain", "ma
     }
     gc(full = T)
     all.vars.weather[[v]] <- all.yrs.weather
-    print(":)")
+    if (verbose) {
+      print(":)")
+    }
   }
   names(all.vars.weather) <- vars
-  names(var.units) <- vars
-  out <- list("data" = all.vars.weather, "units" = var.units, "Env.info" = env.info)
+  env.info <- data.frame("Environment" = Envs, "Lat" = Lats, "Lon" = Lons)
+
+  out <- list("data" = all.vars.weather, "Env.info" = env.info)
   return(out)
 }

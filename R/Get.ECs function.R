@@ -1,6 +1,6 @@
 #' @title Get environmental covariates from weather data
 #'
-#' @description A function to calculate Environmental Covariates (ECs) from daily weather data such as derived from the `Get.SILO.weather()` function.
+#' @description A function to calculate Environmental Covariates (ECs) from daily weather data such as derived from the `get.SILO.weather()` function.
 #'
 #' @param weather description
 #' @param  sow.dates Vector of character strings of dates of sowing for each trail environment in dd/mm/yyy format. Must be in the same order as the
@@ -21,7 +21,7 @@
 #'
 #'    Custom values can be used to define other crop phenologies and growth rates
 #' @param DTH.TT Optional. Estimated thermal time from sowing that flowering growth stage occurs. Default value is 1285
-#' @param verbose Logical.
+#' @param verbose Logical. Should progress be printed?
 #'
 #' @param Lons Vector of longitude numeric values for each environment.
 #' @param Years Vector of year integer values for each environment.
@@ -30,7 +30,7 @@
 #' @returns A data frame of weather EC values with environment names as rows and covariates and columns.
 #' @export
 
-Get.W.ECs <- function(weather,
+get.W.ECs <- function(weather,
                       sow.dates,
                       cardT = c(0, 26, 34),
                       stg.TT = c(500, 250, 250, 250, 400),
@@ -58,8 +58,7 @@ Get.W.ECs <- function(weather,
     nrow = length(Envs), ncol = length(stage.names),
     dimnames = list(Envs, stage.names)
   )
-
-  sow.dates <- as.Date(weather$Env.info$Sowing.date, tryFormats = "%d/%m/%Y")
+  sow.dates <- as.Date(sow.dates, format = "%d/%m/%y")
   yrday1 <- as.Date(paste(stringr::str_sub(string = sow.dates, 1, 4), "-01-01", sep = ""))
   sowdays <- sow.dates - yrday1
   cat("\nStarting growth stage estimates\n")

@@ -5,7 +5,7 @@
 #' @param Envs Vector of environment names character strings.
 #' @param Lats Vector of latitude numeric values for each environment.
 #' @param Lons Vector of longitude numeric values for each environment.
-#' @param verbose Logical.
+#' @param verbose Logical. Should progress be printed?
 #'
 #' @returns A data frame of soil EC values with environment names as rows and covariates as columns.
 #'
@@ -17,7 +17,7 @@
 #'
 #' @export
 
-Get.S.ECs <- function(Envs, Lats, Lons, verbose = TRUE) {
+get.S.ECs <- function(Envs, Lats, Lons, verbose = TRUE) {
   atts <- unlist(c(SLGACloud::getParameterValues(Parameter = "Attribute")))
   atts <- atts[1:20]
   atts <- atts[!atts %in% c("Depth of Regolith", "Soil Organic Carbon (1\" resolution) ", "Effective Cation Exchange Capacity")]
