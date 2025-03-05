@@ -3,9 +3,9 @@ Type: Package
 Title: Derive ECs for METs 
 Version: 0.1.0
 Authors@R: person("Nick", "Fradgley", email = "nick.fradgley@csiro.au",role = c("aut", "cre"))
-Description: Derive environmental covariates (ECs) for crop trial environments to model environmental effects and genotype by environment interactions
+Description: Derive environmental covariates (ECs) for crop trial environments to model environmental effects and genotype by environment interactions.
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
-Imports: terra, stringr, chillR, SLGACloud, abind, ncdf4, randomForest, stats, oz
+Imports: terra, stringr, chillR, SLGACloud, abind, ncdf4, randomForest, stats
 RoxygenNote: 7.3.2

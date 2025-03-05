@@ -22,7 +22,7 @@ A list of weather data for each weather variable and a vector of units for each 
 The data list contains a a matrix or data values with environments as rows and days of the year as columns.
 }
 \description{
-Extract weather data for Australia from the BARRA-R2 weather data resource 
+Extract weather data for Australia from the BARRA-R2 weather data resource
 (https://opus.nci.org.au/spaces/NDP/pages/264241166/BOM+BARRA2+ob53) for a set of environments
 with defined latitude and longitude coordinates. BARRA-R2 data runs from Jan 1979 to Sept 2024.
 
