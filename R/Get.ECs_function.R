@@ -2,7 +2,15 @@
 #'
 #' @description A function to calculate Environmental Covariates (ECs) from daily weather data such as derived from the [get.SILO.weather()] function.
 #'
-#' @param weather description
+#' @param weather A two level list of Weather data as outputted from the [get.SILO.weather()]. `Weather$data` is a list of data matrices for each covariate 
+#' with rows as environments and days of the year as columns. Weather covariate names should be:
+#' *"daily_rain"
+#' *"max_temp"
+#' *"min_temp"
+#' *"vp_deficit"
+#' *"radiation"
+#' 
+#' `obs.wthr$Env.info` is a data frame of info for each environment that includes `Lat` latitude values to calculate day lengths.
 #' @param  sow.dates Vector of character strings of dates of sowing for each trail environment in dd/mm/yyy format. Must be in the same order as the
 #' rownames of weather data in `weather$data` matrices.
 #' @param cardT Optional. Minimum, optimal and maximum cardinal temperatures to calculate thermal time. Default values are min = 0, opt = 26, and max = 34.
