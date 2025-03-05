@@ -1,6 +1,6 @@
 #' @title Get environmental covariates from weather data
 #'
-#' @description A function to calculate Environmental Covariates (ECs) from daily weather data such as derived from the `get.SILO.weather()` function.
+#' @description A function to calculate Environmental Covariates (ECs) from daily weather data such as derived from the [get.SILO.weather()] function.
 #'
 #' @param weather description
 #' @param  sow.dates Vector of character strings of dates of sowing for each trail environment in dd/mm/yyy format. Must be in the same order as the
@@ -9,23 +9,20 @@
 #' Custom values can be used to define other crop phenologies and growth rates
 #' @param stg.TT Optional. Estimated thermal time parameters between wheat crop growth stages. Default values:
 #'
-#'    - Emergence to End of juvenile growth stages = 500
+#'    * Emergence to End of juvenile growth stages = 500
 #'
-#'    - Heading to Flowering = 250
+#'    * Heading to Flowering = 250
 #'
-#'    - Flowering to Start of grain fill = 250
+#'    * Flowering to Start of grain fill = 250
 #'
-#'    - Start of Grain fill to End of grain fill = 250
+#'    * Start of Grain fill to End of grain fill = 250
 #'
-#'    - End of grain fill to Maturity = 400
+#'    * End of grain fill to Maturity = 400
 #'
 #'    Custom values can be used to define other crop phenologies and growth rates
+#'
 #' @param DTH.TT Optional. Estimated thermal time from sowing that flowering growth stage occurs. Default value is 1285
 #' @param verbose Logical. Should progress be printed?
-#'
-#' @param Lons Vector of longitude numeric values for each environment.
-#' @param Years Vector of year integer values for each environment.
-#' @param vars Vector of weather variable names to get.
 #'
 #' @returns A data frame of weather EC values with environment names as rows and covariates and columns.
 #' @export

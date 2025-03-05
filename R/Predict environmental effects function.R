@@ -2,7 +2,7 @@
 #'
 #' @description A function to train a random forest model to predict environmental effects defined from a MET mixed model analysis with ECs as predictors.
 #'
-#' @param train.ECs A data frame of weather and/or soil ECs for observed environments as output from the `get.W.ECs()` or `get.S.ECs()` functions.
+#' @param train.ECs A data frame of weather and/or soil ECs for observed environments as output from the [get.W.ECs()] or `get.S.ECs()` functions.
 #' @param new.ECs A data frame of weather and/or soil ECs for new environments as output from the `get.W.ECs()` or `get.S.ECs()` functions.
 #' @param E.effs A data frame of several or a vector of a single Environmental effects parameters fitted from a multi-environmnet mixed model.
 #' Latent environmental effect factor loadings that decompose GxE can be defined as described by Smith et al (2021).

@@ -1,6 +1,7 @@
 #' @title Get environmental covariates from soils data
 #'
-#' @description A function to derive Environmental Covariates (ECs) from Australian soil data from the Soils and Landscapes Grids Australia resource.
+#' @description A function to derive soil Environmental Covariates (ECs) from the Soils and Landscapes Grids Australia data resource.
+#' https://esoil.io/TERNLandscapes/Public/Pages/SLGA/index.html
 #'
 #' @param Envs Vector of environment names character strings.
 #' @param Lats Vector of latitude numeric values for each environment.
@@ -17,7 +18,10 @@
 #'
 #' @export
 
-get.S.ECs <- function(Envs, Lats, Lons, verbose = TRUE) {
+get.S.ECs <- function(Envs,
+                      Lats,
+                      Lons,
+                      verbose = TRUE) {
   atts <- unlist(c(SLGACloud::getParameterValues(Parameter = "Attribute")))
   atts <- atts[1:20]
   atts <- atts[!atts %in% c("Depth of Regolith", "Soil Organic Carbon (1\" resolution) ", "Effective Cation Exchange Capacity")]
@@ -53,12 +57,12 @@ get.S.ECs <- function(Envs, Lats, Lons, verbose = TRUE) {
   rownames(all.env.soil) <- all.env.soil$Env
   all.env.soil <- all.env.soil[, !colnames(all.env.soil) == "Env"]
   all.env.soil <- apply(all.env.soil, 2, function(x) {
-    med <- median(na.omit(x))
+    med <- stats::median(stats::na.omit(x))
     newx <- x
     newx[is.na(newx)] <- med
     return(newx)
   })
-  all.env.soil <- all.env.soil[, apply(all.env.soil, 2, var) > 0]
+  all.env.soil <- all.env.soil[, apply(all.env.soil, 2, stats::var) > 0]
   colnames(all.env.soil)[colnames(all.env.soil) %in% c(
     "Soil Organic Carbon Fractions_0-0.05m",
     "Soil Organic Carbon Fractions_0.05-0.15m",

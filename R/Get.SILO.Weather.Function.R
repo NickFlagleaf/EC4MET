@@ -24,15 +24,6 @@
 #' @returns A list of weather data for each weather variable and a vector of units for each variable.
 #' The data list contains a a matrix or data values with environments as rows and days of the year as columns.
 #'
-#' @examples
-#' data("CAIGE22_23envs")
-#' wthr <- Get.SILO.weather(
-#'   Envs = CAIGE22_23envs$Environment,
-#'   Lats = CAIGE22_23envs$Lat,
-#'   Lons = CAIGE22_23envs$Long,
-#'   Years = CAIGE22_23envs$Year
-#' )
-#'
 #' @references
 #' Jeffrey, S. J., Carter, J. O., Moodie, K. B., & Beswick, A. R. (2001).
 #'   Using spatial interpolation to construct a comprehensive archive of Australian climate data. Environmental Modelling & Software, 16(4), 309–330.
@@ -40,7 +31,11 @@
 #'
 #' @export
 
-get.SILO.weather <- function(Envs, Lats, Lons, Years, verbose = TRUE) {
+get.SILO.weather <- function(Envs,
+                             Lats,
+                             Lons,
+                             Years,
+                             verbose = TRUE) {
   Years <- as.integer(as.numeric(Years))
   years <- unique(Years)
   all.vars.weather <- list()

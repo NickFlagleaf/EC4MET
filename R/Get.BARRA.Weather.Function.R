@@ -1,7 +1,8 @@
 #' @title Get weather data from BARRA-R2
 #'
-#' @description Extract weather data for Australia from the BARRA-R2 weather data resource (https://opus.nci.org.au/spaces/NDP/pages/264241166/BOM+BARRA2+ob53)
-#' for a set of environments with defined latitude and longitude coordinates. BARRA-R2 data runs from Jan 1979 to Sept 2024.
+#' @description Extract weather data for Australia from the BARRA-R2 weather data resource
+#' (https://opus.nci.org.au/spaces/NDP/pages/264241166/BOM+BARRA2+ob53) for a set of environments
+#' with defined latitude and longitude coordinates. BARRA-R2 data runs from Jan 1979 to Sept 2024.
 #'
 #' Weather varuiables include:
 #'
@@ -25,14 +26,6 @@
 #' @returns A list of weather data for each weather variable and a vector of units for each variable.
 #' The data list contains a a matrix or data values with environments as rows and days of the year as columns.
 #'
-#' @examples
-#' data("CAIGE22_23envs")
-#' wthr <- Get.BARRA.weather(
-#'   Envs = CAIGE22_23envs$Environment,
-#'   Lats = CAIGE22_23envs$Lat,
-#'   Lons = CAIGE22_23envs$Long,
-#'   Years = CAIGE22_23envs$Year
-#' )
 #'
 #' @references
 #' Su, C.H., Dharssi, I., Le Marshall, J., Le, T., Rennie, S., Smith, A., Stassen, C., Steinle, P., Torrance, J., Wang, C. and Warren, R.A., 2022.
@@ -41,7 +34,11 @@
 #'
 #' @export
 
-get.BARRA.weather <- function(Envs, Lats, Lons, Years, verbose = TRUE) {
+get.BARRA.weather <- function(Envs,
+                              Lats,
+                              Lons,
+                              Years,
+                              verbose = TRUE) {
   Years <- as.integer(as.numeric(Years))
   years <- unique(Years)
   var.units <- c()
@@ -69,7 +66,7 @@ get.BARRA.weather <- function(Envs, Lats, Lons, Years, verbose = TRUE) {
         )
         tmp.dir <- tempfile()
         tmp.dir <- gsub("\\", "/", tmp.dir, fixed = T)
-        download.file(url = addrs, destfile = tmp.dir, method = "curl", quiet = T)
+        utils::download.file(url = addrs, destfile = tmp.dir, method = "curl", quiet = T)
         ncfile <- ncdf4::nc_open(tmp.dir)
         nc.data <- ncdf4::ncvar_get(ncfile)
         start.day <- stringr::str_sub(string = ncfile$dim$time$units, start = nchar(ncfile$dim$time$units) - 9, end = nchar(ncfile$dim$time$units))
