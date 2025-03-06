@@ -43,8 +43,7 @@ get.SILO.weather <- function(Envs,
 
   vars <- c("daily_rain", "max_temp", "min_temp", "vp_deficit", "radiation")
 
-
-  if (mean(table(Years)) < 20) {
+  if (length(Envs)*2 < length(years)*3*60) {
     if (verbose) {
       print("Downloading SILO point data")
     }
@@ -69,7 +68,7 @@ get.SILO.weather <- function(Envs,
   }
 
 
-  if (mean(table(Years)) > 19) {
+  if (length(Envs)*2 > length(years)*3*60) {
     if (verbose) {
       print("Downloading SILO gridded data")
     }
