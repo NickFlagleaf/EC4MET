@@ -4,7 +4,7 @@
 \alias{get.SILO.weather}
 \title{Get weather data from SILO}
 \usage{
-get.SILO.weather(Envs, Lats, Lons, Years, verbose = TRUE)
+get.SILO.weather(Envs, Lats, Lons, Years, email, verbose = TRUE)
 }
 \arguments{
 \item{Envs}{Vector of environment names character strings.}
@@ -25,7 +25,7 @@ The data list contains a a matrix or data values with environments as rows and d
 Extract weather data for Australia from the SILO weather data resource (https://www.longpaddock.qld.gov.au/silo/)
 for a set of environments with defined latitude and longitude coordinates
 
-Weather varuiables include:
+Weather variables include:
 
    *daily_rain - Daily rainfall (mm)
 

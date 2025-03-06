@@ -3,7 +3,7 @@
 #' @description Extract weather data for Australia from the SILO weather data resource (https://www.longpaddock.qld.gov.au/silo/)
 #' for a set of environments with defined latitude and longitude coordinates
 #'
-#' Weather varuiables include:
+#' Weather variables include:
 #'
 #'    *daily_rain - Daily rainfall (mm)
 #'
@@ -35,52 +35,87 @@ get.SILO.weather <- function(Envs,
                              Lats,
                              Lons,
                              Years,
+                             email,
                              verbose = TRUE) {
   Years <- as.integer(as.numeric(Years))
   years <- unique(Years)
   all.vars.weather <- list()
 
   vars <- c("daily_rain", "max_temp", "min_temp", "vp_deficit", "radiation")
-  for (v in seq_along(vars)) {
-    if (verbose) {
-      print(paste("Starting", vars[v]))
-    }
-    all.yrs.weather <- matrix(NA, nrow = length(Envs), ncol = 365, dimnames = list(Envs, 1:365))
 
-    for (y in seq_along(years)) {
-      if (verbose) {
-        cat(years[y], "|", sep = "")
-      }
-      addrs <- paste("https://s3-ap-southeast-2.amazonaws.com/silo-open-data/Official/annual/", vars[v], "/", years[y], ".", vars[v], ".nc", sep = "")
-      nc.rast <- terra::rast(addrs)
-      xvals <- terra::xFromCol(nc.rast)
-      yvals <- terra::yFromRow(nc.rast)
-      days <- terra::time(nc.rast)
-      nc.data <- terra::as.array(nc.rast)
-      dimnames(nc.data) <- list(yvals, xvals, as.character(days))
-      env.info.yr.sub <- data.frame(
-        "Environment" = Envs[Years == years[y]],
-        "Lat" = Lats[Years == years[y]],
-        "Lon" = Lons[Years == years[y]]
-      )
-      env.info.yr.sub$lat.ind <- sapply(env.info.yr.sub$Lat, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[1]]) - as.numeric(x))))
-      env.info.yr.sub$lon.ind <- sapply(env.info.yr.sub$Lon, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[2]]) - as.numeric(x))))
-      env.weather <- sapply(seq_len(nrow(env.info.yr.sub)), function(x) nc.data[env.info.yr.sub$lat.ind[x], env.info.yr.sub$lon.ind[x], ])
-      env.weather <- t(env.weather)
-      rownames(env.weather) <- env.info.yr.sub$Environment
-      env.weather <- as.data.frame(env.weather)[, 1:365]
-      if (ncol(env.weather) < 365) {
-        env.weather <- cbind(env.weather, matrix(NA, nrow = nrow(env.weather), ncol = 365 - ncol(env.weather)))
-      }
-      all.yrs.weather[rownames(env.weather), ] <- as.matrix(env.weather)
+
+  if (mean(table(Years)) < 20) {
+    if (verbose) {
+      print("Downloading SILO point data")
     }
-    gc(full = T)
-    all.vars.weather[[v]] <- all.yrs.weather
+    all.env.weather <- list()
+    for (e in 1:length(Envs)) {
+      if (verbose) {
+        cat("|")
+      }
+      url <- paste("https://www.longpaddock.qld.gov.au/cgi-bin/silo/DataDrillDataset.php?lat=", Lats[e], "&lon=", Lons[e], "&start=", Years[e], "0101&finish=", Years[e],
+        "1231&format=csv&comment=RXNDJ&username=xxx&password=apirequest",
+        sep = ""
+      )
+      pnt.data <- read.csv(url)
+      all.env.weather[[e]] <- pnt.data
+    }
+    names(all.env.weather) <- Envs
+    all.vars.weather <- lapply(vars, function(v) t(sapply(all.env.weather, function(e) e[1:365, v])))
+    names(all.vars.weather) <- vars
     if (verbose) {
       print(":)")
     }
   }
-  names(all.vars.weather) <- vars
+
+
+  if (mean(table(Years)) > 19) {
+    if (verbose) {
+      print("Downloading SILO gridded data")
+    }
+
+    for (v in seq_along(vars)) {
+      if (verbose) {
+        print(paste("Starting", vars[v]))
+      }
+      all.yrs.weather <- matrix(NA, nrow = length(Envs), ncol = 365, dimnames = list(Envs, 1:365))
+
+      for (y in seq_along(years)) {
+        if (verbose) {
+          cat(years[y], "|", sep = "")
+        }
+        addrs <- paste("https://s3-ap-southeast-2.amazonaws.com/silo-open-data/Official/annual/", vars[v], "/", years[y], ".", vars[v], ".nc", sep = "")
+        nc.rast <- terra::rast(addrs)
+        xvals <- terra::xFromCol(nc.rast)
+        yvals <- terra::yFromRow(nc.rast)
+        days <- terra::time(nc.rast)
+        nc.data <- terra::as.array(nc.rast)
+        dimnames(nc.data) <- list(yvals, xvals, as.character(days))
+        env.info.yr.sub <- data.frame(
+          "Environment" = Envs[Years == years[y]],
+          "Lat" = Lats[Years == years[y]],
+          "Lon" = Lons[Years == years[y]]
+        )
+        env.info.yr.sub$lat.ind <- sapply(env.info.yr.sub$Lat, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[1]]) - as.numeric(x))))
+        env.info.yr.sub$lon.ind <- sapply(env.info.yr.sub$Lon, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[2]]) - as.numeric(x))))
+        env.weather <- sapply(seq_len(nrow(env.info.yr.sub)), function(x) nc.data[env.info.yr.sub$lat.ind[x], env.info.yr.sub$lon.ind[x], ])
+        env.weather <- t(env.weather)
+        rownames(env.weather) <- env.info.yr.sub$Environment
+        env.weather <- as.data.frame(env.weather)[, 1:365]
+        if (ncol(env.weather) < 365) {
+          env.weather <- cbind(env.weather, matrix(NA, nrow = nrow(env.weather), ncol = 365 - ncol(env.weather)))
+        }
+        all.yrs.weather[rownames(env.weather), ] <- as.matrix(env.weather)
+      }
+      gc(full = T)
+      all.vars.weather[[v]] <- all.yrs.weather
+      if (verbose) {
+        print(":)")
+      }
+    }
+    names(all.vars.weather) <- vars
+  }
+
   env.info <- data.frame("Environment" = Envs, "Lat" = Lats, "Lon" = Lons)
 
   out <- list("data" = all.vars.weather, "Env.info" = env.info)

@@ -14,7 +14,7 @@ get.W.ECs(
 )
 }
 \arguments{
-\item{weather}{A two level list of Weather data as outputted from the [get.SILO.weather()]. `Weather$data` is a list of data matrices for each covariate 
+\item{weather}{A two level list of Weather data as outputted from the [get.SILO.weather()]. `Weather$data` is a list of data matrices for each covariate
 with rows as environments and days of the year as columns. Weather covariate names should be:
 *"daily_rain"
 *"max_temp"

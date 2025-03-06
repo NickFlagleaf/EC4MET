@@ -33,9 +33,9 @@ head(CAIGE20_22envs)
 Get daily weather data from [SILO](https://www.longpaddock.qld.gov.au/silo/) for each observed environment with the `get.SILO.weather` function:
 ```
 obs.wthr <- get.SILO.weather(Envs = CAIGE20_22envs$Environment,
-                       Lats = CAIGE20_22envs$Lat,
-                       Lons = CAIGE20_22envs$Long,
-                       Years = CAIGE20_22envs$Year)
+                             Lats = CAIGE20_22envs$Lat,
+                             Lons = CAIGE20_22envs$Long,
+                             Years = CAIGE20_22envs$Year)
 ```
 
 Calculate ECs based on the daily weather data with the `get.W.ECs` function:
