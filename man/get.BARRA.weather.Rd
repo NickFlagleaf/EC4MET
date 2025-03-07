@@ -4,7 +4,7 @@
 \alias{get.BARRA.weather}
 \title{Get weather data from BARRA-R2}
 \usage{
-get.BARRA.weather(Envs, Lats, Lons, Years, verbose = TRUE)
+get.BARRA.weather(Envs, Lats, Lons, Years, ncores = NULL, verbose = TRUE)
 }
 \arguments{
 \item{Envs}{Vector of environment names character strings.}
@@ -14,6 +14,9 @@ get.BARRA.weather(Envs, Lats, Lons, Years, verbose = TRUE)
 \item{Lons}{Vector of longitude numeric values for each environment in the same order as \code{Envs}.}
 
 \item{Years}{Vector of year integer values for each environment in the same order as \code{Envs}.}
+
+\item{ncores}{Number (integer) of cores to use for parallel processing of gridded data up to 5 cores. Use \code{1} to run in series. The default (\code{NULL}) will
+use the maximum available cores up to 5.}
 
 \item{verbose}{Logical.Should progress be printed?}
 }

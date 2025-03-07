@@ -14,15 +14,13 @@
 #' @param Lats Vector of latitude numeric values for each environment in the same order as `Envs`.
 #' @param Lons Vector of longitude numeric values for each environment in the same order as `Envs`.
 #' @param Years Vector of year integer values for each environment in the same order as `Envs`.
+#' @param ncores Number (integer) of cores to use for parallel processing of gridded data up to 5 cores. Use `1` to run in series. The default (`NULL`) will
+#' use the maximum available cores up to 5.  
 #' @param verbose Logical. Should progress be printed?
 #'
 #' @details When there are only a few environments, point data will be sequentially downloaded from SILO. When there are many environments in each year, 
-#' data will be downloaded and extracted from whole gridded data files more efficiently.
+#' data will be downloaded and extracted from whole gridded data files more efficiently. Any locations outside of the Australian land area will return `NA`.
 #' 
-#' 
-#' 
-#' 
-#'
 #' @returns A list of weather data for each weather variable and a vector of units for each variable.
 #' The data list contains a a matrix or data values with environments as rows and days of the year as columns.
 #'
@@ -37,6 +35,7 @@ get.SILO.weather <- function(Envs,
                              Lats,
                              Lons,
                              Years,
+                             ncores = NULL,
                              verbose = TRUE) {
   Years <- as.integer(as.numeric(Years))
   years <- unique(Years)
@@ -73,7 +72,11 @@ get.SILO.weather <- function(Envs,
     if (verbose) {
       print("Downloading SILO gridded data")
     }
-
+    
+    if(isTRUE(ncores==1)){ #Run in series
+      if (verbose) {
+        print("Running in series")
+      }
     for (v in seq_along(vars)) {
       if (verbose) {
         print(paste("Starting", vars[v]))
@@ -114,10 +117,63 @@ get.SILO.weather <- function(Envs,
       }
     }
     names(all.vars.weather) <- vars
+    }
+    
+    if(is.null(ncores)) {ncores <- min(parallel::detectCores(), length(vars))}
+    ncores <- min(ncores, length(vars))
+    
+    if(isTRUE(ncores > 1)){ #Run in parallel
+      if (verbose) {
+        print("Running in parallel...")
+      }
+    doParallel::registerDoParallel(ncores) 
+    `%dopar%` <- foreach::`%dopar%`
+    all.vars.weather<-foreach::foreach (v=seq_along(vars), .combine=list,.multicombine = T) %dopar% {
+      all.yrs.weather <- matrix(NA, nrow = length(Envs), ncol = 365, dimnames = list(Envs, 1:365))
+      
+      for (y in seq_along(years)) {
+        addrs <- paste("https://s3-ap-southeast-2.amazonaws.com/silo-open-data/Official/annual/", vars[v], "/", years[y], ".", vars[v], ".nc", sep = "")
+        nc.rast <- terra::rast(addrs)
+        xvals <- terra::xFromCol(nc.rast)
+        yvals <- terra::yFromRow(nc.rast)
+        days <- terra::time(nc.rast)
+        nc.data <- terra::as.array(nc.rast)
+        dimnames(nc.data) <- list(yvals, xvals, as.character(days))
+        env.info.yr.sub <- data.frame(
+          "Environment" = Envs[Years == years[y]],
+          "Lat" = Lats[Years == years[y]],
+          "Lon" = Lons[Years == years[y]]
+        )
+        env.info.yr.sub$lat.ind <- sapply(env.info.yr.sub$Lat, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[1]]) - as.numeric(x))))
+        env.info.yr.sub$lon.ind <- sapply(env.info.yr.sub$Lon, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[2]]) - as.numeric(x))))
+        env.weather <- sapply(seq_len(nrow(env.info.yr.sub)), function(x) nc.data[env.info.yr.sub$lat.ind[x], env.info.yr.sub$lon.ind[x], ])
+        env.weather <- t(env.weather)
+        rownames(env.weather) <- env.info.yr.sub$Environment
+        env.weather <- as.data.frame(env.weather)[, 1:365]
+        if (ncol(env.weather) < 365) {
+          env.weather <- cbind(env.weather, matrix(NA, nrow = nrow(env.weather), ncol = 365 - ncol(env.weather)))
+        }
+        all.yrs.weather[rownames(env.weather), ] <- as.matrix(env.weather)
+        gc()
+      }
+      return(all.yrs.weather)
+    }
+    doParallel::stopImplicitCluster()
+    if (verbose) {
+      print(":)")
+    }
+    names(all.vars.weather)<-vars
+    }
   }
 
   env.info <- data.frame("Environment" = Envs, "Lat" = Lats, "Lon" = Lons)
-
   out <- list("data" = all.vars.weather, "Env.info" = env.info)
   return(out)
 }
+
+
+
+
+
+
+

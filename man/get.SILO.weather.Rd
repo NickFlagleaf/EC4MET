@@ -4,7 +4,7 @@
 \alias{get.SILO.weather}
 \title{Get weather data from SILO}
 \usage{
-get.SILO.weather(Envs, Lats, Lons, Years, verbose = TRUE)
+get.SILO.weather(Envs, Lats, Lons, Years, ncores = NULL, verbose = TRUE)
 }
 \arguments{
 \item{Envs}{Vector of environment names character strings.}
@@ -14,6 +14,9 @@ get.SILO.weather(Envs, Lats, Lons, Years, verbose = TRUE)
 \item{Lons}{Vector of longitude numeric values for each environment in the same order as \code{Envs}.}
 
 \item{Years}{Vector of year integer values for each environment in the same order as \code{Envs}.}
+
+\item{ncores}{Number (integer) of cores to use for parallel processing of gridded data up to 5 cores. Use \code{1} to run in series. The default (\code{NULL}) will
+use the maximum available cores up to 5.}
 
 \item{verbose}{Logical. Should progress be printed?}
 }
@@ -36,7 +39,7 @@ Weather variables include:
 }
 \details{
 When there are only a few environments, point data will be sequentially downloaded from SILO. When there are many environments in each year,
-data will be downloaded and extracted from whole gridded data files more efficiently.
+data will be downloaded and extracted from whole gridded data files more efficiently. Any locations outside of the Australian land area will return \code{NA}.
 }
 \references{
 Jeffrey, S. J., Carter, J. O., Moodie, K. B., & Beswick, A. R. (2001).

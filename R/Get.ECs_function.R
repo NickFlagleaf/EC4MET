@@ -34,7 +34,7 @@
 #'
 #'    Custom values can be used to define other crop phenologies and growth rates
 #'
-#' @param DTH.TT Optional. Estimated thermal time from sowing that flowering growth stage occurs. Default value is 1285
+#' @param DTH.TT Optional. Estimated thermal time from sowing that heading growth stage occurs. Default value is 1285.
 #' @param verbose Logical. Should progress be printed?
 #'
 #' @returns A data frame of weather EC values with environment names as rows and covariates as columns.

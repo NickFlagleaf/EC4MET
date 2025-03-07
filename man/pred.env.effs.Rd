@@ -11,7 +11,7 @@ pred.env.effs(train.ECs, new.ECs, E.effs)
 
 \item{new.ECs}{A data frame of weather and/or soil ECs for new environments as output from the \code{\link[=get.W.ECs]{get.W.ECs()}} or \code{\link[=get.S.ECs]{get.S.ECs()}} functions.}
 
-\item{E.effs}{A data frame of several or a vector of a single Environmental effects parameters fitted from a multi-environmnet mixed model.
+\item{E.effs}{A data frame of several or a vector of a single environmental effects parameters fitted from a multi-environmnet trial analysis mixed model.
 Latent environmental effect factor loadings that decompose GxE can be defined as described by \href{https://doi.org/10.3389/fpls.2021.737462}{Smith et al (2021)}}
 }
 \value{

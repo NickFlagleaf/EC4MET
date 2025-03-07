@@ -46,7 +46,7 @@ Custom values can be used to define other crop phenologies and growth rates}
 
 Custom values can be used to define other crop phenologies and growth rates}
 
-\item{DTH.TT}{Optional. Estimated thermal time from sowing that flowering growth stage occurs. Default value is 1285}
+\item{DTH.TT}{Optional. Estimated thermal time from sowing that heading growth stage occurs. Default value is 1285.}
 
 \item{verbose}{Logical. Should progress be printed?}
 }

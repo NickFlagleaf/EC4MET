@@ -60,9 +60,9 @@ Load example dataset for environments in the Australian grain belt from 2018 to 
 data("wheat.area.envs")
 
 wheat.area.wthr <- get.SILO.weather(Envs = wheat.area.envs$Env,
-                                  Lats = wheat.area.envs$Lat,
-                                  Lons = wheat.area.envs$Lon,
-                                  Years = wheat.area.envs$Year)
+                                    Lats = wheat.area.envs$Lat,
+                                    Lons = wheat.area.envs$Lon,
+                                    Years = wheat.area.envs$Year)
                                   
 wheat.area.wthr.ECs <- get.W.ECs(weather = wheat.area.wthr,
                                sow.dates = wheat.area.envs$sow.dates)
