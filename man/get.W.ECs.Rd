@@ -14,43 +14,45 @@ get.W.ECs(
 )
 }
 \arguments{
-\item{weather}{A two level list of Weather data as outputted from the [get.SILO.weather()]. `Weather$data` is a list of data matrices for each covariate
+\item{weather}{A two level list of Weather data as outputted from the \code{\link[=get.SILO.weather]{get.SILO.weather()}}. \code{Weather$data} is a list of data matrices for each covariate
 with rows as environments and days of the year as columns. Weather covariate names should be:
+
 *"daily_rain"
+
 *"max_temp"
+
 *"min_temp"
+
 *"vp_deficit"
+
 *"radiation"
 
-`obs.wthr$Env.info` is a data frame of info for each environment that includes `Lat` latitude values to calculate day lengths.}
+\code{obs.wthr$Env.info} is a data frame of info for each environment that includes a \code{Lat} columnof latitude values for which day lengths are calculated.}
 
 \item{sow.dates}{Vector of character strings of dates of sowing for each trail environment in dd/mm/yyy format. Must be in the same order as the
-rownames of weather data in `weather$data` matrices.}
+rownames of weather data in \code{weather$data} matrices.}
 
 \item{cardT}{Optional. Minimum, optimal and maximum cardinal temperatures to calculate thermal time. Default values are min = 0, opt = 26, and max = 34.
 Custom values can be used to define other crop phenologies and growth rates}
 
 \item{stg.TT}{Optional. Estimated thermal time parameters between wheat crop growth stages. Default values:
+\itemize{
+\item Emergence to End of juvenile growth stages = 500
+\item Heading to Flowering = 250
+\item Flowering to Start of grain fill = 250
+\item Start of Grain fill to End of grain fill = 250
+\item End of grain fill to Maturity = 400
+}
 
-   * Emergence to End of juvenile growth stages = 500
-
-   * Heading to Flowering = 250
-
-   * Flowering to Start of grain fill = 250
-
-   * Start of Grain fill to End of grain fill = 250
-
-   * End of grain fill to Maturity = 400
-
-   Custom values can be used to define other crop phenologies and growth rates}
+Custom values can be used to define other crop phenologies and growth rates}
 
 \item{DTH.TT}{Optional. Estimated thermal time from sowing that flowering growth stage occurs. Default value is 1285}
 
 \item{verbose}{Logical. Should progress be printed?}
 }
 \value{
-A data frame of weather EC values with environment names as rows and covariates and columns.
+A data frame of weather EC values with environment names as rows and covariates as columns.
 }
 \description{
-A function to calculate Environmental Covariates (ECs) from daily weather data such as derived from the [get.SILO.weather()] function.
+A function to calculate Environmental Covariates (ECs) from daily weather data such as derived from the \code{\link[=get.SILO.weather]{get.SILO.weather()}} function.
 }

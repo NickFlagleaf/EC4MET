@@ -7,12 +7,12 @@
 pred.env.effs(train.ECs, new.ECs, E.effs)
 }
 \arguments{
-\item{train.ECs}{A data frame of weather and/or soil ECs for observed environments as output from the [get.W.ECs()] or `get.S.ECs()` functions.}
+\item{train.ECs}{A data frame of weather and/or soil ECs for observed environments as output from the \code{\link[=get.W.ECs]{get.W.ECs()}} or \code{\link[=get.S.ECs]{get.S.ECs()}} functions.}
 
-\item{new.ECs}{A data frame of weather and/or soil ECs for new environments as output from the `get.W.ECs()` or `get.S.ECs()` functions.}
+\item{new.ECs}{A data frame of weather and/or soil ECs for new environments as output from the \code{\link[=get.W.ECs]{get.W.ECs()}} or \code{\link[=get.S.ECs]{get.S.ECs()}} functions.}
 
 \item{E.effs}{A data frame of several or a vector of a single Environmental effects parameters fitted from a multi-environmnet mixed model.
-Latent environmental effect factor loadings that decompose GxE can be defined as described by Smith et al (2021).}
+Latent environmental effect factor loadings that decompose GxE can be defined as described by \href{https://doi.org/10.3389/fpls.2021.737462}{Smith et al (2021)}}
 }
 \value{
 A data frame of environmental effect predictions for the new environments with environments as rows and environmental effect variates as columns.
@@ -22,5 +22,5 @@ A function to train a random forest model to predict environmental effects defin
 }
 \references{
 Smith, A., Norman, A., Kuchel, H., & Cullis, B. (2021). Plant Variety Selection Using Interaction Classes Derived From Factor Analytic Linear Mixed Models:
-     Models With Independent Variety Effects. Frontiers in Plant Science, 12. https://doi.org/10.3389/fpls.2021.737462
+Models With Independent Variety Effects. Frontiers in Plant Science, 12. \url{https://doi.org/10.3389/fpls.2021.737462}
 }

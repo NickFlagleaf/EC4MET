@@ -4,13 +4,18 @@
 #'
 #' @param weather A two level list of Weather data as outputted from the [get.SILO.weather()]. `Weather$data` is a list of data matrices for each covariate
 #' with rows as environments and days of the year as columns. Weather covariate names should be:
+#' 
 #' *"daily_rain"
+#' 
 #' *"max_temp"
+#' 
 #' *"min_temp"
+#' 
 #' *"vp_deficit"
+#' 
 #' *"radiation"
 #'
-#' `obs.wthr$Env.info` is a data frame of info for each environment that includes `Lat` latitude values to calculate day lengths.
+#' `obs.wthr$Env.info` is a data frame of info for each environment that includes a `Lat` columnof latitude values for which day lengths are calculated.
 #' @param  sow.dates Vector of character strings of dates of sowing for each trail environment in dd/mm/yyy format. Must be in the same order as the
 #' rownames of weather data in `weather$data` matrices.
 #' @param cardT Optional. Minimum, optimal and maximum cardinal temperatures to calculate thermal time. Default values are min = 0, opt = 26, and max = 34.
@@ -32,7 +37,7 @@
 #' @param DTH.TT Optional. Estimated thermal time from sowing that flowering growth stage occurs. Default value is 1285
 #' @param verbose Logical. Should progress be printed?
 #'
-#' @returns A data frame of weather EC values with environment names as rows and covariates and columns.
+#' @returns A data frame of weather EC values with environment names as rows and covariates as columns.
 #' @export
 
 get.W.ECs <- function(weather,

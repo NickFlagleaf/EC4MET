@@ -1,26 +1,20 @@
 #' @title Get weather data from BARRA-R2
 #'
-#' @description Extract weather data for Australia from the BARRA-R2 weather data resource
-#' (https://opus.nci.org.au/spaces/NDP/pages/264241166/BOM+BARRA2+ob53) for a set of environments
-#' with defined latitude and longitude coordinates. BARRA-R2 data runs from Jan 1979 to Sept 2024.
+#' @description Extract weather data for Australia from the [BARRA-R2](https://opus.nci.org.au/spaces/NDP/pages/264241166/BOM+BARRA2+ob53) 
+#' weather data resource for a set of environments with defined latitude and longitude coordinates. BARRA-R2 data runs from Jan 1979 to Sept 2024.
 #'
 #' Weather varuiables include:
-#'
-#'    *daily_rain - Daily rainfall (mm)
-#'
-#'    *max_temp - Maximum temperature (deg C)
-#'
-#'    *min_temp - Minimum temperature (deg C)
-#'
-#'    *vp_deficit - Vapour pressure deficit (hPa)
-#'
-#'    *radiation - Solar exposure, consisting of both direct and diffuse components (MJ/m2)
+#' * `daily_rain` - Daily rainfall (mm)
+#' * `max_temp` - Maximum temperature (deg C)
+#' * `min_temp` - Minimum temperature (deg C)
+#' * `vp_deficit` - Vapour pressure deficit (hPa)
+#' * `radiation` - Solar exposure, consisting of both direct and diffuse components (MJ/m2)
 #'
 #'
 #' @param Envs Vector of environment names character strings.
-#' @param Lats Vector of latitude numeric values for each environment.
-#' @param Lons Vector of longitude numeric values for each environment.
-#' @param Years Vector of year integer values for each environment.
+#' @param Lats Vector of latitude numeric values for each environment in the same order as `Envs`.
+#' @param Lons Vector of longitude numeric values for each environment in the same order as `Envs`.
+#' @param Years Vector of year integer values for each environment in the same order as `Envs`.
 #' @param verbose Logical.Should progress be printed?
 #'
 #' @returns A list of weather data for each weather variable and a vector of units for each variable.
@@ -30,7 +24,7 @@
 #' @references
 #' Su, C.H., Dharssi, I., Le Marshall, J., Le, T., Rennie, S., Smith, A., Stassen, C., Steinle, P., Torrance, J., Wang, C. and Warren, R.A., 2022.
 #'     BARRA2: Development of the next-generation Australian regional atmospheric reanalysis. Bureau of Meteorology.
-#'     http://www.bom.gov.au/research/publications/researchreports/BRR-067.pdf
+#'     <http://www.bom.gov.au/research/publications/researchreports/BRR-067.pdf>
 #'
 #' @export
 

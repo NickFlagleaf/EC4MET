@@ -1,25 +1,27 @@
 #' @title Get weather data from SILO
 #'
-#' @description Extract weather data for Australia from the SILO weather data resource (https://www.longpaddock.qld.gov.au/silo/)
-#' for a set of environments with defined latitude and longitude coordinates
+#' @description Extract weather data for Australia from the [SILO](https://www.longpaddock.qld.gov.au/silo/) weather data resource
+#' for a set of environments with defined latitude and longitude coordinates.
 #'
 #' Weather variables include:
-#'
-#'    *daily_rain - Daily rainfall (mm)
-#'
-#'    *max_temp - Maximum temperature (deg C)
-#'
-#'    *min_temp - Minimum temperature (deg C)
-#'
-#'    *vp_deficit - Vapour pressure deficit (hPa)
-#'
-#'    *radiation - Solar exposure, consisting of both direct and diffuse components (MJ/m2)
+#' * `daily_rain` - Daily rainfall (mm)
+#' * `max_temp` - Maximum temperature (deg C)
+#' * `min_temp` - Minimum temperature (deg C)
+#' * `vp_deficit` - Vapour pressure deficit (hPa)
+#' * `radiation` - Solar exposure, consisting of both direct and diffuse components (MJ/m2)
 #'
 #' @param Envs Vector of environment names character strings.
-#' @param Lats Vector of latitude numeric values for each environment.
-#' @param Lons Vector of longitude numeric values for each environment.
-#' @param Years Vector of year integer values for each environment.
+#' @param Lats Vector of latitude numeric values for each environment in the same order as `Envs`.
+#' @param Lons Vector of longitude numeric values for each environment in the same order as `Envs`.
+#' @param Years Vector of year integer values for each environment in the same order as `Envs`.
 #' @param verbose Logical. Should progress be printed?
+#'
+#' @details When there are only a few environments, point data will be sequentially downloaded from SILO. When there are many environments in each year, 
+#' data will be downloaded and extracted from whole gridded data files more efficiently.
+#' 
+#' 
+#' 
+#' 
 #'
 #' @returns A list of weather data for each weather variable and a vector of units for each variable.
 #' The data list contains a a matrix or data values with environments as rows and days of the year as columns.
@@ -27,7 +29,7 @@
 #' @references
 #' Jeffrey, S. J., Carter, J. O., Moodie, K. B., & Beswick, A. R. (2001).
 #'   Using spatial interpolation to construct a comprehensive archive of Australian climate data. Environmental Modelling & Software, 16(4), 309–330.
-#'   https://doi.org/10.1016/S1364-8152(01)00008-1
+#'   <https://doi.org/10.1016/S1364-8152(01)00008-1>
 #'
 #' @export
 
@@ -35,7 +37,6 @@ get.SILO.weather <- function(Envs,
                              Lats,
                              Lons,
                              Years,
-                             email,
                              verbose = TRUE) {
   Years <- as.integer(as.numeric(Years))
   years <- unique(Years)
@@ -56,7 +57,7 @@ get.SILO.weather <- function(Envs,
         "1231&format=csv&comment=RXNDJ&username=xxx&password=apirequest",
         sep = ""
       )
-      pnt.data <- read.csv(url)
+      pnt.data <- utils::read.csv(url)
       all.env.weather[[e]] <- pnt.data
     }
     names(all.env.weather) <- Envs

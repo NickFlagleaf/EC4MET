@@ -1,8 +1,8 @@
 #' @title Get environmental covariates from soils data
 #'
-#' @description A function to derive soil Environmental Covariates (ECs) from the Soils and Landscapes Grids Australia data resource.
-#' https://esoil.io/TERNLandscapes/Public/Pages/SLGA/index.html
-#'
+#' @description A function to derive soil Environmental Covariates (ECs) for multiple soil attributes at multiple depths 
+#' from the [SLGA](https://esoil.io/TERNLandscapes/Public/Pages/SLGA/index.html) data resource.
+#' 
 #' @param Envs Vector of environment names character strings.
 #' @param Lats Vector of latitude numeric values for each environment.
 #' @param Lons Vector of longitude numeric values for each environment.
@@ -14,7 +14,7 @@
 #' Grundy, M. J., Rossel, R. A. V., Searle, R. D., Wilson, P. L., Chen, C., Gregory, L. J., Grundy, M. J., Rossel,
 #'      R. A. V., Searle, R. D., Wilson, P. L., Chen, C., & Gregory, L. J. (2015).
 #'      Soil and Landscape Grid of Australia. Soil Research, 53(8), 835–844.
-#'      https://doi.org/10.1071/SR15191
+#'      <https://doi.org/10.1071/SR15191>
 #'
 #' @export
 
