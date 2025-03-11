@@ -5,10 +5,10 @@
 #'
 #' Weather variables include:
 #' * `daily_rain` - Daily rainfall (mm)
-#' * `max_temp` - Maximum temperature (deg C)
-#' * `min_temp` - Minimum temperature (deg C)
+#' * `max_temp` - Maximum temperature (°C)
+#' * `min_temp` - Minimum temperature (°C)
 #' * `vp_deficit` - Vapour pressure deficit (hPa)
-#' * `radiation` - Solar exposure, consisting of both direct and diffuse components (MJ/m2)
+#' * `radiation` - Solar exposure, consisting of both direct and diffuse components (MJ m<sup>-2</sup>)
 #'
 #' @param Envs Vector of environment names character strings.
 #' @param Lats Vector of latitude numeric values for each environment in the same order as `Envs`.
@@ -21,13 +21,18 @@
 #' @details When there are only a few environments, point data will be sequentially downloaded from SILO. When there are many environments in each year, 
 #' data will be downloaded and extracted from whole gridded data files more efficiently. Any locations outside of the Australian land area will return `NA`.
 #' 
-#' @returns A list of weather data for each weather variable and a vector of units for each variable.
-#' The data list contains a a matrix or data values with environments as rows and days of the year as columns.
+#' @returns A list of length 2: 
+#' * `$data` is a list of matrices of weather data for each weather variable.
+#' Each data matrix has environment names as rows and days of the ywar as columns
+#' * `$Env.info` is a data frame of environment names and coordinate values for environments included in the data.  
+#
+#' @seealso [get.BARRA.weather()] 
 #'
 #' @references
 #' Jeffrey, S. J., Carter, J. O., Moodie, K. B., & Beswick, A. R. (2001).
-#'   Using spatial interpolation to construct a comprehensive archive of Australian climate data. Environmental Modelling & Software, 16(4), 309–330.
-#'   <https://doi.org/10.1016/S1364-8152(01)00008-1>
+#'   [Using spatial interpolation to construct a comprehensive archive of Australian climate data. Environmental Modelling & Software](https://doi.org/10.1016/S1364-8152(01)00008-1),
+#'    16(4), 309–330.
+#'
 #'
 #' @export
 

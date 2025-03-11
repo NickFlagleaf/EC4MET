@@ -10,11 +10,13 @@
 #'
 #' @returns A data frame of soil EC values with environment names as rows and covariates as columns.
 #'
+#' @seealso [get.W.ECs()]
+#' 
 #' @references
 #' Grundy, M. J., Rossel, R. A. V., Searle, R. D., Wilson, P. L., Chen, C., Gregory, L. J., Grundy, M. J., Rossel,
 #'      R. A. V., Searle, R. D., Wilson, P. L., Chen, C., & Gregory, L. J. (2015).
-#'      Soil and Landscape Grid of Australia. Soil Research, 53(8), 835–844.
-#'      <https://doi.org/10.1071/SR15191>
+#'      [Soil and Landscape Grid of Australia. Soil Research](https://doi.org/10.1071/SR15191), 53(8), 835–844.
+#'      
 #'
 #' @export
 

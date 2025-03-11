@@ -14,28 +14,28 @@ get.W.ECs(
 )
 }
 \arguments{
-\item{weather}{A two level list of Weather data as outputted from the \code{\link[=get.SILO.weather]{get.SILO.weather()}}. \code{Weather$data} is a list of data matrices for each covariate
-with rows as environments and days of the year as columns. Weather covariate names should be:
+\item{weather}{A two level list of Weather data as outputted from the \code{\link[=get.SILO.weather]{get.SILO.weather()}}.
+\code{weather$data} is a list of data matrices for each covariate with rows as environments and days of the year as columns. Weather covariate names for list items should be:
 
-*"daily_rain"
+*\code{daily_rain}
 
-*"max_temp"
+*\code{max_temp}
 
-*"min_temp"
+*\code{min_temp}
 
-*"vp_deficit"
+*\code{vp_deficit}
 
-*"radiation"
+*\code{radiation}
 
-\code{obs.wthr$Env.info} is a data frame of info for each environment that includes a \code{Lat} columnof latitude values for which day lengths are calculated.}
+\code{weather$Env.info} is a data frame of info for each environment that includes a \code{Lat} column of latitude values for which day lengths are calculated.}
 
 \item{sow.dates}{Vector of character strings of dates of sowing for each trail environment in dd/mm/yyy format. Must be in the same order as the
 rownames of weather data in \code{weather$data} matrices.}
 
 \item{cardT}{Optional. Minimum, optimal and maximum cardinal temperatures to calculate thermal time. Default values are min = 0, opt = 26, and max = 34.
-Custom values can be used to define other crop phenologies and growth rates}
+Custom values can be used to define other crop growth parameters.}
 
-\item{stg.TT}{Optional. Estimated thermal time parameters between wheat crop growth stages. Default values:
+\item{stg.TT}{Optional. Thermal time parameters that are used to estimate the number of days between wheat crop growth stages (see details). Default values:
 \itemize{
 \item Emergence to End of juvenile growth stages = 500
 \item Heading to Flowering = 250
@@ -51,8 +51,62 @@ Custom values can be used to define other crop phenologies and growth rates}
 \item{verbose}{Logical. Should progress be printed?}
 }
 \value{
-A data frame of weather EC values with environment names as rows and covariates as columns.
+A list of length 2:
+\itemize{
+\item \verb{$ECs} - A data frame of weather EC values with environment names as rows and covariates as columns.
+\item \verb{$gs.dates} - A data frame of estimated dates in yyyy-mm-dd format of each growth stage per environment with environment names as rows and abbreviated
+growth stage names as columns.
+}
 }
 \description{
-A function to calculate Environmental Covariates (ECs) from daily weather data such as derived from the \code{\link[=get.SILO.weather]{get.SILO.weather()}} function.
+A function to calculate Environmental Covariates (ECs) from daily weather data such as derived from the \code{\link[=get.SILO.weather]{get.SILO.weather()}} or \code{\link[=get.BARRA.weather]{get.BARRA.weather()}} functions.
+}
+\details{
+ECs are calculated for periods between crop growth stages that are estimated based on a thermal time degree days model defined by the \code{cardT} parameters.
+Crop growth stages abbreviations and equivalent Zadocks scale:
+\itemize{
+\item \code{Sow} - Sowing (GS0)
+\item \code{Emer} - Emergence (GS10)
+\item \code{Juv} - End of Juvenile (GS30)
+\item \code{He} - Heading (GS55)
+\item \code{Flow} - Flowering (GS65)
+\item \code{Sgf} - Start of grain filling (GS71)
+\item \code{Egf} - End of Grain filling (GS87)
+\item \code{Mat} - Maturity (GS92)
+}
+
+Other abbreviations for ECs calculated between growth stage intervals and combined into EC names include:
+\itemize{
+\item \code{Ndays} - Number of days
+\item \code{TotRain} - Total rainfall (mm)
+\item \code{Avtemp} - Average of average daily temperatures (°C)
+\item \code{AvMintemp} - Average of daily minimum temperatures (°C)
+\item \code{Avmaxtemp} -  Average of daily minimum temperatures (°C)
+\item \code{Ndays<0} - Number of frost days when the minimum temperature was below 0 °C
+\item \code{Ndays>26} - Number of warm days when max temp was over 26 °C
+\item \code{Ndays>34} - Number of hot days when max temp was over 34 °C
+\item \code{AveSR} -  Average solar radiation (MJ m\if{html}{\out{<sup>}}-2\if{html}{\out{</sup>}})
+\item \code{AveVPD} - Average vapour pressure deficit (hPa)
+\item \code{AvePQ} - Average photothermal quotient (MJ m\if{html}{\out{<sup>}}-2\if{html}{\out{</sup>}} day\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}} °C\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}})
+\item \code{AveDL} - Average day length (hr)
+}
+
+Other specific ECs include:
+\itemize{
+\item \code{TotRain_priorSow} - The total rainfall between Jan 1\if{html}{\out{<sup>}}st\if{html}{\out{</sup>}} and the sowing day (mm)
+\item \verb{Mintemp<0_Flw} - Number number of frost days within 7 days of the estimated flowering date
+}
+
+For details of how ECs are calculated, see Fradgley et al. 2025.
+}
+\references{
+\itemize{
+\item Fradgley et al. (2025) Prediction of Australian wheat genotype by environment interactions and mega-environments,
+Under review.
+\item Zadoks, J. C., Chang, T. T., & Konzak, C. F. (1974). \href{https://doi.org/10.1111/j.1365-3180.1974.tb01084.x}{A decimal code for the growth stages of cereals}.
+Weed research, 14(6), 415-421.
+}
+}
+\seealso{
+\code{\link[=get.S.ECs]{get.S.ECs()}}, \code{\link[=get.BARRA.weather]{get.BARRA.weather()}}, \code{\link[=get.SILO.weather]{get.SILO.weather()}}
 }

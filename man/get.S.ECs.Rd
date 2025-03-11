@@ -25,6 +25,8 @@ from the \href{https://esoil.io/TERNLandscapes/Public/Pages/SLGA/index.html}{SLG
 \references{
 Grundy, M. J., Rossel, R. A. V., Searle, R. D., Wilson, P. L., Chen, C., Gregory, L. J., Grundy, M. J., Rossel,
 R. A. V., Searle, R. D., Wilson, P. L., Chen, C., & Gregory, L. J. (2015).
-Soil and Landscape Grid of Australia. Soil Research, 53(8), 835–844.
-\url{https://doi.org/10.1071/SR15191}
+\href{https://doi.org/10.1071/SR15191}{Soil and Landscape Grid of Australia. Soil Research}, 53(8), 835–844.
+}
+\seealso{
+\code{\link[=get.W.ECs]{get.W.ECs()}}
 }

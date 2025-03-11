@@ -3,12 +3,12 @@
 #' @description Extract weather data for Australia from the [BARRA-R2](https://opus.nci.org.au/spaces/NDP/pages/264241166/BOM+BARRA2+ob53) 
 #' weather data resource for a set of environments with defined latitude and longitude coordinates. BARRA-R2 data runs from Jan 1979 to Sept 2024.
 #'
-#' Weather varuiables include:
+#' Weather variables include:
 #' * `daily_rain` - Daily rainfall (mm)
-#' * `max_temp` - Maximum temperature (deg C)
-#' * `min_temp` - Minimum temperature (deg C)
+#' * `max_temp` - Maximum temperature (°C)
+#' * `min_temp` - Minimum temperature (°C)
 #' * `vp_deficit` - Vapour pressure deficit (hPa)
-#' * `radiation` - Solar exposure, consisting of both direct and diffuse components (MJ/m2)
+#' * `radiation` - Solar exposure, consisting of both direct and diffuse components (MJ m<sup>-2</sup>)
 #'
 #'
 #' @param Envs Vector of environment names character strings.
@@ -19,14 +19,18 @@
 #' use the maximum available cores up to 5.  
 #' @param verbose Logical.Should progress be printed?
 #'
-#' @returns A list of weather data for each weather variable and a vector of units for each variable.
-#' The data list contains a a matrix or data values with environments as rows and days of the year as columns.
+#' @returns A list of length 2: 
+#' * `$data` is a list of matrices of weather data for each weather variable.
+#' Each data matrix has environment names as rows and days of the ywar as columns 
+#' * `$Env.info` is a data frame of environment names and coordinate values for environments included in the data.
 #'
+#' @seealso [get.SILO.weather()] 
 #'
 #' @references
 #' Su, C.H., Dharssi, I., Le Marshall, J., Le, T., Rennie, S., Smith, A., Stassen, C., Steinle, P., Torrance, J., Wang, C. and Warren, R.A., 2022.
-#'     BARRA2: Development of the next-generation Australian regional atmospheric reanalysis. Bureau of Meteorology.
-#'     <http://www.bom.gov.au/research/publications/researchreports/BRR-067.pdf>
+#'     [BARRA2: Development of the next-generation Australian regional atmospheric reanalysis](http://www.bom.gov.au/research/publications/researchreports/BRR-067.pdf).
+#'      Bureau of Meteorology.
+#'
 #'
 #' @export
 

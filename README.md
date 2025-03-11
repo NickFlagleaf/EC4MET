@@ -45,7 +45,7 @@ obs.wthr <- get.SILO.weather(Envs = CAIGE20_22envs$Environment,
 Calculate ECs based on the daily weather data with the `get.W.ECs` function:
 ```
 obs.weather.ECs <- get.W.ECs(weather = obs.wthr,
-                           sow.dates = CAIGE20_22envs$Sowing.date)
+                             sow.dates = CAIGE20_22envs$Sowing.date)
 ```
 
 Derive ECs from [SLGA](https://www.clw.csiro.au/aclep/soilandlandscapegrid/GetData-R_package.html) soil data with the `get.S.ECs` function:

@@ -21,8 +21,12 @@ use the maximum available cores up to 5.}
 \item{verbose}{Logical. Should progress be printed?}
 }
 \value{
-A list of weather data for each weather variable and a vector of units for each variable.
-The data list contains a a matrix or data values with environments as rows and days of the year as columns.
+A list of length 2:
+\itemize{
+\item \verb{$data} is a list of matrices of weather data for each weather variable.
+Each data matrix has environment names as rows and days of the ywar as columns
+\item \verb{$Env.info} is a data frame of environment names and coordinate values for environments included in the data.
+}
 }
 \description{
 Extract weather data for Australia from the \href{https://www.longpaddock.qld.gov.au/silo/}{SILO} weather data resource
@@ -31,10 +35,10 @@ for a set of environments with defined latitude and longitude coordinates.
 Weather variables include:
 \itemize{
 \item \code{daily_rain} - Daily rainfall (mm)
-\item \code{max_temp} - Maximum temperature (deg C)
-\item \code{min_temp} - Minimum temperature (deg C)
+\item \code{max_temp} - Maximum temperature (°C)
+\item \code{min_temp} - Minimum temperature (°C)
 \item \code{vp_deficit} - Vapour pressure deficit (hPa)
-\item \code{radiation} - Solar exposure, consisting of both direct and diffuse components (MJ/m2)
+\item \code{radiation} - Solar exposure, consisting of both direct and diffuse components (MJ m\if{html}{\out{<sup>}}-2\if{html}{\out{</sup>}})
 }
 }
 \details{
@@ -43,6 +47,9 @@ data will be downloaded and extracted from whole gridded data files more efficie
 }
 \references{
 Jeffrey, S. J., Carter, J. O., Moodie, K. B., & Beswick, A. R. (2001).
-Using spatial interpolation to construct a comprehensive archive of Australian climate data. Environmental Modelling & Software, 16(4), 309–330.
-\url{https://doi.org/10.1016/S1364-8152(01)00008-1}
+\href{https://doi.org/10.1016/S1364-8152(01)00008-1}{Using spatial interpolation to construct a comprehensive archive of Australian climate data. Environmental Modelling & Software},
+16(4), 309–330.
+}
+\seealso{
+\code{\link[=get.BARRA.weather]{get.BARRA.weather()}}
 }
