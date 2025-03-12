@@ -85,7 +85,7 @@ get.S.ECs <- function(Envs,
     if (verbose) {
       cat("\nRunning in parallel...")
     }
-    cl <- parallel::makeCluster(ncores, outfile = "SILO_soil_download_log.txt")
+    cl <- parallel::makeCluster(ncores, outfile = "SLGA_soil_download_log.txt")
     doParallel::registerDoParallel(cl)
     if (verbose) {
       cat(paste("\nProgress log output to:\n", getwd(), "/SILO_soil_download_log.txt", sep = ""))
@@ -93,7 +93,7 @@ get.S.ECs <- function(Envs,
     `%dopar%` <- foreach::`%dopar%`
     all.env.soil <- foreach::foreach(a = seq_along(atts), .combine = cbind, .multicombine = T) %dopar% {
       if (verbose == TRUE) {
-        print(paste("Starting", atts[a]))
+        cat("\nStarting", atts[a],"\n")
       }
       rasters <- SLGACloud::getProductMetaData(
         Detail = "High", Attribute = atts[a],
@@ -108,7 +108,7 @@ get.S.ECs <- function(Envs,
       )
       for (d in 1:length(depths)) {
         if (verbose == TRUE) {
-          print(paste("At", depths[d]))
+          cat("\n", atts[a],"at", depths[d],"\n")
         }
         r <- NULL
         try(r <- terra::rast(paste("/vsicurl/", rasters$StagingPath[d], sep = "")))
@@ -125,7 +125,7 @@ get.S.ECs <- function(Envs,
       }
       gc()
       if (verbose & sum(!complete.cases(all.depth.soil)) > 0) {
-        cat("\n NAs returned for:\n", rownames(all.depth.soil)[!complete.cases(all.depth.soil)])
+        cat("\n NAs returned for:\n", rownames(all.depth.soil)[!complete.cases(all.depth.soil)],"\n")
       }
       return(all.depth.soil)
     }
@@ -136,7 +136,7 @@ get.S.ECs <- function(Envs,
       cat("\nFinished parallel :)\n")
     }
     Sys.sleep(2)
-    file.remove("SILO_soil_download_log.txt")
+    file.remove("SLGA_soil_download_log.txt")
   }
   
   gc()

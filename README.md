@@ -65,31 +65,31 @@ wheat.area.wthr <- get.SILO.weather(Envs = wheat.area.envs$Env,
                                     Years = wheat.area.envs$Year)
                                   
 wheat.area.wthr.ECs <- get.W.ECs(weather = wheat.area.wthr,
-                               sow.dates = wheat.area.envs$sow.dates)
+                                 sow.dates = wheat.area.envs$sow.dates)
 
 wheat.area.soil.ECs <- get.S.ECs(Envs = wheat.area.envs$Env,
-                               Lats = wheat.area.envs$Lat,
-                               Lons = wheat.area.envs$Lon)
+                                 Lats = wheat.area.envs$Lat,
+                                 Lons = wheat.area.envs$Lon)
 
 ```
 
 Combine weather and soil ECs for the observed and all wheat belt environments 
 ```
-obsECs <- cbind(obs.weather.ECs, obs.soil.ECs)
+obsECs <- cbind(obs.weather.ECs$ECs, obs.soil.ECs)
 
-wheat.area.ECs <- cbind(wheat.area.wthr.ECs, wheat.area.soil.ECs)
+wheat.area.ECs <- cbind(wheat.area.wthr.ECs$ECs, wheat.area.soil.ECs)
 ```
 
 
 Predict environmental effects for all wheat belt environments based on the observed ECs
 ```
-obs.env.effs <- CAIGE22_23envs[ ,c("Main_E_effect","FA1","FA2","FA3")]
+obs.env.effs <- CAIGE20_22envs[ ,c("Main_E_effect","FA1","FA2","FA3")]
 
-rownames(obs.env.effs) <- CAIGE22_23envs$Environment
+rownames(obs.env.effs) <- CAIGE20_22envs$Environment
 
 wheat.area.preds <- pred.env.effs(train.ECs = obsECs,
-                                new.ECs = wheat.area.ECs,
-                                E.effs = obs.env.effs)
+                                  new.ECs = wheat.area.ECs,
+                                  E.effs = obs.env.effs)
 ```
                                 
 Plot the iClasses environment types for all environments in the Australian grain belt on maps:
