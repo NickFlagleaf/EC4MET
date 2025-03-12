@@ -16,7 +16,7 @@ get.SILO.weather(Envs, Lats, Lons, Years, ncores = NULL, verbose = TRUE)
 \item{Years}{Vector of year integer values for each environment in the same order as \code{Envs}.}
 
 \item{ncores}{Number (integer) of cores to use for parallel processing of gridded data up to 5 cores. Use \code{1} to run in series. The default (\code{NULL}) will
-use the maximum available cores up to 5.}
+use the maximum available cores up to 5. If running in parallel, an output log text file will be created in the working directory.}
 
 \item{verbose}{Logical. Should progress be printed?}
 }
@@ -24,7 +24,7 @@ use the maximum available cores up to 5.}
 A list of length 2:
 \itemize{
 \item \verb{$data} is a list of matrices of weather data for each weather variable.
-Each data matrix has environment names as rows and days of the ywar as columns
+Each data matrix has environment names as rows and days of the year as columns
 \item \verb{$Env.info} is a data frame of environment names and coordinate values for environments included in the data.
 }
 }

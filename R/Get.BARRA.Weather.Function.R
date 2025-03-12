@@ -1,6 +1,6 @@
 #' @title Get weather data from BARRA-R2
 #'
-#' @description Extract weather data for Australia from the [BARRA-R2](https://opus.nci.org.au/spaces/NDP/pages/264241166/BOM+BARRA2+ob53) 
+#' @description Extract weather data for Australia from the [BARRA-R2](https://opus.nci.org.au/spaces/NDP/pages/264241166/BOM+BARRA2+ob53)
 #' weather data resource for a set of environments with defined latitude and longitude coordinates. BARRA-R2 data runs from Jan 1979 to Sept 2024.
 #'
 #' Weather variables include:
@@ -16,15 +16,15 @@
 #' @param Lons Vector of longitude numeric values for each environment in the same order as `Envs`.
 #' @param Years Vector of year integer values for each environment in the same order as `Envs`.
 #' @param ncores Number (integer) of cores to use for parallel processing of gridded data up to 5 cores. Use `1` to run in series. The default (`NULL`) will
-#' use the maximum available cores up to 5.  
+#' use the maximum available cores up to 5. If running in parallel, an output log text file will be created in the working directory.
 #' @param verbose Logical.Should progress be printed?
 #'
-#' @returns A list of length 2: 
+#' @returns A list of length 2:
 #' * `$data` is a list of matrices of weather data for each weather variable.
-#' Each data matrix has environment names as rows and days of the ywar as columns 
+#' Each data matrix has environment names as rows and days of the ywar as columns
 #' * `$Env.info` is a data frame of environment names and coordinate values for environments included in the data.
 #'
-#' @seealso [get.SILO.weather()] 
+#' @seealso [get.SILO.weather()]
 #'
 #' @references
 #' Su, C.H., Dharssi, I., Le Marshall, J., Le, T., Rennie, S., Smith, A., Stassen, C., Steinle, P., Torrance, J., Wang, C. and Warren, R.A., 2022.
@@ -40,148 +40,192 @@ get.BARRA.weather <- function(Envs,
                               Years,
                               ncores = NULL,
                               verbose = TRUE) {
-  Years <- as.integer(as.numeric(Years))
+  Years <- as.integer(as.character(Years))
   years <- unique(Years)
+  Envs <- as.character(Envs)
   var.units <- c()
   all.vars.weather <- list()
   mons <- stringr::str_pad(1:12, 2, pad = "0")
   vars <- c("pr", "tasmax", "tasmin", "hurs", "rsdt")
-  
-  
-  if(isTRUE(ncores==1)){ #Run in series
-    if (verbose) {
-      print("Running in series")
-    }
-  for (v in seq_along(vars)) {
-    if (verbose) {
-      cat(paste("Starting", vars[v], "\n"))
-    }
-    all.yrs.weather <- matrix(NA, nrow = length(Envs), ncol = 365, dimnames = list(Envs, 1:365))
 
-    for (y in seq_along(years)) {
-      if (verbose) {
-        cat(years[y], "|", sep = "")
-      }
-      all.mons.weather <- list()
-      for (m in 1:length(mons)) {
-        if (verbose) {
-          cat(years[y], mons[m], "|", sep = "")
-        }
-        addrs <- paste("https://thredds.nci.org.au/thredds/fileServer/ob53/output/reanalysis/AUS-11/BOM/ERA5/historical/hres/BARRA-R2/v1/day/",
-          vars[v], "/latest/", vars[v], "_AUS-11_ERA5_historical_hres_BOM_BARRA-R2_v1_day_", years[y], mons[m], "-", years[y], mons[m], ".nc",
-          sep = ""
-        )
-        tmp.dir <- tempfile()
-        tmp.dir <- gsub("\\", "/", tmp.dir, fixed = T)
-        utils::download.file(url = addrs, destfile = tmp.dir, method = "curl", quiet = T)
-        ncfile <- ncdf4::nc_open(tmp.dir)
-        nc.data <- ncdf4::ncvar_get(ncfile)
-        start.day <- stringr::str_sub(string = ncfile$dim$time$units, start = nchar(ncfile$dim$time$units) - 9, end = nchar(ncfile$dim$time$units))
-        dimnames(nc.data) <- list(
-          ncfile$dim$lon$vals,
-          ncfile$dim$lat$vals,
-          as.character(as.Date(start.day) + ncfile$dim$time$vals)
-        )
-        all.mons.weather[[m]] <- nc.data
-        ncdf4::nc_close(ncfile)
-        rm(ncfile, nc.data)
-        file.remove(tmp.dir)
-        gc(full = T)
-      }
-
-      tnames <- unlist(lapply(all.mons.weather, function(x) dimnames(x)[[3]]))
-      all.mons.weather <- abind::abind(all.mons.weather, along = 3)
-
-      env.info.yr.sub <- data.frame(
-        "Environment" = Envs[Years == years[y]],
-        "Lat" = Lats[Years == years[y]],
-        "Lon" = Lons[Years == years[y]]
-      )
-      env.info.yr.sub$lon.ind <- sapply(env.info.yr.sub$Lon, function(x) which.min(abs(as.numeric(dimnames(all.mons.weather)[[1]]) - as.numeric(x))))
-      env.info.yr.sub$lat.ind <- sapply(env.info.yr.sub$Lat, function(x) which.min(abs(as.numeric(dimnames(all.mons.weather)[[2]]) - as.numeric(x))))
-      env.weather <- sapply(seq_len(nrow(env.info.yr.sub)), function(x) all.mons.weather[env.info.yr.sub$lon.ind[x], env.info.yr.sub$lat.ind[x], ])
-      env.weather <- t(env.weather)
-      rownames(env.weather) <- env.info.yr.sub$Environment
-      env.weather <- as.data.frame(env.weather)[, 1:365]
-      if (ncol(env.weather) < 365) {
-        env.weather <- cbind(env.weather, matrix(NA, nrow = nrow(env.weather), ncol = 365 - ncol(env.weather)))
-      }
-      all.yrs.weather[rownames(env.weather), ] <- as.matrix(env.weather)
-    }
-    gc(full = T)
-    all.vars.weather[[v]] <- all.yrs.weather
-    if (verbose) {
-      print(":)")
-    }
+  if (verbose & sum(!years %in% 1979:2023) > 0) {
+    cat("\nYears out of range of BARRA R2 data (1979 to Sept 2024)")
   }
+  if (verbose & !is.numeric(Lats)) {
+    cat("Lat values not numeric")
+  }
+  if (verbose & !is.numeric(Lons)) {
+    cat("Lon values not numeric")
+  }
+  if (verbose & sum(Lons < 88.48 | Lons > 207.39) > 0) {
+    cat("\nLon out of range of SILO data: 88.48 to 207.39")
+  }
+  if (verbose & sum(Lats < -57.97 | Lats > 12.98) > 0) {
+    cat("\nLats out of range of SILO data: -57.97 to -12.98")
+  }
+
+
+  if (isTRUE(ncores == 1)) { # Run in series
+    if (verbose) {
+      cat("\nRunning in series")
+    }
+    for (v in seq_along(vars)) {
+      if (verbose) {
+        cat(paste("\nStarting", vars[v], "\n"))
+      }
+      all.yrs.weather <- matrix(NA, nrow = length(Envs), ncol = 365, dimnames = list(Envs, 1:365))
+
+      for (y in seq_along(years)) {
+        if (verbose) {
+          cat(years[y], "|", sep = "")
+        }
+        all.mons.weather <- list()
+        for (m in 1:length(mons)) {
+          if (verbose) {
+            cat(years[y], mons[m], "|", sep = "")
+          }
+          addrs <- paste("https://thredds.nci.org.au/thredds/fileServer/ob53/output/reanalysis/AUS-11/BOM/ERA5/historical/hres/BARRA-R2/v1/day/",
+            vars[v], "/latest/", vars[v], "_AUS-11_ERA5_historical_hres_BOM_BARRA-R2_v1_day_", years[y], mons[m], "-", years[y], mons[m], ".nc",
+            sep = ""
+          )
+          tmp.dir <- tempfile()
+          tmp.dir <- gsub("\\", "/", tmp.dir, fixed = T)
+          utils::download.file(url = addrs, destfile = tmp.dir, method = "curl", quiet = T)
+          ncfile <- ncdf4::nc_open(tmp.dir)
+          nc.data <- ncdf4::ncvar_get(ncfile)
+          start.day <- stringr::str_sub(string = ncfile$dim$time$units, start = nchar(ncfile$dim$time$units) - 9, end = nchar(ncfile$dim$time$units))
+          dimnames(nc.data) <- list(
+            ncfile$dim$lon$vals,
+            ncfile$dim$lat$vals,
+            as.character(as.Date(start.day) + ncfile$dim$time$vals)
+          )
+          all.mons.weather[[m]] <- nc.data
+          ncdf4::nc_close(ncfile)
+          rm(ncfile, nc.data)
+          file.remove(tmp.dir)
+          gc(full = T)
+        }
+
+        tnames <- unlist(lapply(all.mons.weather, function(x) dimnames(x)[[3]]))
+        all.mons.weather <- abind::abind(all.mons.weather, along = 3)
+
+        env.info.yr.sub <- data.frame(
+          "Environment" = Envs[Years == years[y]],
+          "Lat" = Lats[Years == years[y]],
+          "Lon" = Lons[Years == years[y]]
+        )
+        env.info.yr.sub$lon.ind <- sapply(env.info.yr.sub$Lon, function(x) which.min(abs(as.numeric(dimnames(all.mons.weather)[[1]]) - as.numeric(x))))
+        env.info.yr.sub$lat.ind <- sapply(env.info.yr.sub$Lat, function(x) which.min(abs(as.numeric(dimnames(all.mons.weather)[[2]]) - as.numeric(x))))
+        env.weather <- sapply(seq_len(nrow(env.info.yr.sub)), function(x) all.mons.weather[env.info.yr.sub$lon.ind[x], env.info.yr.sub$lat.ind[x], ])
+        env.weather <- t(env.weather)
+        rownames(env.weather) <- env.info.yr.sub$Environment
+        env.weather <- as.data.frame(env.weather)[, 1:365]
+        if (ncol(env.weather) < 365) {
+          env.weather <- cbind(env.weather, matrix(NA, nrow = nrow(env.weather), ncol = 365 - ncol(env.weather)))
+        }
+        all.yrs.weather[rownames(env.weather), ] <- as.matrix(env.weather)
+        if (verbose & sum(is.na(env.weather)) > 0) {
+          NAenvs <- Envs[!complete.cases(env.weather)]
+          cat("\nNAs returned at ", paste(NAenvs, collapse = " "))
+        }
+      }
+      gc(full = T)
+      all.vars.weather[[v]] <- all.yrs.weather
+      if (verbose) {
+        cat(":)")
+      }
+    }
     names(all.vars.weather) <- vars
   }
-    
-    
-    if(is.null(ncores)) {ncores <- min(parallel::detectCores(), length(vars))}
-    ncores <- min(ncores, length(vars))
-    
-    if(isTRUE(ncores > 1)){ #Run in parallel
+
+
+  if (is.null(ncores)) {
+    ncores <- min(parallel::detectCores(), length(vars))
+  }
+  ncores <- min(ncores, length(vars))
+
+  if (isTRUE(ncores > 1)) { # Run in parallel
+    if (verbose) {
+      cat("\nRunning in parallel...")
+    }
+    cl <- parallel::makeCluster(ncores, outfile = "BARRA_download_log.txt")
+    doParallel::registerDoParallel(cl)
+    if (verbose) {
+      cat(paste("\nProgress log output to:\n", getwd(), "/BARRA_download_log.txt", sep = ""))
+    }
+    `%dopar%` <- foreach::`%dopar%`
+    all.vars.weather <- foreach::foreach(v = seq_along(vars), .combine = list, .multicombine = T) %dopar% {
       if (verbose) {
-        print("Running in parallel...")
+        print(paste("Starting", vars[v]))
       }
-      doParallel::registerDoParallel(ncores) 
-      `%dopar%` <- foreach::`%dopar%`
-      all.vars.weather<-foreach::foreach (v=seq_along(vars), .combine=list,.multicombine = T) %dopar% {
-        
-        all.yrs.weather <- matrix(NA, nrow = length(Envs), ncol = 365, dimnames = list(Envs, 1:365))
-        for (y in seq_along(years)) {
-          if (verbose) {
-            cat(years[y], "|", sep = "")
-          }
-          all.mons.weather <- list()
-          for (m in 1:length(mons)) {
-            addrs <- paste("https://thredds.nci.org.au/thredds/fileServer/ob53/output/reanalysis/AUS-11/BOM/ERA5/historical/hres/BARRA-R2/v1/day/",
-                           vars[v], "/latest/", vars[v], "_AUS-11_ERA5_historical_hres_BOM_BARRA-R2_v1_day_", years[y], mons[m], "-", years[y], mons[m], ".nc",
-                           sep = ""
-            )
-            tmp.dir <- tempfile()
-            tmp.dir <- gsub("\\", "/", tmp.dir, fixed = T)
-            utils::download.file(url = addrs, destfile = tmp.dir, method = "curl", quiet = T)
-            ncfile <- ncdf4::nc_open(tmp.dir)
-            nc.data <- ncdf4::ncvar_get(ncfile)
-            start.day <- stringr::str_sub(string = ncfile$dim$time$units, start = nchar(ncfile$dim$time$units) - 9, end = nchar(ncfile$dim$time$units))
-            dimnames(nc.data) <- list(
-              ncfile$dim$lon$vals,
-              ncfile$dim$lat$vals,
-              as.character(as.Date(start.day) + ncfile$dim$time$vals)
-            )
-            all.mons.weather[[m]] <- nc.data
-            ncdf4::nc_close(ncfile)
-            rm(ncfile, nc.data)
-            file.remove(tmp.dir)
-            gc(full = T)
-          }
-          
-          tnames <- unlist(lapply(all.mons.weather, function(x) dimnames(x)[[3]]))
-          all.mons.weather <- abind::abind(all.mons.weather, along = 3)
-          
-          env.info.yr.sub <- data.frame(
-            "Environment" = Envs[Years == years[y]],
-            "Lat" = Lats[Years == years[y]],
-            "Lon" = Lons[Years == years[y]]
-          )
-          env.info.yr.sub$lon.ind <- sapply(env.info.yr.sub$Lon, function(x) which.min(abs(as.numeric(dimnames(all.mons.weather)[[1]]) - as.numeric(x))))
-          env.info.yr.sub$lat.ind <- sapply(env.info.yr.sub$Lat, function(x) which.min(abs(as.numeric(dimnames(all.mons.weather)[[2]]) - as.numeric(x))))
-          env.weather <- sapply(seq_len(nrow(env.info.yr.sub)), function(x) all.mons.weather[env.info.yr.sub$lon.ind[x], env.info.yr.sub$lat.ind[x], ])
-          env.weather <- t(env.weather)
-          rownames(env.weather) <- env.info.yr.sub$Environment
-          env.weather <- as.data.frame(env.weather)[, 1:365]
-          if (ncol(env.weather) < 365) {
-            env.weather <- cbind(env.weather, matrix(NA, nrow = nrow(env.weather), ncol = 365 - ncol(env.weather)))
-          }
-          all.yrs.weather[rownames(env.weather), ] <- as.matrix(env.weather)
+      all.yrs.weather <- matrix(NA, nrow = length(Envs), ncol = 365, dimnames = list(Envs, 1:365))
+      for (y in seq_along(years)) {
+        if (verbose) {
+          cat(years[y], "|", sep = "")
         }
-        gc(full = T)
-        all.vars.weather[[v]] <- all.yrs.weather
+        all.mons.weather <- list()
+        for (m in 1:length(mons)) {
+          if (verbose) {
+            cat(years[y], mons[m], "|", sep = "")
+          }
+          addrs <- paste("https://thredds.nci.org.au/thredds/fileServer/ob53/output/reanalysis/AUS-11/BOM/ERA5/historical/hres/BARRA-R2/v1/day/",
+            vars[v], "/latest/", vars[v], "_AUS-11_ERA5_historical_hres_BOM_BARRA-R2_v1_day_", years[y], mons[m], "-", years[y], mons[m], ".nc",
+            sep = ""
+          )
+          tmp.dir <- tempfile()
+          tmp.dir <- gsub("\\", "/", tmp.dir, fixed = T)
+          utils::download.file(url = addrs, destfile = tmp.dir, method = "curl", quiet = T)
+          ncfile <- ncdf4::nc_open(tmp.dir)
+          nc.data <- ncdf4::ncvar_get(ncfile)
+          start.day <- stringr::str_sub(string = ncfile$dim$time$units, start = nchar(ncfile$dim$time$units) - 9, end = nchar(ncfile$dim$time$units))
+          dimnames(nc.data) <- list(
+            ncfile$dim$lon$vals,
+            ncfile$dim$lat$vals,
+            as.character(as.Date(start.day) + ncfile$dim$time$vals)
+          )
+          all.mons.weather[[m]] <- nc.data
+          ncdf4::nc_close(ncfile)
+          rm(ncfile, nc.data)
+          file.remove(tmp.dir)
+          gc(full = T)
+        }
+
+        tnames <- unlist(lapply(all.mons.weather, function(x) dimnames(x)[[3]]))
+        all.mons.weather <- abind::abind(all.mons.weather, along = 3)
+
+        env.info.yr.sub <- data.frame(
+          "Environment" = Envs[Years == years[y]],
+          "Lat" = Lats[Years == years[y]],
+          "Lon" = Lons[Years == years[y]]
+        )
+        env.info.yr.sub$lon.ind <- sapply(env.info.yr.sub$Lon, function(x) which.min(abs(as.numeric(dimnames(all.mons.weather)[[1]]) - as.numeric(x))))
+        env.info.yr.sub$lat.ind <- sapply(env.info.yr.sub$Lat, function(x) which.min(abs(as.numeric(dimnames(all.mons.weather)[[2]]) - as.numeric(x))))
+        env.weather <- sapply(seq_len(nrow(env.info.yr.sub)), function(x) all.mons.weather[env.info.yr.sub$lon.ind[x], env.info.yr.sub$lat.ind[x], ])
+        env.weather <- t(env.weather)
+        rownames(env.weather) <- env.info.yr.sub$Environment
+        env.weather <- as.data.frame(env.weather)[, 1:365]
+        if (ncol(env.weather) < 365) {
+          env.weather <- cbind(env.weather, matrix(NA, nrow = nrow(env.weather), ncol = 365 - ncol(env.weather)))
+        }
+        all.yrs.weather[rownames(env.weather), ] <- as.matrix(env.weather)
+        if (verbose & sum(is.na(env.weather)) > 0) {
+          NAenvs <- Envs[!complete.cases(env.weather)]
+          cat("\nNAs returned at ", paste(NAenvs, collapse = " "))
+        }
       }
-      names(all.vars.weather) <- vars
-      }
+      gc(full = T)
+      all.vars.weather[[v]] <- all.yrs.weather
+    }
+    parallel::stopCluster(cl)
+    doParallel::stopImplicitCluster()
+
+    if (verbose) {
+      cat("\nFinished parallel :)\n")
+    }
+    Sys.sleep(2)
+    file.remove("BARRA_download_log.txt")
+    names(all.vars.weather) <- vars
+  }
 
   all.vars.weather$pr <- all.vars.weather$pr * 86400 # convert "kg m-2 s-1" to "mm day-1"
   all.vars.weather$tasmax <- all.vars.weather$tasmax - 273.15 # convert from Kelvin to deg C

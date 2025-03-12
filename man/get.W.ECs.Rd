@@ -32,7 +32,7 @@ get.W.ECs(
 \item{sow.dates}{Vector of character strings of dates of sowing for each trail environment in dd/mm/yyy format. Must be in the same order as the
 rownames of weather data in \code{weather$data} matrices.}
 
-\item{cardT}{Optional. Minimum, optimal and maximum cardinal temperatures to calculate thermal time. Default values are min = 0, opt = 26, and max = 34.
+\item{cardT}{Optional. Vector of minimum, optimal and maximum cardinal temperatures to calculate thermal time. Default values are min = 0, opt = 26, and max = 34.
 Custom values can be used to define other crop growth parameters.}
 
 \item{stg.TT}{Optional. Thermal time parameters that are used to estimate the number of days between wheat crop growth stages (see details). Default values:
