@@ -15,18 +15,18 @@
 #' @param Lons Vector of longitude numeric values for each environment in the same order as `Envs`.
 #' @param Years Vector of year integer values for each environment in the same order as `Envs`.
 #' @param ncores Number (integer) of cores to use for parallel processing of gridded data up to 5 cores. Use `1` to run in series. The default (`NULL`) will
-#' use the maximum available cores up to 5.  
+#' use the maximum available cores up to 5. If running in parallel, an output log text file will be created in the working directory.
 #' @param verbose Logical. Should progress be printed?
 #'
-#' @details When there are only a few environments, point data will be sequentially downloaded from SILO. When there are many environments in each year, 
+#' @details When there are only a few environments, point data will be sequentially downloaded from SILO. When there are many environments in each year,
 #' data will be downloaded and extracted from whole gridded data files more efficiently. Any locations outside of the Australian land area will return `NA`.
-#' 
-#' @returns A list of length 2: 
+#'
+#' @returns A list of length 2:
 #' * `$data` is a list of matrices of weather data for each weather variable.
-#' Each data matrix has environment names as rows and days of the ywar as columns
-#' * `$Env.info` is a data frame of environment names and coordinate values for environments included in the data.  
+#' Each data matrix has environment names as rows and days of the year as columns
+#' * `$Env.info` is a data frame of environment names and coordinate values for environments included in the data.
 #
-#' @seealso [get.BARRA.weather()] 
+#' @seealso [get.BARRA.weather()]
 #'
 #' @references
 #' Jeffrey, S. J., Carter, J. O., Moodie, K. B., & Beswick, A. R. (2001).
@@ -42,20 +42,37 @@ get.SILO.weather <- function(Envs,
                              Years,
                              ncores = NULL,
                              verbose = TRUE) {
-  Years <- as.integer(as.numeric(Years))
+  Years <- as.integer(as.character(Years))
   years <- unique(Years)
+  Envs <- as.character(Envs)
   all.vars.weather <- list()
+
+  if (verbose & sum(!years %in% 1889:as.numeric(stringr::str_sub(Sys.Date(), 1, 4))) > 0) {
+    cat("\nYears out of range of SILO data (1889 to yesterday)")
+  }
+  if (verbose & !is.numeric(Lats)) {
+    cat("\nLat values not numeric")
+  }
+  if (verbose & !is.numeric(Lons)) {
+    cat("\nLon values not numeric")
+  }
+  if (verbose & sum(Lons < 112 | Lons > 154) > 0) {
+    cat("\nLon out of range of SILO data: 112 to 154")
+  }
+  if (verbose & sum(Lats < -44 | Lats > -10) > 0) {
+    cat("\nLats out of range of SILO data: -44 to -10")
+  }
 
   vars <- c("daily_rain", "max_temp", "min_temp", "vp_deficit", "radiation")
 
-  if (length(Envs)*2 < length(years)*3*60) {
+  if (length(Envs) * 2 < length(years) * 3 * 60) {
     if (verbose) {
-      print("Downloading SILO point data")
+      cat("\nDownloading SILO point data")
     }
     all.env.weather <- list()
     for (e in 1:length(Envs)) {
-      if (verbose) {
-        cat("|")
+      if (verbose == TRUE & e %in% round(seq(1, length(Envs), length.out = 100))) {
+        cat("|", round(e / length(Envs) * 100), "%", sep = "")
       }
       url <- paste("https://www.longpaddock.qld.gov.au/cgi-bin/silo/DataDrillDataset.php?lat=", Lats[e], "&lon=", Lons[e], "&start=", Years[e], "0101&finish=", Years[e],
         "1231&format=csv&comment=RXNDJ&username=xxx&password=apirequest",
@@ -63,122 +80,154 @@ get.SILO.weather <- function(Envs,
       )
       pnt.data <- utils::read.csv(url)
       all.env.weather[[e]] <- pnt.data
+
+      if (verbose & sum(is.na(pnt.data[, vars])) > 0) {
+        NAenvs <- Envs[!complete.cases(pnt.data[, vars])]
+        cat("\nNAs returned at ", paste(NAenvs, collapse = " "))
+      }
     }
     names(all.env.weather) <- Envs
     all.vars.weather <- lapply(vars, function(v) t(sapply(all.env.weather, function(e) e[1:365, v])))
     names(all.vars.weather) <- vars
     if (verbose) {
-      print(":)")
+      cat(":)")
     }
   }
 
 
-  if (length(Envs)*2 > length(years)*3*60) {
+  if (length(Envs) * 2 > length(years) * 3 * 60) {
     if (verbose) {
-      print("Downloading SILO gridded data")
+      cat("\nDownloading SILO gridded data")
     }
-    
-    if(isTRUE(ncores==1)){ #Run in series
-      if (verbose) {
-        print("Running in series")
-      }
-    for (v in seq_along(vars)) {
-      if (verbose) {
-        print(paste("Starting", vars[v]))
-      }
-      all.yrs.weather <- matrix(NA, nrow = length(Envs), ncol = 365, dimnames = list(Envs, 1:365))
 
-      for (y in seq_along(years)) {
+    if (isTRUE(ncores == 1)) { # Run in series
+      if (verbose) {
+        cat("\nRunning in series")
+      }
+      for (v in seq_along(vars)) {
         if (verbose) {
-          cat(years[y], "|", sep = "")
+          cat(paste("\nStarting", vars[v]))
         }
-        addrs <- paste("https://s3-ap-southeast-2.amazonaws.com/silo-open-data/Official/annual/", vars[v], "/", years[y], ".", vars[v], ".nc", sep = "")
-        nc.rast <- terra::rast(addrs)
-        xvals <- terra::xFromCol(nc.rast)
-        yvals <- terra::yFromRow(nc.rast)
-        days <- terra::time(nc.rast)
-        nc.data <- terra::as.array(nc.rast)
-        dimnames(nc.data) <- list(yvals, xvals, as.character(days))
-        env.info.yr.sub <- data.frame(
-          "Environment" = Envs[Years == years[y]],
-          "Lat" = Lats[Years == years[y]],
-          "Lon" = Lons[Years == years[y]]
-        )
-        env.info.yr.sub$lat.ind <- sapply(env.info.yr.sub$Lat, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[1]]) - as.numeric(x))))
-        env.info.yr.sub$lon.ind <- sapply(env.info.yr.sub$Lon, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[2]]) - as.numeric(x))))
-        env.weather <- sapply(seq_len(nrow(env.info.yr.sub)), function(x) nc.data[env.info.yr.sub$lat.ind[x], env.info.yr.sub$lon.ind[x], ])
-        env.weather <- t(env.weather)
-        rownames(env.weather) <- env.info.yr.sub$Environment
-        env.weather <- as.data.frame(env.weather)[, 1:365]
-        if (ncol(env.weather) < 365) {
-          env.weather <- cbind(env.weather, matrix(NA, nrow = nrow(env.weather), ncol = 365 - ncol(env.weather)))
+        all.yrs.weather <- matrix(NA, nrow = length(Envs), ncol = 365, dimnames = list(Envs, 1:365))
+
+        for (y in seq_along(years)) {
+          if (verbose) {
+            cat(years[y], "|", sep = "")
+          }
+          addrs <- paste("https://s3-ap-southeast-2.amazonaws.com/silo-open-data/Official/annual/", vars[v], "/", years[y], ".", vars[v], ".nc", sep = "")
+          nc.rast <- terra::rast(addrs)
+          xvals <- terra::xFromCol(nc.rast)
+          yvals <- terra::yFromRow(nc.rast)
+          days <- terra::time(nc.rast)
+          nc.data <- terra::as.array(nc.rast)
+          dimnames(nc.data) <- list(yvals, xvals, as.character(days))
+          env.info.yr.sub <- data.frame(
+            "Environment" = Envs[Years == years[y]],
+            "Lat" = Lats[Years == years[y]],
+            "Lon" = Lons[Years == years[y]]
+          )
+          env.info.yr.sub$lat.ind <- sapply(env.info.yr.sub$Lat, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[1]]) - as.numeric(x))))
+          env.info.yr.sub$lon.ind <- sapply(env.info.yr.sub$Lon, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[2]]) - as.numeric(x))))
+          env.weather <- sapply(seq_len(nrow(env.info.yr.sub)), function(x) nc.data[env.info.yr.sub$lat.ind[x], env.info.yr.sub$lon.ind[x], ])
+          env.weather <- t(env.weather)
+          rownames(env.weather) <- env.info.yr.sub$Environment
+          env.weather <- as.data.frame(env.weather)[, 1:365]
+          if (ncol(env.weather) < 365) {
+            env.weather <- cbind(env.weather, matrix(NA, nrow = nrow(env.weather), ncol = 365 - ncol(env.weather)))
+          }
+          all.yrs.weather[rownames(env.weather), ] <- as.matrix(env.weather)
+
+          if (verbose & sum(is.na(env.weather)) > 0) {
+            NAenvs <- Envs[!complete.cases(env.weather)]
+            cat("\nNAs returned at ", paste(NAenvs, collapse = " "))
+          }
         }
-        all.yrs.weather[rownames(env.weather), ] <- as.matrix(env.weather)
+        gc(full = T)
+        all.vars.weather[[v]] <- all.yrs.weather
+        if (verbose) {
+          print(":)")
+        }
       }
-      gc(full = T)
-      all.vars.weather[[v]] <- all.yrs.weather
-      if (verbose) {
-        print(":)")
-      }
+      names(all.vars.weather) <- vars
     }
-    names(all.vars.weather) <- vars
+
+    if (is.null(ncores)) {
+      ncores <- min(parallel::detectCores(), length(vars))
     }
-    
-    if(is.null(ncores)) {ncores <- min(parallel::detectCores(), length(vars))}
     ncores <- min(ncores, length(vars))
-    
-    if(isTRUE(ncores > 1)){ #Run in parallel
+
+    if (isTRUE(ncores > 1)) { # Run in parallel
       if (verbose) {
-        print("Running in parallel...")
+        cat("\nRunning in parallel...")
       }
-    doParallel::registerDoParallel(ncores) 
-    `%dopar%` <- foreach::`%dopar%`
-    all.vars.weather<-foreach::foreach (v=seq_along(vars), .combine=list,.multicombine = T) %dopar% {
-      all.yrs.weather <- matrix(NA, nrow = length(Envs), ncol = 365, dimnames = list(Envs, 1:365))
-      
-      for (y in seq_along(years)) {
-        addrs <- paste("https://s3-ap-southeast-2.amazonaws.com/silo-open-data/Official/annual/", vars[v], "/", years[y], ".", vars[v], ".nc", sep = "")
-        nc.rast <- terra::rast(addrs)
-        xvals <- terra::xFromCol(nc.rast)
-        yvals <- terra::yFromRow(nc.rast)
-        days <- terra::time(nc.rast)
-        nc.data <- terra::as.array(nc.rast)
-        dimnames(nc.data) <- list(yvals, xvals, as.character(days))
-        env.info.yr.sub <- data.frame(
-          "Environment" = Envs[Years == years[y]],
-          "Lat" = Lats[Years == years[y]],
-          "Lon" = Lons[Years == years[y]]
-        )
-        env.info.yr.sub$lat.ind <- sapply(env.info.yr.sub$Lat, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[1]]) - as.numeric(x))))
-        env.info.yr.sub$lon.ind <- sapply(env.info.yr.sub$Lon, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[2]]) - as.numeric(x))))
-        env.weather <- sapply(seq_len(nrow(env.info.yr.sub)), function(x) nc.data[env.info.yr.sub$lat.ind[x], env.info.yr.sub$lon.ind[x], ])
-        env.weather <- t(env.weather)
-        rownames(env.weather) <- env.info.yr.sub$Environment
-        env.weather <- as.data.frame(env.weather)[, 1:365]
-        if (ncol(env.weather) < 365) {
-          env.weather <- cbind(env.weather, matrix(NA, nrow = nrow(env.weather), ncol = 365 - ncol(env.weather)))
+
+      cl <- parallel::makeCluster(ncores, outfile = "SILO_download_log.txt")
+      if (verbose) {
+        cat(paste("\nProgress log output to:\n", getwd(), "/SILO_download_log.txt", sep = ""))
+      }
+      doParallel::registerDoParallel(cl)
+      `%dopar%` <- foreach::`%dopar%`
+      all.vars.weather <- foreach::foreach(v = seq_along(vars), .combine = list, .multicombine = T) %dopar% {
+        all.yrs.weather <- matrix(NA, nrow = length(Envs), ncol = 365, dimnames = list(Envs, 1:365))
+        if (verbose) {
+          print(paste("Starting", vars[v]))
         }
-        all.yrs.weather[rownames(env.weather), ] <- as.matrix(env.weather)
-        gc()
+        for (y in seq_along(years)) {
+          if (verbose) {
+            cat(years[y], "|", sep = "")
+          }
+          addrs <- paste("https://s3-ap-southeast-2.amazonaws.com/silo-open-data/Official/annual/", vars[v], "/", years[y], ".", vars[v], ".nc", sep = "")
+          nc.rast <- terra::rast(addrs)
+          xvals <- terra::xFromCol(nc.rast)
+          yvals <- terra::yFromRow(nc.rast)
+          days <- terra::time(nc.rast)
+          nc.data <- terra::as.array(nc.rast)
+          dimnames(nc.data) <- list(yvals, xvals, as.character(days))
+          env.info.yr.sub <- data.frame(
+            "Environment" = Envs[Years == years[y]],
+            "Lat" = Lats[Years == years[y]],
+            "Lon" = Lons[Years == years[y]]
+          )
+          env.info.yr.sub$lat.ind <- sapply(env.info.yr.sub$Lat, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[1]]) - as.numeric(x))))
+          env.info.yr.sub$lon.ind <- sapply(env.info.yr.sub$Lon, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[2]]) - as.numeric(x))))
+          env.weather <- sapply(seq_len(nrow(env.info.yr.sub)), function(x) nc.data[env.info.yr.sub$lat.ind[x], env.info.yr.sub$lon.ind[x], ])
+          env.weather <- t(env.weather)
+          rownames(env.weather) <- env.info.yr.sub$Environment
+          env.weather <- as.data.frame(env.weather)[, 1:365]
+          if (ncol(env.weather) < 365) {
+            env.weather <- cbind(env.weather, matrix(NA, nrow = nrow(env.weather), ncol = 365 - ncol(env.weather)))
+          }
+          all.yrs.weather[rownames(env.weather), ] <- as.matrix(env.weather)
+          if (verbose & sum(is.na(env.weather)) > 0) {
+            NAenvs <- env.info.yr.sub$Environment[!complete.cases(env.weather)]
+            cat("\nNAs returned at ", paste(NAenvs, collapse = " "))
+          }
+          gc()
+        }
+        if (verbose) {
+          print(":)")
+        }
+        return(all.yrs.weather)
       }
-      return(all.yrs.weather)
+      parallel::stopCluster(cl)
+      doParallel::stopImplicitCluster()
+
+      if (verbose) {
+        cat("\nFinished parallel :)\n")
+      }
+      Sys.sleep(2)
+      file.remove("SILO_download_log.txt")
+      names(all.vars.weather) <- vars
     }
-    doParallel::stopImplicitCluster()
-    if (verbose) {
-      print(":)")
-    }
-    names(all.vars.weather)<-vars
-    }
+  }
+
+  NAnums <- sapply(all.vars.weather, function(x) sum(is.na(x)))
+  if (verbose & sum(NAnums) > 0) {
+    cat("\nNAs in:\n")
+    print(NAnums)
   }
 
   env.info <- data.frame("Environment" = Envs, "Lat" = Lats, "Lon" = Lons)
   out <- list("data" = all.vars.weather, "Env.info" = env.info)
   return(out)
 }
-
-
-
-
-
-
-
