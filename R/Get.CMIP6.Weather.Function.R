@@ -29,7 +29,7 @@
 #' 
 #' Possible options for Global Climate Models (GCM):
 #' * `ACCESS-CM2` - A much hotter future, and drier in most regions except the southeast
-#' * `ACCESS-ESM1.5` - A hotter and much drier future
+#' * `ACCESS-ESM1-5` - A hotter and much drier future
 #' * `CESM2` - A hotter future, wetter in parts of the east and north
 #' * `CMCC-ESM2` - A much hotter future with little change in mean rainfall (with regional exceptions)
 #' * `CNRMESM2-1` - A much hotter future, much drier especially in the east, but wetter in the northwest
@@ -62,8 +62,9 @@
 #'     Technical Note.
 #' * Riahi, K., van Vuuren, D. P., Kriegler, E., Edmonds, J., O’Neill, B. C., Fujimori, S., Bauer, N., Calvin, K., Dellink, R., Fricko, O., Lutz, W., Popp, A., Cuaresma, J. C., Kc, S., Leimbach, M., Jiang, L., Kram, T., Rao, S., Emmerling, J., … Tavoni, M. (2017). 
 #'     [The Shared Socioeconomic Pathways and their energy, land use, and greenhouse gas emissions implications: An overview](https://doi.org/10.1016/j.gloenvcha.2016.05.009). Global Environmental Change, 42, 153–168.
-
-
+#'
+#' @author Nick Fradgley
+#'     
 #' @export
 
 get.CMIP6.weather <- function(Envs,

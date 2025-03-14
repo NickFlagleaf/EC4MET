@@ -33,6 +33,7 @@
 #'   [Using spatial interpolation to construct a comprehensive archive of Australian climate data. Environmental Modelling & Software](https://doi.org/10.1016/S1364-8152(01)00008-1),
 #'    16(4), 309–330.
 #'
+#' @author Nick Fradgley
 #'
 #' @export
 
@@ -69,6 +70,7 @@ get.SILO.weather <- function(Envs,
     if (verbose) {
       cat("\nDownloading SILO point data\n")
     }
+    
     all.env.weather <- list()
     for (e in 1:length(Envs)) {
       if (verbose == TRUE & e %in% round(seq(1, length(Envs), length.out = 100))) {
@@ -94,63 +96,11 @@ get.SILO.weather <- function(Envs,
     }
   }
 
-
-  if (length(Envs) * 2 > length(years) * 3 * 60) {
+  if (length(Envs) * 2 < length(years) * 3 * 60) {
     if (verbose) {
-      cat("\nDownloading SILO gridded data")
+      cat("\nDownloading SILO gridded data\n")
     }
-
-    if (isTRUE(ncores == 1)) { # Run in series
-      if (verbose) {
-        cat("\nRunning in series")
-      }
-      for (v in seq_along(vars)) {
-        if (verbose) {
-          cat(paste("\nStarting", vars[v]))
-        }
-        all.yrs.weather <- matrix(NA, nrow = length(Envs), ncol = 365, dimnames = list(Envs, 1:365))
-
-        for (y in seq_along(years)) {
-          if (verbose) {
-            cat(years[y], "|", sep = "")
-          }
-          addrs <- paste("https://s3-ap-southeast-2.amazonaws.com/silo-open-data/Official/annual/", vars[v], "/", years[y], ".", vars[v], ".nc", sep = "")
-          nc.rast <- terra::rast(addrs)
-          xvals <- terra::xFromCol(nc.rast)
-          yvals <- terra::yFromRow(nc.rast)
-          days <- terra::time(nc.rast)
-          nc.data <- terra::as.array(nc.rast)
-          dimnames(nc.data) <- list(yvals, xvals, as.character(days))
-          env.info.yr.sub <- data.frame(
-            "Environment" = Envs[Years == years[y]],
-            "Lat" = Lats[Years == years[y]],
-            "Lon" = Lons[Years == years[y]]
-          )
-          env.info.yr.sub$lat.ind <- sapply(env.info.yr.sub$Lat, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[1]]) - as.numeric(x))))
-          env.info.yr.sub$lon.ind <- sapply(env.info.yr.sub$Lon, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[2]]) - as.numeric(x))))
-          env.weather <- sapply(seq_len(nrow(env.info.yr.sub)), function(x) nc.data[env.info.yr.sub$lat.ind[x], env.info.yr.sub$lon.ind[x], ])
-          env.weather <- t(env.weather)
-          rownames(env.weather) <- env.info.yr.sub$Environment
-          env.weather <- as.data.frame(env.weather)[, 1:365]
-          if (ncol(env.weather) < 365) {
-            env.weather <- cbind(env.weather, matrix(NA, nrow = nrow(env.weather), ncol = 365 - ncol(env.weather)))
-          }
-          all.yrs.weather[rownames(env.weather), ] <- as.matrix(env.weather)
-
-          if (verbose & sum(is.na(env.weather)) > 0) {
-            NAenvs <- Envs[!complete.cases(env.weather)]
-            cat("\nNAs returned at ", paste(NAenvs, collapse = " "))
-          }
-        }
-        gc(full = T)
-        all.vars.weather[[v]] <- all.yrs.weather
-        if (verbose) {
-          print(":)")
-        }
-      }
-      names(all.vars.weather) <- vars
-    }
-
+  
     if (is.null(ncores)) {
       ncores <- min(parallel::detectCores(), length(vars))
     }
@@ -160,13 +110,20 @@ get.SILO.weather <- function(Envs,
       if (verbose) {
         cat("\nRunning in parallel...")
       }
-
-      cl <- parallel::makeCluster(ncores, outfile = "SILO_download_log.txt")
-      if (verbose) {
-        cat(paste("\nProgress log output to:\n", getwd(), "/SILO_download_log.txt", sep = ""))
-      }
+      cl <- parallel::makeCluster(ncores, outfile = "CMIP6_download_log.txt")
       doParallel::registerDoParallel(cl)
+      if (verbose) {
+        cat(paste("\nProgress log output to:", getwd(), "/CMIP6_download_log.txt", sep = ""))
+      }
       `%dopar%` <- foreach::`%dopar%`
+    }
+    
+    if (isTRUE(ncores == 1)) { # Run in series
+      if (verbose) {
+        cat("\nRunning in series")
+        `%dopar%` <- foreach::`%do%`
+      }
+    }
       all.vars.weather <- foreach::foreach(v = seq_along(vars), .combine = list, .multicombine = T) %dopar% {
         all.yrs.weather <- matrix(NA, nrow = length(Envs), ncol = 365, dimnames = list(Envs, 1:365))
         if (verbose) {
@@ -209,17 +166,19 @@ get.SILO.weather <- function(Envs,
         }
         return(all.yrs.weather)
       }
-      parallel::stopCluster(cl)
-      doParallel::stopImplicitCluster()
-
-      if (verbose) {
-        cat("\nFinished parallel :)\n")
+      
+      if (isTRUE(ncores > 1)) { # if running in parallel
+        parallel::stopCluster(cl)
+        doParallel::stopImplicitCluster()
+        if (verbose) {
+          cat("\nFinished parallel :)")
+        }
+        Sys.sleep(2)
+        file.remove("CMIP6_download_log.txt")
+        gc(full = T)
       }
-      Sys.sleep(2)
-      file.remove("SILO_download_log.txt")
-      names(all.vars.weather) <- vars
-    }
-  }
+      }
+
 
   NAnums <- sapply(all.vars.weather, function(x) sum(is.na(x)))
   if (verbose & sum(NAnums) > 0) {
