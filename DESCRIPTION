@@ -7,10 +7,13 @@ Description: Derive environmental covariates (ECs) for crop trial environments t
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
-Imports: terra, stringr, chillR, SLGACloud, abind, ncdf4, randomForest, stats, utils, doParallel, parallel, foreach, abind
+Imports: terra, stringr, chillR, SLGACloud, abind, ncdf4, randomForest, stats, utils, doParallel, parallel, foreach, abind, oz
 Remotes: AusSoilsDSM/SLGACloud
 RoxygenNote: 7.3.2
 Suggests: 
+    knitr,
+    rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Roxygen: list(markdown = TRUE)
+VignetteBuilder: knitr

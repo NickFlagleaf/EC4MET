@@ -124,8 +124,11 @@ get.W.ECs <- function(weather,
   if (verbose & sum(is.na(sow.dates)) > 0) {
     cat(paste("\nError for sow.dates at ", paste(Envs[is.na(sow.dates)], collapse = " "), sep = ""))
   }
-
+  
+  if (verbose ) {
   cat("\nStarting growth stage estimates\n")
+  }
+  
   for (i in 1:length(Envs)) {
     DailyTT <- all.envDailyTT[i, ]
     Dailypr <- weather$data$daily_rain[i, ]
@@ -484,8 +487,8 @@ get.W.ECs <- function(weather,
   )
   rownames(Wmat) <- Envs
 
+  isnas <- sum(is.nan(unlist(Wmat)) | is.na(unlist(Wmat)))
   if (verbose) {
-    isnas <- sum(is.nan(unlist(Wmat)) | is.na(unlist(Wmat)))
     cat(paste("\n", isnas, "NAs"))
   }
   if (verbose & isnas > 0) {

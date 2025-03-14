@@ -3,7 +3,8 @@ test_that("Get ECs works", {
     Envs = c("test1", "test2"),
     Lats = c(-31.2, -31.7),
     Lons = c(123.5, 150.5),
-    Years = c(2020, 2021)
+    Years = c(2020, 2021),
+    ncores = 1
   )
 
   obs.weather.ECs <- get.W.ECs(
@@ -15,7 +16,7 @@ test_that("Get ECs works", {
     round(unlist(obs.weather.ECs$ECs)[c(2, 50, 100, 150)], 2),
     c(
       "Ndays_Sow2Emer2" = 13.00, "Avtemp_Sgf2Egf2" = 18.46,
-      "Ndays<0_Emer2Juv2" = 10.00, "AveSR_Sgf2Egf2" = 0.00
+      "Ndays<0_Emer2Juv2" = 10.00, "AveSR_Sgf2Egf2" = 18.96
     )
   )
 })

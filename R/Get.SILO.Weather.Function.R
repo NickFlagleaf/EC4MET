@@ -67,7 +67,7 @@ get.SILO.weather <- function(Envs,
 
   if (length(Envs) * 2 < length(years) * 3 * 60) {
     if (verbose) {
-      cat("\nDownloading SILO point data")
+      cat("\nDownloading SILO point data\n")
     }
     all.env.weather <- list()
     for (e in 1:length(Envs)) {

@@ -79,7 +79,7 @@ get.S.ECs <- function(Envs,
 
 
   if (is.null(ncores)) {
-    ncores <- min(parallel::detectCores(), length(vars))
+    ncores <- min(parallel::detectCores(), length(atts))
   }
   if (isTRUE(ncores > 1)) { # Run in parallel
     if (verbose) {
