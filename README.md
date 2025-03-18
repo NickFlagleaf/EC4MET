@@ -19,7 +19,7 @@ Derive environmental covariates (ECs) for crop trial environments to model envir
 To install from Github using devtools:
 
 ```         
-devtools::install_github("NickFlagleaf/EC4MET")
+devtools::install_github("NickFlagleaf/EC4MET",build_vignettes = T)
 ```
 
 ------------------------------------------------------------------------

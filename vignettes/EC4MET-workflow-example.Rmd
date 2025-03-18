@@ -26,7 +26,7 @@ This vignette runs through an example workflow to derive Environmental Covariate
 The EC4MET package can be installed from Github and loaded from your library. Built with `r getRversion()`.
 
 ```{r setup}
-#devtools::install_github("NickFlagleaf/EC4MET")
+devtools::install_github("NickFlagleaf/EC4MET",build_vignettes = T)
 library(EC4MET)
 ```
 
@@ -107,7 +107,7 @@ dim(wheat.area.envs)
 unique(wheat.area.envs$Year)
 ```
 
-ECs for all of these environments can be extracted and calcualted in a similar way as for the observed data.
+ECs for all of these environments can be extracted and calculated in a similar way as for the observed data.
 
 ```{r Get soil and weather ECS for all wheat area envs, message=FALSE, warning=FALSE}
 wheat.area.wthr <- get.SILO.weather(Envs = wheat.area.envs$Env,
