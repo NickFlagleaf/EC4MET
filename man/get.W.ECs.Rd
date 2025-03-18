@@ -7,25 +7,23 @@
 get.W.ECs(
   weather,
   sow.dates,
-  cardT = c(0, 26, 34),
-  stg.TT = c(500, 250, 250, 250, 400),
-  DTH.TT = 1285,
+  cardT = NULL,
+  stg.TT = NULL,
+  DTH.TT = NULL,
   verbose = TRUE
 )
 }
 \arguments{
-\item{weather}{A two level list of Weather data as outputted from the \code{\link[=get.SILO.weather]{get.SILO.weather()}}.
+\item{weather}{A list of length 2. Weather data as outputted from the \code{\link[=get.SILO.weather]{get.SILO.weather()}}.
+
 \code{weather$data} is a list of data matrices for each covariate with rows as environments and days of the year as columns. Weather covariate names for list items should be:
-
-*\code{daily_rain}
-
-*\code{max_temp}
-
-*\code{min_temp}
-
-*\code{vp_deficit}
-
-*\code{radiation}
+\itemize{
+\item \code{daily_rain}
+\item \code{max_temp}
+\item \code{min_temp}
+\item \code{vp_deficit}
+\item \code{radiation}
+}
 
 \code{weather$Env.info} is a data frame of info for each environment that includes a \code{Lat} column of latitude values for which day lengths are calculated.}
 
@@ -82,14 +80,16 @@ Other abbreviations for ECs calculated between growth stage intervals and combin
 \item \code{Avtemp} - Average of average daily temperatures (°C)
 \item \code{AvMintemp} - Average of daily minimum temperatures (°C)
 \item \code{Avmaxtemp} -  Average of daily minimum temperatures (°C)
-\item \code{Ndays<0} - Number of frost days when the minimum temperature was below 0 °C
-\item \code{Ndays>26} - Number of warm days when max temp was over 26 °C
-\item \code{Ndays>34} - Number of hot days when max temp was over 34 °C
+\item \code{Ndays<0} - Number of frost days that the minimum temperature was below 0 °C
+\item \code{Ndays>26} - Number of warm days that max temp was over 26 °C
+\item \code{Ndays>34} - Number of hot days that max temp was over 34 °C
 \item \code{AveSR} -  Average solar radiation (MJ m\if{html}{\out{<sup>}}-2\if{html}{\out{</sup>}})
 \item \code{AveVPD} - Average vapour pressure deficit (hPa)
 \item \code{AvePQ} - Average photothermal quotient (MJ m\if{html}{\out{<sup>}}-2\if{html}{\out{</sup>}} day\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}} °C\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}})
 \item \code{AveDL} - Average day length (hr)
 }
+
+For example, \code{TotRain_He2Flw} indicates the total rainfall between the heading and flowering growth stages.
 
 Other specific ECs include:
 \itemize{

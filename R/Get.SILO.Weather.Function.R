@@ -9,6 +9,7 @@
 #' * `min_temp` - Minimum temperature (°C)
 #' * `vp_deficit` - Vapour pressure deficit (hPa)
 #' * `radiation` - Solar exposure, consisting of both direct and diffuse components (MJ m<sup>-2</sup>)
+#' * `day_lengths` - Time between sunrise and sunset (h) not taken from SILO 
 #'
 #' @param Envs Vector of environment names character strings.
 #' @param Lats Vector of latitude numeric values for each environment in the same order as `Envs`.
@@ -20,6 +21,8 @@
 #'
 #' @details When there are only a few environments, point data will be sequentially downloaded from SILO. When there are many environments in each year,
 #' data will be downloaded and extracted from whole gridded data files more efficiently. Any locations outside of the Australian land area will return `NA`.
+#' 
+#' An internet connection with high download speed is suggested for downloading gridded data for many environments.
 #'
 #' @returns A list of length 2:
 #' * `$data` is a list of matrices of weather data for each weather variable.
@@ -48,6 +51,11 @@ get.SILO.weather <- function(Envs,
   Envs <- as.character(Envs)
   all.vars.weather <- list()
 
+  if (verbose & length(unique(c(length(Envs),length(Lats),length(Lons),length(Years)))) > 1){
+    cat("\nLengths of Envs, Lats, Lons or Years differ:\n")
+    print(sapply(list("Envs"=Envs,"Lats"=Lats,"Lons"=Lons,"Years"=Years),length))
+  }
+  
   if (verbose & sum(!years %in% 1889:as.numeric(stringr::str_sub(Sys.Date(), 1, 4))) > 0) {
     cat("\nYears out of range of SILO data (1889 to yesterday)")
   }
@@ -66,21 +74,23 @@ get.SILO.weather <- function(Envs,
 
   vars <- c("daily_rain", "max_temp", "min_temp", "vp_deficit", "radiation")
 
-  if (length(Envs) * 2 < length(years) * 3 * 60) {
+  if (length(Envs) < 500) {
     if (verbose) {
       cat("\nDownloading SILO point data\n")
     }
+    urls <- paste("https://www.longpaddock.qld.gov.au/cgi-bin/silo/DataDrillDataset.php?lat=", Lats, "&lon=", Lons, "&start=", Years, "0101&finish=", Years,
+                 "1231&format=csv&comment=RXNDJ&username=xxx&password=apirequest",sep = "")
+    tmp.dir <- tempfile()
+    tmp.dir <- gsub("\\", "/", tmp.dir, fixed = T)
+    tmp.dir <- paste(tmp.dir,"_",1:length(urls),sep="")
+    utils::download.file(url = urls, destfile = tmp.dir, method = "libcurl", quiet = T,mode = "wb")
     
     all.env.weather <- list()
     for (e in 1:length(Envs)) {
       if (verbose == TRUE & e %in% round(seq(1, length(Envs), length.out = 100))) {
         cat("|", round(e / length(Envs) * 100), "%", sep = "")
       }
-      url <- paste("https://www.longpaddock.qld.gov.au/cgi-bin/silo/DataDrillDataset.php?lat=", Lats[e], "&lon=", Lons[e], "&start=", Years[e], "0101&finish=", Years[e],
-        "1231&format=csv&comment=RXNDJ&username=xxx&password=apirequest",
-        sep = ""
-      )
-      pnt.data <- utils::read.csv(url)
+      pnt.data <- utils::read.csv(tmp.dir[e])
       all.env.weather[[e]] <- pnt.data
 
       if (verbose & sum(is.na(pnt.data[, vars])) > 0) {
@@ -88,6 +98,8 @@ get.SILO.weather <- function(Envs,
         cat("\nNAs returned at ", paste(NAenvs, collapse = " "))
       }
     }
+    file.remove(tmp.dir)
+    gc()
     names(all.env.weather) <- Envs
     all.vars.weather <- lapply(vars, function(v) t(sapply(all.env.weather, function(e) e[1:365, v])))
     names(all.vars.weather) <- vars
@@ -96,7 +108,7 @@ get.SILO.weather <- function(Envs,
     }
   }
 
-  if (length(Envs) * 2 < length(years) * 3 * 60) {
+  if (length(Envs) > 499) {
     if (verbose) {
       cat("\nDownloading SILO gridded data\n")
     }
@@ -110,17 +122,17 @@ get.SILO.weather <- function(Envs,
       if (verbose) {
         cat("\nRunning in parallel...")
       }
-      cl <- parallel::makeCluster(ncores, outfile = "CMIP6_download_log.txt")
+      cl <- parallel::makeCluster(ncores, outfile = "SILO_download_log.txt")
       doParallel::registerDoParallel(cl)
       if (verbose) {
-        cat(paste("\nProgress log output to:", getwd(), "/CMIP6_download_log.txt", sep = ""))
+        cat(paste("\nProgress log output to:", getwd(), "/SILO_download_log.txt", sep = ""))
       }
       `%dopar%` <- foreach::`%dopar%`
     }
     
     if (isTRUE(ncores == 1)) { # Run in series
       if (verbose) {
-        cat("\nRunning in series")
+        cat("\nRunning in series\n")
         `%dopar%` <- foreach::`%do%`
       }
     }
@@ -129,38 +141,48 @@ get.SILO.weather <- function(Envs,
         if (verbose) {
           print(paste("Starting", vars[v]))
         }
+        cat("\nDownloading .nc files...\n")
+        addrs <- paste("https://s3-ap-southeast-2.amazonaws.com/silo-open-data/Official/annual/", vars[v], "/", years, ".", vars[v], ".nc", sep = "")
+        tmp.dir <- tempfile()
+        tmp.dir <- gsub("\\", "/", tmp.dir, fixed = T)
+        tmp.dir <- paste(tmp.dir,"_SILO",vars[v],"_",years,"_",sep="")
+        options(timeout = max(500, getOption("timeout")))
+        utils::download.file(url = addrs, destfile = tmp.dir, method = "libcurl", quiet = T,mode = "wb",)
+        
         for (y in seq_along(years)) {
           if (verbose) {
             cat(years[y], "|", sep = "")
           }
-          addrs <- paste("https://s3-ap-southeast-2.amazonaws.com/silo-open-data/Official/annual/", vars[v], "/", years[y], ".", vars[v], ".nc", sep = "")
-          nc.rast <- terra::rast(addrs)
-          xvals <- terra::xFromCol(nc.rast)
-          yvals <- terra::yFromRow(nc.rast)
-          days <- terra::time(nc.rast)
-          nc.data <- terra::as.array(nc.rast)
-          dimnames(nc.data) <- list(yvals, xvals, as.character(days))
           env.info.yr.sub <- data.frame(
             "Environment" = Envs[Years == years[y]],
             "Lat" = Lats[Years == years[y]],
             "Lon" = Lons[Years == years[y]]
           )
-          env.info.yr.sub$lat.ind <- sapply(env.info.yr.sub$Lat, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[1]]) - as.numeric(x))))
-          env.info.yr.sub$lon.ind <- sapply(env.info.yr.sub$Lon, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[2]]) - as.numeric(x))))
-          env.weather <- sapply(seq_len(nrow(env.info.yr.sub)), function(x) nc.data[env.info.yr.sub$lat.ind[x], env.info.yr.sub$lon.ind[x], ])
-          env.weather <- t(env.weather)
+          
+          ncfile <- ncdf4::nc_open(tmp.dir[y])
+          nc.data <- ncdf4::ncvar_get(ncfile)
+          start.day <- stringr::str_sub(string = ncfile$dim$time$units, start = nchar(ncfile$dim$time$units) - 9, end = nchar(ncfile$dim$time$units))
+          dimnames(nc.data) <- list(
+            ncfile$dim$lon$vals,
+            ncfile$dim$lat$vals,
+            as.character(as.Date(start.day) + ncfile$dim$time$vals)
+          )
+          env.info.yr.sub$lon.ind <- sapply(env.info.yr.sub$Lon, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[1]]) - as.numeric(x))))
+          env.info.yr.sub$lat.ind <- sapply(env.info.yr.sub$Lat, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[2]]) - as.numeric(x))))
+          env.weather <- t(sapply(seq_len(nrow(env.info.yr.sub)), function(x) nc.data[env.info.yr.sub$lon.ind[x], env.info.yr.sub$lat.ind[x], ]))
           rownames(env.weather) <- env.info.yr.sub$Environment
-          env.weather <- as.data.frame(env.weather)[, 1:365]
-          if (ncol(env.weather) < 365) {
-            env.weather <- cbind(env.weather, matrix(NA, nrow = nrow(env.weather), ncol = 365 - ncol(env.weather)))
-          }
+          env.weather<-env.weather[,1:365]
           all.yrs.weather[rownames(env.weather), ] <- as.matrix(env.weather)
+          
           if (verbose & sum(is.na(env.weather)) > 0) {
-            NAenvs <- env.info.yr.sub$Environment[!complete.cases(env.weather)]
+            NAenvs <- Envs[!complete.cases(env.weather)]
             cat("\nNAs returned at ", paste(NAenvs, collapse = " "))
           }
+          ncdf4::nc_close(ncfile)
+          rm(ncfile, nc.data)
           gc()
         }
+        file.remove(tmp.dir)
         if (verbose) {
           print(":)")
         }
@@ -174,11 +196,16 @@ get.SILO.weather <- function(Envs,
           cat("\nFinished parallel :)")
         }
         Sys.sleep(2)
-        file.remove("CMIP6_download_log.txt")
+        file.remove("SILO_download_log.txt")
         gc(full = T)
       }
       }
 
+  names(all.vars.weather)<-vars
+  
+  DLs <- t(sapply(Lats,function(x) chillR::daylength(latitude = x, JDay = 1:370, notimes.as.na = FALSE)$Daylength))
+  rownames(DLs)<-Envs
+  all.vars.weather$day_length <- DLs
 
   NAnums <- sapply(all.vars.weather, function(x) sum(is.na(x)))
   if (verbose & sum(NAnums) > 0) {

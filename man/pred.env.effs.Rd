@@ -24,3 +24,6 @@ A function to train a random forest model to predict environmental effects defin
 Smith, A., Norman, A., Kuchel, H., & Cullis, B. (2021). Plant Variety Selection Using Interaction Classes Derived From Factor Analytic Linear Mixed Models:
 Models With Independent Variety Effects. Frontiers in Plant Science, 12. \url{https://doi.org/10.3389/fpls.2021.737462}
 }
+\author{
+Nick Fradgley
+}

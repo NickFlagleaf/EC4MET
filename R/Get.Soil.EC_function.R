@@ -31,68 +31,34 @@ get.S.ECs <- function(Envs,
   atts <- unlist(c(SLGACloud::getParameterValues(Parameter = "Attribute")))
   atts <- atts[1:20]
   atts <- atts[!atts %in% c("Depth of Regolith", "Soil Organic Carbon (1\" resolution) ", "Effective Cation Exchange Capacity")]
-  lonlats <- cbind(Lons, Lats)
-  colnames(lonlats) <- c("longitude", "latitude")
-
+  lonlats.full <- data.frame("Loc"=paste(Lons,Lats,sep="_"),"longitude"=Lons, "latitude"=Lats)
+  lonlats.sub <- lonlats.full[!duplicated(lonlats.full$Loc),]
+  
+   if (is.null(ncores)) {
+    ncores <- min(parallel::detectCores(), length(atts))
+  }
+  
   if (isTRUE(ncores == 1)) { # Run in series
     if (verbose) {
       cat("\nRunning in series")
     }
-    all.env.soil <- list()
-    for (a in seq_along(atts)) {
-      if (verbose == TRUE) {
-        print(paste("Starting", atts[a]))
-      }
-      rasters <- SLGACloud::getProductMetaData(
-        Detail = "High", Attribute = atts[a],
-        Component = "Modelled-Value",
-        isCurrentVersion = 1
-      )
-      depths <- paste(rasters$UpperDepth_m, "-", rasters$LowerDepth_m, "m", sep = "")
-      all.depth.soil <- matrix(NA,
-        nrow = length(Envs),
-        ncol = length(depths),
-        dimnames = list(Envs, paste(atts[a], depths, sep = "_"))
-      )
-      for (d in 1:length(depths)) {
-        if (verbose == TRUE) {
-          print(paste("At", depths[d]))
-        }
-        r <- NULL
-        try(r <- terra::rast(paste("/vsicurl/", rasters$StagingPath[d], sep = "")))
-        if (!is.null(r)) {
-          vals <- unlist(terra::extract(r, lonlats))
-          while (sum(is.na(vals)) > 0) {
-            lonlats[is.na(vals), ] <- lonlats[is.na(vals), ] + 0.01
-            vals[is.na(vals)] <- unlist(terra::extract(r, lonlats[is.na(vals)]))
-          }
-          all.depth.soil[, d] <- vals
-        }
-      }
-      gc()
-      if (verbose & sum(!complete.cases(all.depth.soil)) > 0) {
-        cat("\n NAs returned for:\n", rownames(all.depth.soil)[!complete.cases(all.depth.soil)])
-      }
-      all.env.soil[[a]] <- all.depth.soil
-    }
-    all.env.soil <- abind::abind(all.env.soil)
+    `%dopar%` <- foreach::`%do%`
   }
-
-
-  if (is.null(ncores)) {
-    ncores <- min(parallel::detectCores(), length(atts))
-  }
+ 
   if (isTRUE(ncores > 1)) { # Run in parallel
     if (verbose) {
       cat("\nRunning in parallel...")
     }
+    
     cl <- parallel::makeCluster(ncores, outfile = "SLGA_soil_download_log.txt")
     doParallel::registerDoParallel(cl)
     if (verbose) {
       cat(paste("\nProgress log output to:\n", getwd(), "/SILO_soil_download_log.txt", sep = ""))
     }
     `%dopar%` <- foreach::`%dopar%`
-    all.env.soil <- foreach::foreach(a = seq_along(atts), .combine = cbind, .multicombine = T) %dopar% {
+  }
+  
+  all.env.soil <- foreach::foreach(a = seq_along(atts), .combine = cbind, .multicombine = T) %dopar% {
       if (verbose == TRUE) {
         cat("\nStarting", atts[a],"\n")
       }
@@ -114,12 +80,19 @@ get.S.ECs <- function(Envs,
         r <- NULL
         try(r <- terra::rast(paste("/vsicurl/", rasters$StagingPath[d], sep = "")))
         if (!is.null(r)) {
-          vals <- unlist(terra::extract(r, lonlats))
+          vals <- unlist(terra::extract(r, as.matrix(lonlats.sub[,c("longitude","latitude")])))
           trys<-10
           while (sum(is.na(vals)) > 0 & trys > 0) {
             trys<-trys-1
-            lonlats[is.na(vals), ] <- lonlats[is.na(vals), ] + 0.01
-            vals[is.na(vals)] <- unlist(terra::extract(r, lonlats[is.na(vals)]))
+            na.ind<-which(is.na(vals))
+            vals[is.na(vals)] <- sapply(na.ind,function(x) {
+              mean(na.omit(sapply(list(c(0.01,0.01),
+                                       c(-0.01,0.01),
+                                       c(0.01,-0.01),
+                                       c(-0.01,0.01)),function(c){
+                                         unlist(terra::extract(r,  as.matrix(lonlats.sub[x,c("longitude","latitude")])+c))
+                                       })))
+            })
           }
           all.depth.soil[, d] <- vals
         }
@@ -129,10 +102,10 @@ get.S.ECs <- function(Envs,
         cat("\n NAs returned for:\n", rownames(all.depth.soil)[!complete.cases(all.depth.soil)],"\n")
       }
       return(all.depth.soil)
-    }
+  }
+  if (isTRUE(ncores > 1)) { # Run in parallel
     parallel::stopCluster(cl)
     doParallel::stopImplicitCluster()
-
     if (verbose) {
       cat("\nFinished parallel :)\n")
     }
@@ -140,7 +113,7 @@ get.S.ECs <- function(Envs,
     file.remove("SLGA_soil_download_log.txt")
   }
   
-  gc()
+  gc(full = T)
   all.env.soil <- all.env.soil[, !colnames(all.env.soil) == "Env"]
   all.env.soil <- apply(all.env.soil, 2, function(x) {
     med <- stats::median(stats::na.omit(x))

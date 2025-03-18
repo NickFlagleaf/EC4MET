@@ -33,3 +33,6 @@ R. A. V., Searle, R. D., Wilson, P. L., Chen, C., & Gregory, L. J. (2015).
 \seealso{
 \code{\link[=get.W.ECs]{get.W.ECs()}}
 }
+\author{
+Nick Fradgley
+}

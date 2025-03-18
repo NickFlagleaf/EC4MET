@@ -39,6 +39,7 @@ Weather variables include:
 \item \code{min_temp} - Minimum temperature (°C)
 \item \code{vp_deficit} - Vapour pressure deficit (hPa)
 \item \code{radiation} - Solar exposure, consisting of both direct and diffuse components (MJ m\if{html}{\out{<sup>}}-2\if{html}{\out{</sup>}})
+\item \code{day_lengths} - Time between sunrise and sunset (h) not taken from BARRA-R2
 }
 }
 \references{

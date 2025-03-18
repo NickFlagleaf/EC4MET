@@ -14,6 +14,7 @@ bibliography: references.bib
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
+  eval = T,
   comment = "#>"
 )
 ```
@@ -39,7 +40,7 @@ data("CAIGE20_22envs")
 
 The example data set includes environment names, lat and lon values and sowing dates for 36 trial environments in Australia as part of the CAIGE project [@trethowan2024] as well as fitted environmental main effects and factor loadings fitted from a factor analytic mixed model multi-environment trial (MET) analysis as described by [@fradgley2025; @smith2021].
 
-```{r Look at example data}
+```{r Look at example data,eval = T}
 head(CAIGE20_22envs)
 ```
 
@@ -47,20 +48,20 @@ head(CAIGE20_22envs)
 
 Get daily weather data from [SILO](https://www.longpaddock.qld.gov.au/silo/) [@jeffrey2001] for each observed environment in the MET with the `get.SILO.weather()` function:
 
-```{r Get SILO weather data, message=FALSE, warning=FALSE}
+```{r Get SILO weather data, message=FALSE, warning=FALSE,eval = T}
 obs.wthr <- get.SILO.weather(Envs = CAIGE20_22envs$Environment,
                              Lats = CAIGE20_22envs$Lat,
                              Lons = CAIGE20_22envs$Long,
                              Years = CAIGE20_22envs$Year,
-                             verbose = F)
+                             verbose = T)
 ```
 
 The `get.BARRA.weather()` function can similarly be used to extract different weather data from the [BARRA-R2](https://opus.nci.org.au/spaces/NDP/pages/264241166/BOM+BARRA2+ob53) data resource [@su2022] and should output data in the same format.
 
 You can see that the `$data` output from this contains a data matrix for each of six weather variables with the 36 environments as rows and 365 days of the year as columns:
 
-```{r look at SILO weather}
-lapply(obs.wthr$data,dim)
+```{r look at SILO weather,eval = T}
+sapply(obs.wthr$data,dim)
 ```
 
 The weather data can then be used to define crop growth stage specific ECs for each environment.
@@ -68,12 +69,12 @@ The weather data can then be used to define crop growth stage specific ECs for e
 ```{r Calculate SILO ECs, message=FALSE, warning=FALSE}
 obs.weather.ECs <- get.W.ECs(weather = obs.wthr,
                              sow.dates = CAIGE20_22envs$Sowing.date,
-                             verbose = F)
+                             verbose = T)
 ```
 
 You can see that the output from this function includes (`ECs`) a data frame of 97 ECs as columns for 36 environments as rows as well as a data frame (`gs.dates`) of estimated dates of crop growth stages that the ECS were calculated between:
 
-```{r Look at EC data}
+```{r Look at EC data,eval = T}
 dim(obs.weather.ECs$ECs)
 head(obs.weather.ECs$gs.dates)
 ```
@@ -84,12 +85,12 @@ As well as weather related ECs, soil attribute covariates can be extracted using
 obs.soil.ECs <- get.S.ECs(Envs = CAIGE20_22envs$Environment,
                           Lats = CAIGE20_22envs$Lat,
                           Lons = CAIGE20_22envs$Long,
-                          verbose = F,ncores = 1)
+                          verbose = F)
 ```
 
 The soil EC data matrix is also in the same format with 36 environments as rows and 96 soil ECS as columns:
 
-```{r Look at Soil EC dims}
+```{r Look at Soil EC dims,eval = T}
 dim(obs.soil.ECs)
 ```
 
@@ -99,7 +100,7 @@ For more information on how ECs are calculated, see @fradgley2025 .
 
 An example dataset of gridded environment locations that cover the extend of the Australian wheat belt is also included in the package. This dataset includes unique 5,080 environments between 2018 and 2020.
 
-```{r load and look at wheat area envs dataset}
+```{r load and look at wheat area envs dataset,eval = T}
 data("wheat.area.envs")
 head(wheat.area.envs)
 dim(wheat.area.envs)
@@ -113,16 +114,16 @@ wheat.area.wthr <- get.SILO.weather(Envs = wheat.area.envs$Env,
                                     Lats = wheat.area.envs$Lat,
                                     Lons = wheat.area.envs$Lon,
                                     Years = wheat.area.envs$Year,
-                                    verbose = F,ncores = 1)
+                                    verbose = T)
                                   
 wheat.area.wthr.ECs <- get.W.ECs(weather = wheat.area.wthr,
                                  sow.dates = wheat.area.envs$sow.dates,
-                                 verbose = F)
+                                 verbose = T)
 
 wheat.area.soil.ECs <- get.S.ECs(Envs = wheat.area.envs$Env,
                                  Lats = wheat.area.envs$Lat,
                                  Lons = wheat.area.envs$Lon,
-                                 verbose = F,ncores = 1)
+                                 verbose = T)
 ```
 
 Combine weather and soil ECs for the observed and all wheat belt environments:

@@ -1,10 +1,10 @@
 test_that("get SILO data works", {
   obs.wthr <- get.SILO.weather(
     Envs = c("test1", "test2"),
-    Lats = c(31.2, 31.7),
+    Lats = c(-31.2, -31.7),
     Lons = c(123.5, 150.5),
     Years = c(2020, 2021),
-    ncores = 1
+    ncores = 1,verbose=F
   )
   expect_equal(
     c(obs.wthr$data$max_temp)[1:10],

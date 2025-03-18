@@ -2,7 +2,7 @@
 % Please edit documentation in R/Get.CMIP6.Weather.Function.R
 \name{get.CMIP6.weather}
 \alias{get.CMIP6.weather}
-\title{Get weather data from BARRA-R2}
+\title{Get weather data from CMIP6 QDM}
 \usage{
 get.CMIP6.weather(
   Envs,
@@ -52,6 +52,7 @@ Weather variables include:
 \item \code{min_temp} - Minimum temperature (°C)
 \item \code{vp_deficit} - Vapour pressure deficit (hPa)
 \item \code{radiation} - Solar exposure, consisting of both direct and diffuse components (MJ m\if{html}{\out{<sup>}}-2\if{html}{\out{</sup>}})
+\item \code{day_lengths} - Time between sunrise and sunset (h) not taken from CMIP6 QDM
 }
 }
 \details{
@@ -59,13 +60,14 @@ The CMPI6 QDM dataset includes climate projections for two time future periods o
 \enumerate{
 \item 2035-2064
 \item 2070-2099
-\code{Years} values must be within either of these two time periods.
 }
+
+\code{Years} values must be within either of these two time periods.
 
 Possible options for Global Climate Models (GCM):
 \itemize{
 \item \code{ACCESS-CM2} - A much hotter future, and drier in most regions except the southeast
-\item \code{ACCESS-ESM1.5} - A hotter and much drier future
+\item \code{ACCESS-ESM1-5} - A hotter and much drier future
 \item \code{CESM2} - A hotter future, wetter in parts of the east and north
 \item \code{CMCC-ESM2} - A much hotter future with little change in mean rainfall (with regional exceptions)
 \item \code{CNRMESM2-1} - A much hotter future, much drier especially in the east, but wetter in the northwest
@@ -73,18 +75,21 @@ Possible options for Global Climate Models (GCM):
 \item \code{MPI-ESM1-2-HR} - Lower warming, mid-range changes in rainfall
 \item \code{NorESM2-MM} - Lower warming, mid-range changes in rainfall
 \item \code{UKESM1-0-LL} - Low probability, high impact case (high climate sensitivity, high Australian warming)
-For further details see \href{https://doi.org/10.1016/j.cliser.2023.100368}{Grose et al. 2023}
 }
+
+For further details see \href{https://doi.org/10.1016/j.cliser.2023.100368}{Grose et al. 2023}
 
 Possible options for Shared Socio-economic Pathways (SSP) and equivalent Representative Concentration Pathways (RCP):
 \itemize{
 \item \code{ssp126} - Sustainability (RCP2.6)
 \item \code{ssp245} - Middle of the road (RCP4.5)
 \item \code{ssp370} - Regional rivalry (No equivalent RCP)
-\item \code{ssp585} - Fossil fuelled development (RCP8.5)
+\item \code{ssp585} - Fossil fueled development (RCP8.5)
 }
 
 For further details see \href{https://doi.org/10.1016/j.gloenvcha.2016.05.009}{Riahi et al. 2017}
+
+An internet connection with high download speed is suggested for downloading gridded data for many environments.
 }
 \references{
 \itemize{
@@ -98,4 +103,7 @@ Technical Note.
 }
 \seealso{
 \code{\link[=get.SILO.weather]{get.SILO.weather()}}, \code{\link[=get.BARRA.weather]{get.BARRA.weather()}}
+}
+\author{
+Nick Fradgley
 }

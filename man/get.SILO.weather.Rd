@@ -39,11 +39,14 @@ Weather variables include:
 \item \code{min_temp} - Minimum temperature (°C)
 \item \code{vp_deficit} - Vapour pressure deficit (hPa)
 \item \code{radiation} - Solar exposure, consisting of both direct and diffuse components (MJ m\if{html}{\out{<sup>}}-2\if{html}{\out{</sup>}})
+\item \code{day_lengths} - Time between sunrise and sunset (h) not taken from SILO
 }
 }
 \details{
 When there are only a few environments, point data will be sequentially downloaded from SILO. When there are many environments in each year,
 data will be downloaded and extracted from whole gridded data files more efficiently. Any locations outside of the Australian land area will return \code{NA}.
+
+An internet connection with high download speed is suggested for downloading gridded data for many environments.
 }
 \references{
 Jeffrey, S. J., Carter, J. O., Moodie, K. B., & Beswick, A. R. (2001).
@@ -52,4 +55,7 @@ Jeffrey, S. J., Carter, J. O., Moodie, K. B., & Beswick, A. R. (2001).
 }
 \seealso{
 \code{\link[=get.BARRA.weather]{get.BARRA.weather()}}
+}
+\author{
+Nick Fradgley
 }
