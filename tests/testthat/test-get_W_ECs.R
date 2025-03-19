@@ -4,7 +4,7 @@ test_that("Get W ECs works", {
     Lats = c(-31.2, -31.7),
     Lons = c(123.5, 150.5),
     Years = c(2020, 2021),
-    ncores = 1,verbose=F
+    ncores = 1, verbose = F
   )
 
   obs.weather.ECs <- get.W.ECs(

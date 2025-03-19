@@ -4,7 +4,15 @@
 \alias{get.BARRA.weather}
 \title{Get weather data from BARRA-R2}
 \usage{
-get.BARRA.weather(Envs, Lats, Lons, Years, ncores = NULL, verbose = TRUE)
+get.BARRA.weather(
+  Envs,
+  Lats,
+  Lons,
+  Years,
+  ncores = NULL,
+  verbose = TRUE,
+  dlprompt = FALSE
+)
 }
 \arguments{
 \item{Envs}{Vector of environment names character strings.}
@@ -19,6 +27,8 @@ get.BARRA.weather(Envs, Lats, Lons, Years, ncores = NULL, verbose = TRUE)
 use the maximum available cores up to 5. If running in parallel, an output log text file will be created in the working directory.}
 
 \item{verbose}{Logical.Should progress be printed?}
+
+\item{dlprompt}{Logical. Should the user be prompted approve the total download size? Default it TRUE.}
 }
 \value{
 A list of length 2:
@@ -31,8 +41,9 @@ Each data matrix has environment names as rows and days of the ywar as columns
 \description{
 Extract weather data for Australia from the \href{https://opus.nci.org.au/spaces/NDP/pages/264241166/BOM+BARRA2+ob53}{BARRA-R2}
 weather data resource for a set of environments with defined latitude and longitude coordinates. BARRA-R2 data runs from Jan 1979 to Sept 2024.
-
-Weather variables include:
+}
+\details{
+Weather variables returned include:
 \itemize{
 \item \code{daily_rain} - Daily rainfall (mm)
 \item \code{max_temp} - Maximum temperature (°C)

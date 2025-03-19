@@ -12,9 +12,9 @@
 #' @references
 #' Smith, A., Norman, A., Kuchel, H., & Cullis, B. (2021). Plant Variety Selection Using Interaction Classes Derived From Factor Analytic Linear Mixed Models:
 #'      Models With Independent Variety Effects. Frontiers in Plant Science, 12. <https://doi.org/10.3389/fpls.2021.737462>
-#' 
+#'
 #' @author Nick Fradgley
-#' 
+#'
 #' @export
 
 pred.env.effs <- function(train.ECs, new.ECs, E.effs) {
@@ -28,6 +28,7 @@ pred.env.effs <- function(train.ECs, new.ECs, E.effs) {
   }
 
   rfmods <- apply(E.effs, 2, function(x) {
+    cat("|")
     randomForest::randomForest(x = train.ECs, y = x, ntree = 2000)
   })
 

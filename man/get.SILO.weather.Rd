@@ -4,7 +4,15 @@
 \alias{get.SILO.weather}
 \title{Get weather data from SILO}
 \usage{
-get.SILO.weather(Envs, Lats, Lons, Years, ncores = NULL, verbose = TRUE)
+get.SILO.weather(
+  Envs,
+  Lats,
+  Lons,
+  Years,
+  ncores = NULL,
+  verbose = TRUE,
+  dlprompt = FALSE
+)
 }
 \arguments{
 \item{Envs}{Vector of environment names character strings.}
@@ -19,6 +27,8 @@ get.SILO.weather(Envs, Lats, Lons, Years, ncores = NULL, verbose = TRUE)
 use the maximum available cores up to 5. If running in parallel, an output log text file will be created in the working directory.}
 
 \item{verbose}{Logical. Should progress be printed?}
+
+\item{dlprompt}{Logical. Should the user be prompted approve the total download size? Default it FALSE}
 }
 \value{
 A list of length 2:
@@ -31,8 +41,9 @@ Each data matrix has environment names as rows and days of the year as columns
 \description{
 Extract weather data for Australia from the \href{https://www.longpaddock.qld.gov.au/silo/}{SILO} weather data resource
 for a set of environments with defined latitude and longitude coordinates.
-
-Weather variables include:
+}
+\details{
+Weather variables returned include:
 \itemize{
 \item \code{daily_rain} - Daily rainfall (mm)
 \item \code{max_temp} - Maximum temperature (°C)
@@ -41,8 +52,7 @@ Weather variables include:
 \item \code{radiation} - Solar exposure, consisting of both direct and diffuse components (MJ m\if{html}{\out{<sup>}}-2\if{html}{\out{</sup>}})
 \item \code{day_lengths} - Time between sunrise and sunset (h) not taken from SILO
 }
-}
-\details{
+
 When there are only a few environments, point data will be sequentially downloaded from SILO. When there are many environments in each year,
 data will be downloaded and extracted from whole gridded data files more efficiently. Any locations outside of the Australian land area will return \code{NA}.
 

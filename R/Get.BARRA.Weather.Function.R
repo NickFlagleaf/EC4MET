@@ -3,15 +3,6 @@
 #' @description Extract weather data for Australia from the [BARRA-R2](https://opus.nci.org.au/spaces/NDP/pages/264241166/BOM+BARRA2+ob53)
 #' weather data resource for a set of environments with defined latitude and longitude coordinates. BARRA-R2 data runs from Jan 1979 to Sept 2024.
 #'
-#' Weather variables include:
-#' * `daily_rain` - Daily rainfall (mm)
-#' * `max_temp` - Maximum temperature (°C)
-#' * `min_temp` - Minimum temperature (°C)
-#' * `vp_deficit` - Vapour pressure deficit (hPa)
-#' * `radiation` - Solar exposure, consisting of both direct and diffuse components (MJ m<sup>-2</sup>)
-#' * `day_lengths` - Time between sunrise and sunset (h) not taken from BARRA-R2  
-#'
-#' 
 #' @param Envs Vector of environment names character strings.
 #' @param Lats Vector of latitude numeric values for each environment in the same order as `Envs`.
 #' @param Lons Vector of longitude numeric values for each environment in the same order as `Envs`.
@@ -19,7 +10,17 @@
 #' @param ncores Number (integer) of cores to use for parallel processing of gridded data up to 5 cores. Use `1` to run in series. The default (`NULL`) will
 #' use the maximum available cores up to 5. If running in parallel, an output log text file will be created in the working directory.
 #' @param verbose Logical.Should progress be printed?
-#'
+#' @param dlprompt Logical. Should the user be prompted approve the total download size? Default it TRUE.
+#' 
+#' @details
+#' Weather variables returned include:
+#' * `daily_rain` - Daily rainfall (mm)
+#' * `max_temp` - Maximum temperature (°C)
+#' * `min_temp` - Minimum temperature (°C)
+#' * `vp_deficit` - Vapour pressure deficit (hPa)
+#' * `radiation` - Solar exposure, consisting of both direct and diffuse components (MJ m<sup>-2</sup>)
+#' * `day_lengths` - Time between sunrise and sunset (h) not taken from BARRA-R2  
+#' 
 #' @returns A list of length 2:
 #' * `$data` is a list of matrices of weather data for each weather variable.
 #' Each data matrix has environment names as rows and days of the ywar as columns
@@ -40,7 +41,8 @@ get.BARRA.weather <- function(Envs,
                               Lons,
                               Years,
                               ncores = NULL,
-                              verbose = TRUE) {
+                              verbose = TRUE,
+                              dlprompt = FALSE) {
   Years <- as.integer(as.character(Years))
   years <- unique(Years)
   Envs <- as.character(Envs)
@@ -48,27 +50,31 @@ get.BARRA.weather <- function(Envs,
   mons <- stringr::str_pad(1:12, 2, pad = "0")
   vars <- c("pr", "tasmax", "tasmin", "hurs", "rsdt")
 
+  #Check for errors
   if (verbose & length(unique(c(length(Envs),length(Lats),length(Lons),length(Years)))) > 1){
-    cat("\nLengths of Envs, Lats, Lons or Years differ:\n")
     print(sapply(list("Envs"=Envs,"Lats"=Lats,"Lons"=Lons,"Years"=Years),length))
+    stop("Lengths of Envs, Lats, Lons or Years differ")
   }
-  
   if (verbose & sum(!years %in% 1979:2023) > 0) {
-    cat("\nYears out of range of BARRA R2 data (1979 to Sept 2024)")
+    stop("Years out of range of BARRA R2 data (1979 to Sept 2024)")
   }
   if (verbose & !is.numeric(Lats)) {
-    cat("Lat values not numeric")
+    stop("Lat values not numeric")
   }
   if (verbose & !is.numeric(Lons)) {
-    cat("Lon values not numeric")
+    stop("Lon values not numeric")
   }
   if (verbose & sum(Lons < 88.48 | Lons > 207.39) > 0) {
-    cat("\nLon out of range of SILO data: 88.48 to 207.39")
+    stop("Lon out of range of BARRA data: 88.48 to 207.39")
   }
   if (verbose & sum(Lats < -57.97 | Lats > 12.98) > 0) {
-    cat("\nLats out of range of SILO data: -57.97 to -12.98")
+    stop("Lats out of range of BARRA data: -57.97 to -12.98")
   }
 
+  
+  dl.size <- 36041366 * length(vars)*length(years)*length(mons)
+  download_data(dlprompt,dl.size)
+  
   if (is.null(ncores)) {
     ncores <- min(parallel::detectCores(), length(vars))
   }
@@ -91,6 +97,7 @@ get.BARRA.weather <- function(Envs,
     if (verbose) {
       cat(paste("\nProgress log output to:\n", getwd(), "/BARRA_download_log.txt", sep = ""))
     }
+    on.exit(expr = closeAllConnections())
     `%dopar%` <- foreach::`%dopar%`
   }
   
@@ -118,21 +125,12 @@ get.BARRA.weather <- function(Envs,
           if (verbose) {
             cat(month.abb[m], "|", sep = "")
           }
-          ncfile <- ncdf4::nc_open(tmp.dir[m])
-          nc.data <- ncdf4::ncvar_get(ncfile)
-          start.day <- stringr::str_sub(string = ncfile$dim$time$units, start = nchar(ncfile$dim$time$units) - 9, end = nchar(ncfile$dim$time$units))
-          dimnames(nc.data) <- list(
-            ncfile$dim$lon$vals,
-            ncfile$dim$lat$vals,
-            as.character(as.Date(start.day) + ncfile$dim$time$vals)
-          )
+          nc.data<-nc.process(tmp.dir[m])
+          file.remove(tmp.dir[m])
           all.mons.weather[[m]] <- nc.data
-          ncdf4::nc_close(ncfile)
-          rm(ncfile, nc.data)
           gc(full = T)
         }
-        file.remove(tmp.dir)
-
+       
         tnames <- unlist(lapply(all.mons.weather, function(x) dimnames(x)[[3]]))
         all.mons.weather <- abind::abind(all.mons.weather, along = 3)
 
@@ -169,10 +167,8 @@ get.BARRA.weather <- function(Envs,
     Sys.sleep(2)
     file.remove("BARRA_download_log.txt")
     }
-    
-    
+  
   names(all.vars.weather) <- vars
-    
   
   all.vars.weather$pr <- all.vars.weather$pr * 86400 # convert "kg m-2 s-1" to "mm day-1"
   all.vars.weather$tasmax <- all.vars.weather$tasmax - 273.15 # convert from Kelvin to deg C
@@ -183,13 +179,10 @@ get.BARRA.weather <- function(Envs,
 
 
   # Calculate VPD
-  Tave <- (all.vars.weather$max_temp + all.vars.weather$min_temp) / 2
-  es <- 0.6108 * (exp((17.27 * Tave) / (Tave + 237.3)))
-  ea <- all.vars.weather$relhumidity / 100 * es
-  VPD <- es - ea
-  VPD <- VPD * 10 # Convert kpa to hpa
-
-  all.vars.weather$vp_deficit <- VPD
+  all.vars.weather$vp_deficit <- vpdfun(tmin = all.vars.weather$min_temp,
+                                        tmax = all.vars.weather$max_temp,
+                                        relh = all.vars.weather$relhumidity)
+  
   all.vars.weather <- all.vars.weather[!names(all.vars.weather) == "relhumidity"]
   
   DLs <- t(sapply(Lats,function(x) chillR::daylength(latitude = x, JDay = 1:370, notimes.as.na = FALSE)$Daylength))

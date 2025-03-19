@@ -62,7 +62,7 @@ obs.soil.ECs <- get.S.ECs(Envs = CAIGE20_22envs$Environment,
                           Lons = CAIGE20_22envs$Long)
 ```
 
-Load example dataset for environments in the Australian grain belt from 2018 to 2020 and get weather and soil ECs for all environments.
+Load example dataset for 1697 locations in the Australian grain belt from 2018 to 2020 and get weather and soil ECs for all environments.
 
 ```         
 data("wheat.area.envs")
@@ -105,7 +105,7 @@ Plot the iClasses environment types for all environments in the Australian grain
 ```         
 iclasses <- apply(wheat.area.preds[,c("FA1","FA2","FA3")],1,function(x) paste(ifelse(x > 0, "p", "n"), collapse = ""))
 
-iclass.cols <- viridis::turbo(length(unique(iclasses)))
+iclass.cols <- c("#30123BFF","#1AE4B6FF","#FABA39FF","#7A0403FF")
 names(iclass.cols) <- unique(iclasses)
 par(mfrow=c(2,2), mar=c(1,1,1,1))
   for(y in unique(wheat.area.envs$Year)){

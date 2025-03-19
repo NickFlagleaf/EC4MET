@@ -4,7 +4,7 @@
 \alias{get.S.ECs}
 \title{Get environmental covariates from soils data}
 \usage{
-get.S.ECs(Envs, Lats, Lons, ncores = NULL, verbose = TRUE)
+get.S.ECs(Envs, Lats, Lons, ncores = NULL, verbose = TRUE, dlprompt = FALSE)
 }
 \arguments{
 \item{Envs}{Vector of environment names character strings.}
@@ -17,6 +17,8 @@ get.S.ECs(Envs, Lats, Lons, ncores = NULL, verbose = TRUE)
 use the maximum available cores. If running in parallel, an output log text file will be created in the working directory.}
 
 \item{verbose}{Logical. Should progress be printed?}
+
+\item{dlprompt}{Logical. Should the user be prompted approve the total download size? Default it FALSE.}
 }
 \value{
 A data frame of soil EC values with environment names as rows and covariates as columns.

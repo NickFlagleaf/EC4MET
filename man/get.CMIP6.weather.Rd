@@ -2,7 +2,7 @@
 % Please edit documentation in R/Get.CMIP6.Weather.Function.R
 \name{get.CMIP6.weather}
 \alias{get.CMIP6.weather}
-\title{Get weather data from CMIP6 QDM}
+\title{Get weather data from CMIP6 QDC}
 \usage{
 get.CMIP6.weather(
   Envs,
@@ -12,7 +12,8 @@ get.CMIP6.weather(
   GCMs,
   SSPs,
   ncores = NULL,
-  verbose = TRUE
+  verbose = TRUE,
+  dlprompt = FALSE
 )
 }
 \arguments{
@@ -22,7 +23,8 @@ get.CMIP6.weather(
 
 \item{Lons}{Vector of longitude numeric values for each environment in the same order as \code{Envs}.}
 
-\item{Years}{Vector of year integer values for each environment in the same order as \code{Envs}.}
+\item{Years}{Vector of year integer values. Unlike \code{\link[=get.SILO.weather]{get.SILO.weather()}} and \code{\link[=get.BARRA.weather]{get.BARRA.weather()}}, \code{Years} should to be the same
+length as \code{Envs}. Data for all locations in \code{Envs} will be extracted for all \code{Years}. Must be within the possible}
 
 \item{GCMs}{Vector of GCM names to get data from. For options see Details below.}
 
@@ -32,37 +34,39 @@ get.CMIP6.weather(
 use the maximum available cores up to 5. If running in parallel, an output log text file will be created in the working directory.}
 
 \item{verbose}{Logical.Should progress be printed?}
+
+\item{dlprompt}{Logical. Should the user be prompted approve the total download size? Default it TRUE.}
 }
 \value{
-A list of length 2:
+A multi-level list of \verb{$data} and \verb{$Env.info} weather variables within SSPs within GCMs:
 \itemize{
 \item \verb{$data} is a list of matrices of weather data for each weather variable.
-Each data matrix has environment names as rows and days of the ywar as columns
+Each data matrix has environment names as rows and days of the year as columns
 \item \verb{$Env.info} is a data frame of environment names and coordinate values for environments included in the data.
 }
+
+E.g. \code{x$CESM2$ssp585$daily_rain$data[1,1]} will return the rainfall on the Jan 1st at the first location in the
+first year for the high emissions SSP585 for the CESM2 GCM.
 }
 \description{
-Extract weather data for Coupled Model Intercomparison Project phase 6 using a Quantile Delta Change method for Australia
-\href{https://doi.org/10.25919/03by-9y62}{CMIP6 QDM} weather data resource for a set of environments with defined latitude and longitude coordinates.
+Extract weather data from the Coupled Model Intercomparison Project phase 6 using a Quantile Delta Change method for Australia
+\href{https://doi.org/10.25919/03by-9y62}{CMIP6 QDC} weather data resource for a set of environments with defined latitude and longitude coordinates.
+}
+\details{
+The CMPI6 QDC dataset includes climate projections for historical (1985-2014) and two future periods of years (2035-2064 and 2070-2099).
+All \code{Years} values must be within these time periods. The QDC method benchmarks CMIP6 against the observational data from the \href{https://opus.nci.org.au/spaces/NDP/pages/264241166/BOM+BARRA2+ob53}{BARRA-R2}
+dataset so should be used in combination with the \code{\link[=get.BARRA.weather]{get.BARRA.weather()}} rather than the \code{\link[=get.SILO.weather]{get.SILO.weather()}} function for observed environments that are outside of the 1985-2014 time period of the CMIP6 QDC
+historical time period.
 
-Weather variables include:
+Weather variables returned include:
 \itemize{
 \item \code{daily_rain} - Daily rainfall (mm)
 \item \code{max_temp} - Maximum temperature (°C)
 \item \code{min_temp} - Minimum temperature (°C)
 \item \code{vp_deficit} - Vapour pressure deficit (hPa)
 \item \code{radiation} - Solar exposure, consisting of both direct and diffuse components (MJ m\if{html}{\out{<sup>}}-2\if{html}{\out{</sup>}})
-\item \code{day_lengths} - Time between sunrise and sunset (h) not taken from CMIP6 QDM
+\item \code{day_lengths} - Time between sunrise and sunset (h) not taken from CMIP6 QDC
 }
-}
-\details{
-The CMPI6 QDM dataset includes climate projections for two time future periods of years:
-\enumerate{
-\item 2035-2064
-\item 2070-2099
-}
-
-\code{Years} values must be within either of these two time periods.
 
 Possible options for Global Climate Models (GCM):
 \itemize{
@@ -79,12 +83,13 @@ Possible options for Global Climate Models (GCM):
 
 For further details see \href{https://doi.org/10.1016/j.cliser.2023.100368}{Grose et al. 2023}
 
-Possible options for Shared Socio-economic Pathways (SSP) and equivalent Representative Concentration Pathways (RCP):
+Possible options for Shared Socio-economic Pathways (SSP) and equivalent Representative Concentration Pathways (RCP)
+with expected temperature increase range:
 \itemize{
-\item \code{ssp126} - Sustainability (RCP2.6)
-\item \code{ssp245} - Middle of the road (RCP4.5)
-\item \code{ssp370} - Regional rivalry (No equivalent RCP)
-\item \code{ssp585} - Fossil fueled development (RCP8.5)
+\item \code{ssp126} - Sustainability (RCP2.6; 1.0-1.8°C)
+\item \code{ssp245} - Middle of the road (RCP4.5; 1.3-2.4°C)
+\item \code{ssp370} - Regional rivalry (No equivalent RCP; 2.8-4.6°C)
+\item \code{ssp585} - Fossil fueled development (RCP8.5; 3.3-5.7°C)
 }
 
 For further details see \href{https://doi.org/10.1016/j.gloenvcha.2016.05.009}{Riahi et al. 2017}
