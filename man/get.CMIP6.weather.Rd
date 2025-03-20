@@ -33,7 +33,7 @@ length as \code{Envs}. Data for all locations in \code{Envs} will be extracted f
 \item{ncores}{Number (integer) of cores to use for parallel processing of gridded data up to 5 cores. Use \code{1} to run in series. The default (\code{NULL}) will
 use the maximum available cores up to 5. If running in parallel, an output log text file will be created in the working directory.}
 
-\item{verbose}{Logical.Should progress be printed?}
+\item{verbose}{Logical. Should progress be printed? Default if TRUE.}
 
 \item{dlprompt}{Logical. Should the user be prompted approve the total download size? Default it TRUE.}
 }
@@ -45,8 +45,8 @@ Each data matrix has environment names as rows and days of the year as columns
 \item \verb{$Env.info} is a data frame of environment names and coordinate values for environments included in the data.
 }
 
-E.g. \code{x$CESM2$ssp585$daily_rain$data[1,1]} will return the rainfall on the Jan 1st at the first location in the
-first year for the high emissions SSP585 for the CESM2 GCM.
+E.g. \code{x$ACCESS-CM2$ssp585$daily_rain$data[1,1]} will return the rainfall on the Jan 1st at the first location in the
+first year for the high emissions SSP585 for the ACCESS-CM2 GCM.
 }
 \description{
 Extract weather data from the Coupled Model Intercomparison Project phase 6 using a Quantile Delta Change method for Australia
@@ -72,7 +72,6 @@ Possible options for Global Climate Models (GCM):
 \itemize{
 \item \code{ACCESS-CM2} - A much hotter future, and drier in most regions except the southeast
 \item \code{ACCESS-ESM1-5} - A hotter and much drier future
-\item \code{CESM2} - A hotter future, wetter in parts of the east and north
 \item \code{CMCC-ESM2} - A much hotter future with little change in mean rainfall (with regional exceptions)
 \item \code{CNRMESM2-1} - A much hotter future, much drier especially in the east, but wetter in the northwest
 \item \code{EC-Earth3} - A hotter and much wetter future for much of Australia (except southwest Western Australia)

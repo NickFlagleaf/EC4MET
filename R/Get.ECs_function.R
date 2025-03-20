@@ -11,7 +11,7 @@
 #' * `vp_deficit`
 #' * `radiation`
 #'
-#' `weather$Env.info` is a data frame of info for each environment that includes a `Lat` column of latitude values for which day lengths are calculated.
+#' `weather$Env.info` is a data frame of info for each environment but is not required for this function.
 #'
 #' @param  sow.dates Vector of character strings of dates of sowing for each trail environment in dd/mm/yyy format. Must be in the same order as the
 #' rownames of weather data in `weather$data` matrices.
@@ -27,7 +27,7 @@
 #' Custom values can be used to define other crop phenologies and growth rates
 #'
 #' @param DTH.TT Optional. Estimated thermal time from sowing that heading growth stage occurs. Default value is 1285.
-#' @param verbose Logical. Should progress be printed?
+#' @param verbose Logical. Should progress be printed? Default if TRUE.
 #'
 #' @details
 #' ECs are calculated for periods between crop growth stages that are estimated based on a thermal time degree days model defined by the `cardT` parameters.
@@ -84,6 +84,24 @@ get.W.ECs <- function(weather,
                       stg.TT = NULL,
                       DTH.TT = NULL,
                       verbose = TRUE) {
+  
+  Envs <- weather$Env.info$Environment
+  
+  envmissmatchs<-sapply(weather$data,function(x) sum(!rownames(x)==Envs))
+  if (verbose & sum(envmissmatchs)>0) {
+    print(envmissmatchs)
+    stop("Rownames of `weather$data` dataframes differ to `weather$Env.info$Environment`")
+    }
+  
+  if (verbose & !length(sow.dates) == length(Envs)) {
+    stop("sow.dates and Envs lengths differ")
+  }
+  
+  if (verbose & sum(is.na(sow.dates)) > 0) {
+    stop(paste("NAs in sow.dates at ", paste(Envs[is.na(sow.dates)], collapse = " "), sep = ""))
+  }
+  
+  
   if (is.null(cardT)) {
     cardT <- c("min" = 0, "opt" = 26, "max" = 34)
   }
@@ -102,25 +120,15 @@ get.W.ECs <- function(weather,
     )
   }
 
-  TTfun <- function(Tci) {
-    if (cardT[1] <= Tci & Tci <= cardT[2]) {
-      out <- Tci
-    }
-    if (cardT[2] <= Tci & Tci <= cardT[3]) {
-      out <- (cardT[2] / 8) * (cardT[3] - Tci)
-    }
-    if (Tci < cardT[1] | Tci > cardT[3]) {
-      out <- 0
-    }
-    return(out)
+  if (verbose) {
+  cat("Calculating thermal time")
   }
-
-
   Tc <- (weather$data$max_temp + weather$data$min_temp) / 2
-  all.envDailyTT <- t(apply(Tc, 1, function(x) sapply(x, TTfun)))
-
+  all.envDailyTT <- t(apply(Tc, 1, function(x) sapply(x,function(t) TTfun(t,cardT))))
+  if (verbose) {
+    cat(" 100% :)\n")
+  }
   stage.names <- c("Sow", "Emer", "Juv", "He", "Flow", "Sgf", "Egf", "Mat")
-  Envs <- rownames(weather$data$daily_rain)
   all.env.stages <- matrix(NA,
     nrow = length(Envs), ncol = length(stage.names),
     dimnames = list(Envs, stage.names)
@@ -129,17 +137,6 @@ get.W.ECs <- function(weather,
   yrday1 <- as.Date(paste(stringr::str_sub(string = sow.dates, 1, 4), "-01-01", sep = ""))
   sowdays <- sow.dates - yrday1
 
-  if (verbose & !length(sow.dates) == length(Envs)) {
-    cat("\n!length(sow.dates)==length(Envs)")
-  }
-
-  if (verbose & sum(is.na(sow.dates)) > 0) {
-    cat(paste("\nError for sow.dates at ", paste(Envs[is.na(sow.dates)], collapse = " "), sep = ""))
-  }
-
-  if (verbose) {
-    cat("\nStarting growth stage estimates ")
-  }
 
   for (i in 1:length(Envs)) {
     DailyTT <- all.envDailyTT[i, ]
@@ -161,10 +158,11 @@ get.W.ECs <- function(weather,
     stages[7] <- which.min(abs(cumsum(DailyTT[sow.day:364]) - (cumsum(DailyTT[sow.day:364])[stages[6]] + stg.TT[4])))
     stages[8] <- which.min(abs(cumsum(DailyTT[sow.day:364]) - (cumsum(DailyTT[sow.day:364])[stages[7]] + stg.TT[5])))
     if (verbose == TRUE & i %in% round(seq(1, length(Envs), length.out = 100))) {
-      cat("|", round(i / length(Envs) * 100), "%", sep = "")
-    }
+      cat("\rStarting growth stage estimates ", round(i / length(Envs) * 100), "%", sep = "")
+     }
     all.env.stages[i, ] <- stages
   }
+  if (verbose) cat(" :)\n")
   all.env.stages <- as.data.frame(all.env.stages)
 
   # Define stress covariates----
@@ -172,7 +170,7 @@ get.W.ECs <- function(weather,
 
   {
     if (verbose == TRUE) {
-      cat("\nStarting days per stage ")
+      cat("Starting days per stage")
     }
     # N days per stage----
     Ndays.per.stage <- sapply(2:ncol(all.env.stages), function(s) all.env.stages[, s] - all.env.stages[, s - 1])
@@ -185,13 +183,12 @@ get.W.ECs <- function(weather,
     Ndays_Flw2Egf <- all.env.stages[, "Egf"] - all.env.stages[, "Flow"]
 
     ndays.ECs <- cbind(Ndays.per.stage, Ndays_Sow2Flw, Ndays_Flw2Egf)
+    if (verbose) cat("\rStarting days per stage ", 100, "%", sep = "")
+    if (verbose) cat(" :)\n")
   }
 
   { # total rain per stage-----
-    if (verbose == TRUE) {
-      cat("\nStarting total and rain and dry days per stages ")
-    }
-    Sum.rain.per.stage <- matrix(NA,
+   Sum.rain.per.stage <- matrix(NA,
       nrow = length(Envs), ncol = length(interval.names) + 3,
       dimnames = list(Envs, c(
         paste("TotRain_", interval.names, sep = ""),
@@ -219,17 +216,15 @@ get.W.ECs <- function(weather,
       Sum.drydays.per.stage[e, ] <- sapply(2:length(stgs), function(s) sum(yr.pr[(sowday + stgs[s - 1]):(sowday + stgs[s])] < 1))
 
       if (verbose == TRUE & e %in% stps) {
-        cat("|", round(e / length(Envs) * 100), "%", sep = "")
+        cat("\rStarting total rain and dry days per stages ", round(e / length(Envs) * 100), "%", sep = "")
       }
     }
+    if (verbose) cat(" :)\n")
     rain.ECs <- cbind(Sum.rain.per.stage, Sum.drydays.per.stage)
   }
 
   { # mean temp per stage------
-    if (verbose == TRUE) {
-      cat("\nStarting temps per stage ")
-    }
-    mean.temp.per.stage <- matrix(NA,
+   mean.temp.per.stage <- matrix(NA,
       nrow = length(Envs), ncol = length(interval.names),
       dimnames = list(Envs, paste("Avtemp_", interval.names, sep = ""))
     )
@@ -275,9 +270,10 @@ get.W.ECs <- function(weather,
       MaxToverr34per.stage[e, ] <- sapply(2:ncol(all.env.stages), function(s) sum(yr.tmax[(sowday + stgs[s - 1]):(sowday + stgs[s])] > 34))
 
       if (verbose == TRUE & e %in% stps) {
-        cat("|", round(e / length(Envs) * 100), "%", sep = "")
+        cat("\rStarting temps per stage ", round(e / length(Envs) * 100), "%", sep = "")
       }
     }
+    if (verbose) cat(" :)\n")
     temp.ECS <- cbind(
       mean.temp.per.stage, mean.max.temp.per.stage, mean.min.temp.per.stage,
       MinTbelow0per.stage, MaxToverr26per.stage, MaxToverr34per.stage
@@ -285,10 +281,7 @@ get.W.ECs <- function(weather,
   }
 
   { # mean sunshine per stage-------
-    if (verbose == TRUE) {
-      cat("\nStarting sol rad and PQ per stage ")
-    }
-    AveSR.per.stage <- matrix(NA,
+      AveSR.per.stage <- matrix(NA,
       nrow = length(Envs), ncol = length(interval.names),
       dimnames = list(Envs, paste("AveSR_", interval.names, sep = ""))
     )
@@ -308,16 +301,14 @@ get.W.ECs <- function(weather,
       })
 
       if (verbose == TRUE & e %in% stps) {
-        cat("|", round(e / length(Envs) * 100), "%", sep = "")
+        cat("\rStarting sol rad and PQ per stage ", round(e / length(Envs) * 100), "%", sep = "")
       }
     }
+    if (verbose) cat(" :)\n")
     sunECs <- cbind(AveSR.per.stage, AvePQ.per.stage)
   }
 
   { # mean VPD per stage-------
-    if (verbose == TRUE) {
-      cat("\nStarting VPD days per stage ")
-    }
     AveVPD.per.stage <- matrix(NA,
       nrow = length(Envs), ncol = length(interval.names),
       dimnames = list(Envs, paste("AveVPD_", interval.names, sep = ""))
@@ -329,15 +320,13 @@ get.W.ECs <- function(weather,
       yr.vpd <- unlist(weather$data$vp_deficit[e, ])
       AveVPD.per.stage[e, ] <- sapply(2:ncol(all.env.stages), function(s) mean(yr.vpd[(sowdays[e] + stgs[s - 1]):(sowdays[e] + stgs[s])]))
       if (verbose == TRUE & e %in% stps) {
-        cat("|", round(e / length(Envs) * 100), "%", sep = "")
+        cat("\rStarting VPD days per stage ", round(e / length(Envs) * 100), "%", sep = "")
       }
     }
+    if (verbose) cat(" :)\n")
   }
 
-  # mean day lengths per stage---------
-  if (verbose == TRUE) {
-    cat("\nStarting mean day lengths per stage ")
-  }
+  {# mean day lengths per stage---------
   MeanDLper.stage <- matrix(NA,
     nrow = length(Envs), ncol = length(interval.names),
     dimnames = list(Envs, paste("AveDL_", interval.names, sep = ""))
@@ -348,10 +337,11 @@ get.W.ECs <- function(weather,
     stgs <- unlist(all.env.stages[e, ])
     MeanDLper.stage[e, ] <- sapply(2:ncol(all.env.stages), function(s) mean(yr.DLs[as.numeric(sowdays[e] + stgs[(s - 1):s])]))
     if (verbose == TRUE & e %in% stps) {
-      cat("|", round(e / length(Envs) * 100), "%", sep = "")
+      cat("\rStarting mean day lengths per stage ", round(e / length(Envs) * 100), "%", sep = "")
     }
   }
-
+  if (verbose) cat(" :)\n")
+}
 
 
   # Make weather matrix------
@@ -360,14 +350,17 @@ get.W.ECs <- function(weather,
   rownames(Wmat) <- Envs
 
   isnas <- sum(is.nan(unlist(Wmat)) | is.na(unlist(Wmat)))
-  if (verbose) {
-    cat(paste("\n", isnas, "NAs"))
-  }
+  if (verbose) cat(paste(isnas, "NAs returned"))
+  
   if (verbose & isnas > 0) {
     cat(paste("\n NAs at:\n", paste(Envs[!complete.cases(Wmat)], collapse = " ")))
     cat(paste("\n For:\n", paste(colnames(Wmat)[!complete.cases(t(Wmat))], collapse = " ")))
   }
 
+  ECvars<-apply(Wmat,2,var)
+  if (verbose & sum(ECvars == 0) > 0) {
+    cat(paste("\nECs with zero variance:",paste(names(ECvars)[ECvars==0],"\n",collapse = " ")))
+  }
 
   GS.dates <- t(sapply(1:nrow(all.env.stages), function(x) as.character(sow.dates[x] + unlist(all.env.stages[x, ]) - 1)))
   dimnames(GS.dates) <- list(Envs, stage.names)

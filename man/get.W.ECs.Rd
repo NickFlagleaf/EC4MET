@@ -25,7 +25,7 @@ get.W.ECs(
 \item \code{radiation}
 }
 
-\code{weather$Env.info} is a data frame of info for each environment that includes a \code{Lat} column of latitude values for which day lengths are calculated.}
+\code{weather$Env.info} is a data frame of info for each environment but is not required for this function.}
 
 \item{sow.dates}{Vector of character strings of dates of sowing for each trail environment in dd/mm/yyy format. Must be in the same order as the
 rownames of weather data in \code{weather$data} matrices.}
@@ -46,7 +46,7 @@ Custom values can be used to define other crop phenologies and growth rates}
 
 \item{DTH.TT}{Optional. Estimated thermal time from sowing that heading growth stage occurs. Default value is 1285.}
 
-\item{verbose}{Logical. Should progress be printed?}
+\item{verbose}{Logical. Should progress be printed? Default if TRUE.}
 }
 \value{
 A list of length 2:

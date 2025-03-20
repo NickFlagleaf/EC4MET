@@ -9,7 +9,7 @@
 #' @param Years Vector of year integer values for each environment in the same order as `Envs`.
 #' @param ncores Number (integer) of cores to use for parallel processing of gridded data up to 5 cores. Use `1` to run in series. The default (`NULL`) will
 #' use the maximum available cores up to 5. If running in parallel, an output log text file will be created in the working directory.
-#' @param verbose Logical. Should progress be printed?
+#' @param verbose Logical. Should progress be printed? Default if TRUE.
 #' @param dlprompt Logical. Should the user be prompted approve the total download size? Default it FALSE
 #'
 #' @details 
@@ -59,26 +59,17 @@ get.SILO.weather <- function(Envs,
     print(sapply(list("Envs" = Envs, "Lats" = Lats, "Lons" = Lons, "Years" = Years), length))
     stop("Lengths of Envs, Lats, Lons or Years differ")
   }
-
-  if (verbose & sum(!years %in% 1889:as.numeric(stringr::str_sub(Sys.Date(), 1, 4))) > 0) {
-    stop("Years out of range of SILO data (1889 to yesterday)")
-  }
-  if (verbose & !is.numeric(Lats)) {
-    stop("Lat values not numeric")
-  }
-  if (verbose & !is.numeric(Lons)) {
-    stop("Lon values not numeric")
-  }
-  if (verbose & sum(Lons < 112 | Lons > 154) > 0) {
-    stop("Lon out of range of SILO data: 112 to 154")
-  }
-  if (verbose & sum(Lats < -44 | Lats > -10) > 0) {
-    stop("Lats out of range of SILO data: -44 to -10")
-  }
+  if (verbose & sum(!years %in% 1889:as.numeric(stringr::str_sub(Sys.Date(), 1, 4))) > 0) stop("Years out of range of SILO data (1889 to yesterday)")
+  if (verbose & !is.numeric(Lats)) stop("Lat values not numeric")
+  if (verbose & !is.numeric(Lons)) stop("Lon values not numeric")
+  if (verbose & sum(duplicated(Envs))>0) stop(paste("Duplicated Envs:",Envs[duplicated(Envs)]))
+  if (verbose & sum(Lons < 112 | Lons > 154) > 0) stop("Lon out of range of SILO data: 112 to 154")
+  if (verbose & sum(Lats < -44 | Lats > -10) > 0) stop("Lats out of range of SILO data: -44 to -10")
 
   if (length(Envs) < 500) {
     dl.size <- 29982 * length(Envs)
-    download_data(dlprompt, dl.size)
+    
+    if (verbose) download_data(dlprompt, dl.size)
 
     if (verbose) {
       cat("\nDownloading SILO point data\n")
@@ -95,7 +86,7 @@ get.SILO.weather <- function(Envs,
     all.env.weather <- list()
     for (e in 1:length(Envs)) {
       if (verbose == TRUE & e %in% round(seq(1, length(Envs), length.out = 100))) {
-        cat("|", round(e / length(Envs) * 100), "%", sep = "")
+        cat("\r|", round(e / length(Envs) * 100), "%", sep = "")
       }
       pnt.data <- utils::read.csv(tmp.dir[e])
       all.env.weather[[e]] <- pnt.data
@@ -117,22 +108,18 @@ get.SILO.weather <- function(Envs,
   }
 
   if (length(Envs) > 499) {
-    dl.size <- 418145109 * length(vars) * length(years)
-    download_data(dlprompt, dl.size)
-
-    if (verbose) {
-      cat("\nDownloading SILO gridded data")
-    }
-
+    if (verbose) download_data(dlprompt, dl.size)
+    
+    if (verbose) cat("\nDownloading SILO gridded data")
+    
     if (is.null(ncores)) {
       ncores <- min(parallel::detectCores(), length(vars))
     }
     ncores <- min(ncores, length(vars))
 
     if (isTRUE(ncores > 1)) { # Run in parallel
-      if (verbose) {
-        cat("\nRunning in parallel...")
-      }
+      if (verbose) cat("\nRunning in parallel...")
+      file.remove("SILO_download_log.txt")
       cl <- parallel::makeCluster(ncores, outfile = "SILO_download_log.txt")
       doParallel::registerDoParallel(cl)
       if (verbose) {
@@ -143,17 +130,14 @@ get.SILO.weather <- function(Envs,
     }
 
     if (isTRUE(ncores == 1)) { # Run in series
-      if (verbose) {
-        cat("\nRunning in series\n")
+      if (verbose) cat("\nRunning in series\n")
         `%dopar%` <- foreach::`%do%`
       }
-    }
+      
     all.vars.weather <- foreach::foreach(v = seq_along(vars), .combine = list, .multicombine = T) %dopar% {
       all.yrs.weather <- matrix(NA, nrow = length(Envs), ncol = 365, dimnames = list(Envs, 1:365))
-      if (verbose) {
-        print(paste("Starting", vars[v]))
-      }
-      cat("\nDownloading .nc files...\n")
+      if (verbose) print(paste("Starting", vars[v]))
+      if (verbose) cat("\nDownloading .nc files...\n")
       addrs <- paste("https://s3-ap-southeast-2.amazonaws.com/silo-open-data/Official/annual/", vars[v], "/", years, ".", vars[v], ".nc", sep = "")
       tmp.dir <- tempfile()
       tmp.dir <- gsub("\\", "/", tmp.dir, fixed = T)
@@ -162,15 +146,12 @@ get.SILO.weather <- function(Envs,
       utils::download.file(url = addrs, destfile = tmp.dir, method = "libcurl", quiet = T, mode = "wb", )
 
       for (y in seq_along(years)) {
-        if (verbose) {
-          cat(years[y], "|", sep = "")
-        }
+        if (verbose) cat(years[y], "|", sep = "")
         env.info.yr.sub <- data.frame(
           "Environment" = Envs[Years == years[y]],
           "Lat" = Lats[Years == years[y]],
           "Lon" = Lons[Years == years[y]]
         )
-
         nc.data<-nc.process(tmp.dir[y])
         file.remove(tmp.dir[y])
         env.info.yr.sub$lon.ind <- sapply(env.info.yr.sub$Lon, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[1]]) - as.numeric(x))))
@@ -186,18 +167,14 @@ get.SILO.weather <- function(Envs,
         }
         gc()
       }
-      if (verbose) {
-        print(":)")
-      }
+      if (verbose) print(":)")
       return(all.yrs.weather)
     }
 
     if (isTRUE(ncores > 1)) { # if running in parallel
       parallel::stopCluster(cl)
       doParallel::stopImplicitCluster()
-      if (verbose) {
-        cat("\nFinished parallel :)")
-      }
+      if (verbose) cat("\nFinished parallel :)")
       Sys.sleep(2)
       file.remove("SILO_download_log.txt")
       gc(full = T)

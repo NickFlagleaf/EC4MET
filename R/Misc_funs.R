@@ -4,7 +4,7 @@ bytes.cnvrt <- function(bytes) {
     ifelse(bytes < 1000000, paste0(round(bytes / 1000, 2), "KB"),
       ifelse(bytes < 1000000000, paste0(round(bytes / 1000000, 2), "MB"),
         ifelse(bytes < 1000000000000, paste0(round(bytes / 1000000000, 2), "GB"),
-          paste0(round(bytes / 1000000000000, 2), "TB")
+          paste(round(bytes / 1000000000000, 2), "TB",sep="")
         )
       )
     )
@@ -29,6 +29,7 @@ download_data <- function(ask_before_downloading = TRUE, dl.size) {
   message("Download beginning")
   } else{
     cat("\nTotal download approx:", bytes.cnvrt(dl.size))
+    cat("\nStart time:", format(Sys.time(), "%Y-%m-%d %X"))
   }
 }
 
@@ -54,4 +55,18 @@ ea <- relh / 100 * es
 VPD <- es - ea
 VPD <- VPD * 10 # Convert kpa to hpa
 return(VPD)
+}
+
+#Thermal time function---
+TTfun <- function(Tci,cardT) {
+  if (cardT[1] <= Tci & Tci <= cardT[2]) {
+    out <- Tci
+  }
+  if (cardT[2] <= Tci & Tci <= cardT[3]) {
+    out <- (cardT[2] / 8) * (cardT[3] - Tci)
+  }
+  if (Tci < cardT[1] | Tci > cardT[3]) {
+    out <- 0
+  }
+  return(out)
 }

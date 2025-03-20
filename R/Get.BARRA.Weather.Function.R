@@ -9,7 +9,7 @@
 #' @param Years Vector of year integer values for each environment in the same order as `Envs`.
 #' @param ncores Number (integer) of cores to use for parallel processing of gridded data up to 5 cores. Use `1` to run in series. The default (`NULL`) will
 #' use the maximum available cores up to 5. If running in parallel, an output log text file will be created in the working directory.
-#' @param verbose Logical.Should progress be printed?
+#' @param verbose Logical. Should progress be printed? Default if TRUE.
 #' @param dlprompt Logical. Should the user be prompted approve the total download size? Default it TRUE.
 #' 
 #' @details
@@ -55,25 +55,15 @@ get.BARRA.weather <- function(Envs,
     print(sapply(list("Envs"=Envs,"Lats"=Lats,"Lons"=Lons,"Years"=Years),length))
     stop("Lengths of Envs, Lats, Lons or Years differ")
   }
-  if (verbose & sum(!years %in% 1979:2023) > 0) {
-    stop("Years out of range of BARRA R2 data (1979 to Sept 2024)")
-  }
-  if (verbose & !is.numeric(Lats)) {
-    stop("Lat values not numeric")
-  }
-  if (verbose & !is.numeric(Lons)) {
-    stop("Lon values not numeric")
-  }
-  if (verbose & sum(Lons < 88.48 | Lons > 207.39) > 0) {
-    stop("Lon out of range of BARRA data: 88.48 to 207.39")
-  }
-  if (verbose & sum(Lats < -57.97 | Lats > 12.98) > 0) {
-    stop("Lats out of range of BARRA data: -57.97 to -12.98")
-  }
+  if (verbose & !is.numeric(Lats)) stop("Lat values not numeric")
+  if (verbose & !is.numeric(Lons)) stop("Lon values not numeric")
+  if (verbose & sum(duplicated(Envs))>0) stop(paste("Duplicated Envs:",Envs[duplicated(Envs)]))
+  if (verbose & sum(!years %in% 1979:2023) > 0) stop("Years out of range of BARRA R2 data (Jan 1979 to Sept 2024)")
+  if (verbose & sum(Lons < 88.48 | Lons > 207.39) > 0) stop("Lon out of range of BARRA data: 88.48 to 207.39")
+  if (verbose & sum(Lats < -57.97 | Lats > 12.98) > 0) stop("Lats out of range of BARRA data: -57.97 to -12.98")
 
-  
-  dl.size <- 36041366 * length(vars)*length(years)*length(mons)
-  download_data(dlprompt,dl.size)
+  dl.size <- 40000000 * length(vars) * length(Years) * length(mons)
+  if (verbose) download_data(dlprompt, dl.size)
   
   if (is.null(ncores)) {
     ncores <- min(parallel::detectCores(), length(vars))
@@ -92,6 +82,7 @@ get.BARRA.weather <- function(Envs,
     if (verbose) {
       cat("\nRunning in parallel...")
     }
+    file.remove("BARRA_download_log.txt")
     cl <- parallel::makeCluster(ncores, outfile = "BARRA_download_log.txt")
     doParallel::registerDoParallel(cl)
     if (verbose) {

@@ -12,7 +12,7 @@
 #' @param SSPs Vector of SSP names to get data from. For options see Details below.
 #' @param ncores Number (integer) of cores to use for parallel processing of gridded data up to 5 cores. Use `1` to run in series. The default (`NULL`) will
 #' use the maximum available cores up to 5. If running in parallel, an output log text file will be created in the working directory.
-#' @param verbose Logical.Should progress be printed?
+#' @param verbose Logical. Should progress be printed? Default if TRUE.
 #' @param dlprompt Logical. Should the user be prompted approve the total download size? Default it TRUE.
 #'
 #' @details
@@ -32,7 +32,6 @@
 #' Possible options for Global Climate Models (GCM):
 #' * `ACCESS-CM2` - A much hotter future, and drier in most regions except the southeast
 #' * `ACCESS-ESM1-5` - A hotter and much drier future
-#' * `CESM2` - A hotter future, wetter in parts of the east and north
 #' * `CMCC-ESM2` - A much hotter future with little change in mean rainfall (with regional exceptions)
 #' * `CNRMESM2-1` - A much hotter future, much drier especially in the east, but wetter in the northwest
 #' * `EC-Earth3` - A hotter and much wetter future for much of Australia (except southwest Western Australia)
@@ -58,8 +57,8 @@
 #' Each data matrix has environment names as rows and days of the year as columns
 #' * `$Env.info` is a data frame of environment names and coordinate values for environments included in the data.
 #'
-#' E.g. `x$CESM2$ssp585$daily_rain$data[1,1]` will return the rainfall on the Jan 1st at the first location in the
-#' first year for the high emissions SSP585 for the CESM2 GCM.
+#' E.g. `x$ACCESS-CM2$ssp585$daily_rain$data[1,1]` will return the rainfall on the Jan 1st at the first location in the
+#' first year for the high emissions SSP585 for the ACCESS-CM2 GCM.
 #'
 #' @seealso [get.SILO.weather()], [get.BARRA.weather()]
 #'
@@ -85,7 +84,7 @@ get.CMIP6.weather <- function(Envs,
                               verbose = TRUE,
                               dlprompt = FALSE) {
   
-  pos.GCM <- c("ACCESS-CM2", "ACCESS-ESM1-5", "CESM2", "CMCC-ESM2", "CNRM-ESM2-1", "EC-Earth3", "MPI-ESM1-2-HR", "NorESM2-MM", "UKESM1-0-LL")
+  pos.GCM <- c("ACCESS-CM2", "ACCESS-ESM1-5", "CMCC-ESM2", "CNRM-ESM2-1", "EC-Earth3", "MPI-ESM1-2-HR", "NorESM2-MM", "UKESM1-0-LL")
   runs.codes <- c("r4i1p1f1", "r6i1p1f1", "r11i1p1f1", "r1i1p1f1", "r1i1p1f2", "r1i1p1f1", "r1i1p1f1", "r1i1p1f1", "r1i1p1f2")
   names(runs.codes) <- pos.GCM
   pos.SSP <- c("ssp585", "ssp370", "ssp245", "ssp126")
@@ -108,15 +107,19 @@ get.CMIP6.weather <- function(Envs,
     "qdc-multiplicative-monthly-q100-linear-rsdscs-clipped"
   )
   names(method) <- vars
-
+ 
   dl.size <- 647893838 * length(GCMs) * length(SSPs) * length(vars) * length(Years)
-  download_data(dlprompt, dl.size)
-
+  if (verbose) download_data(dlprompt, dl.size)
+  
   if (is.null(ncores)) {
     ncores <- min(parallel::detectCores(), length(vars))
   }
 
-
+  #Error checks
+  if (verbose & !is.numeric(Lats)) stop("Lat values not numeric")
+  if (verbose & !is.numeric(Lons)) stop("Lon values not numeric")
+  if(verbose & sum(duplicated(Envs))>0) stop(paste("Duplicated Envs:",Envs[duplicated(Envs)]))
+    
   if (verbose & length(unique(c(length(Envs), length(Lats), length(Lons)))) > 1) {
     print(sapply(list("Envs" = Envs, "Lats" = Lats, "Lons" = Lons), length))
     stop("Lengths of Envs, Lats or Lons differ")
@@ -124,13 +127,12 @@ get.CMIP6.weather <- function(Envs,
 
   yrs.in.spans <- sapply(Years, function(x) sum(sapply(year.spans, function(s) sum(x %in% s)) == 1))
   if (verbose & sum(yrs.in.spans == 0) > 0) {
-    print(Years[yrs.in.spans == 0])
-    stop("Years outside of CMIP6 range")
+    stop(paste("Years outside of CMIP6 range:",Years[yrs.in.spans == 0]))
   }
 
   if (verbose & sum(!GCMs %in% pos.GCM) > 0) {
-    cat("\nPossible options include:", pos.GCM)
-    stop(paste("Invalid GCM names:", GCMs[!GCMs %in% pos.GCM]))
+    cat("\nPossible options include:", pos.GCM,"\n")
+    stop(paste("\nInvalid GCM names:", paste(GCMs[!GCMs %in% pos.GCM],collapse=" ")))
   }
   if (verbose & sum(!SSPs %in% pos.SSP) > 0) {
     cat("\nPossible options include:", pos.SSP)
@@ -197,6 +199,7 @@ get.CMIP6.weather <- function(Envs,
           if (verbose) {
             cat("\nRunning in parallel...")
           }
+          file.remove("CMIP6_download_log.txt")
           cl <- parallel::makeCluster(ncores, outfile = "CMIP6_download_log.txt")
           doParallel::registerDoParallel(cl)
           if (verbose) {
@@ -218,6 +221,7 @@ get.CMIP6.weather <- function(Envs,
             cat(Years[y], "|", sep = "")
           }
           nc.data <- nc.process(tmp.dir[y])
+          yr<- stringr::str_sub(dimnames(nc.data)[[3]][1],1,4)
           file.remove(tmp.dir[y])
           lon.ind <- sapply(Lons, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[1]]) - as.numeric(x))))
           lat.ind <- sapply(Lats, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[2]]) - as.numeric(x))))
@@ -237,7 +241,7 @@ get.CMIP6.weather <- function(Envs,
           if (verbose) {
             cat("\nFinished parallel :)")
           }
-          Sys.sleep(2)
+          Sys.sleep(5)
           file.remove("CMIP6_download_log.txt")
           gc(full = T)
         }
