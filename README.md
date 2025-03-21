@@ -1,14 +1,14 @@
+
+
+# EC4MET <a href="https://github.com/NickFlagleaf/EC4MET/tree/main"><img src="man/figures/logo.png" align="right" height="200" alt="" /></a>
+
 <!-- badges: start -->
 
 [![R-CMD-check](https://github.com/NickFlagleaf/EC4MET/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/NickFlagleaf/EC4MET/actions/workflows/R-CMD-check.yaml)
 
 <!-- badges: end -->
 
-# EC4MET
-
-------------------------------------------------------------------------
-
-## Derive ECs for METs
+##   Derive ECs for METs
 
 Derive environmental covariates (ECs) for crop trial environments to model environmental effects and genotype by environment interactions
 

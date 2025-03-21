@@ -108,6 +108,7 @@ get.SILO.weather <- function(Envs,
   }
 
   if (length(Envs) > 499) {
+    dl.size <- 419290699 * length(years) * length(vars)
     if (verbose) download_data(dlprompt, dl.size)
     
     if (verbose) cat("\nDownloading SILO gridded data")

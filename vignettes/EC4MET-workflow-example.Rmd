@@ -19,6 +19,12 @@ knitr::opts_chunk$set(
 )
 ```
 
+[![](images/logo-01.png){width="300"}](https://github.com/NickFlagleaf/EC4MET)
+
+# EC4MET
+
+# 
+
 This vignette runs through an example workflow to derive Environmental Covariates (ECs) from weather and soil data for a multi-environment trial analysis using the example datasets included in the EC4MET package.
 
 ## Installing EC4MET

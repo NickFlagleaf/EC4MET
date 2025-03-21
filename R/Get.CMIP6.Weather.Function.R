@@ -85,7 +85,7 @@ get.CMIP6.weather <- function(Envs,
                               dlprompt = FALSE) {
   
   pos.GCM <- c("ACCESS-CM2", "ACCESS-ESM1-5", "CMCC-ESM2", "CNRM-ESM2-1", "EC-Earth3", "MPI-ESM1-2-HR", "NorESM2-MM", "UKESM1-0-LL")
-  runs.codes <- c("r4i1p1f1", "r6i1p1f1", "r11i1p1f1", "r1i1p1f1", "r1i1p1f2", "r1i1p1f1", "r1i1p1f1", "r1i1p1f1", "r1i1p1f2")
+  runs.codes <- c("r4i1p1f1", "r6i1p1f1", "r1i1p1f1", "r1i1p1f2", "r1i1p1f1", "r1i1p1f1", "r1i1p1f1", "r1i1p1f2")
   names(runs.codes) <- pos.GCM
   pos.SSP <- c("ssp585", "ssp370", "ssp245", "ssp126")
   year.spans <- list(
