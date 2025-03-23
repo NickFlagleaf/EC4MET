@@ -1,0 +1,48 @@
+starting worker pid=16588 on localhost:11259 at 21:05:56.607
+starting worker pid=33156 on localhost:11259 at 21:05:56.790
+starting worker pid=32172 on localhost:11259 at 21:05:56.961
+starting worker pid=21852 on localhost:11259 at 21:05:57.223
+starting worker pid=33996 on localhost:11259 at 21:05:57.393
+starting worker pid=9912 on localhost:11259 at 21:05:57.570
+starting worker pid=16304 on localhost:11259 at 21:05:57.817
+starting worker pid=32864 on localhost:11259 at 21:05:58.053
+starting worker pid=35052 on localhost:11259 at 21:05:58.310
+starting worker pid=8748 on localhost:11259 at 21:05:58.533
+Loading required package: EC4MET
+Loading required package: EC4MET
+Loading required package: EC4MET
+Loading required package: EC4MET
+Loading required package: EC4MET
+Loading required package: EC4MET
+Loading required package: EC4MET
+loaded EC4MET and set parent environment
+loaded EC4MET and set parent environment
+loaded EC4MET and set parent environment
+loaded EC4MET and set parent environment
+loaded EC4MET and set parent environment
+loaded EC4MET and set parent environment
+loaded EC4MET and set parent environment
+2002|2003|2004|2005|2040|20412042|2043|2044|2045|Error in R_nc4_open: No such file or directory
+Error in R_nc4_open: No such file or directory
+2080Error in R_nc4_open: No such file or directory
+Error in R_nc4_open: No such file or directory
+2081|Error in R_nc4_open: No such file or directory
+2082|Error in R_nc4_open: No such file or directory
+2083|Error in R_nc4_open: No such file or directory
+2084|Error in R_nc4_open: No such file or directory
+2085|Error in R_nc4_open: No such file or directory
+Error in R_nc4_open: No such file or directory
+Error in R_nc4_open: No such file or directory
+Error in unserialize(node$con) : error reading from connection
+Calls: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Error in unserialize(node$con) : error reading from connection
+Calls: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Error in unserialize(node$con) : error reading from connection
+Calls: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Error in unserialize(node$con) : error reading from connection
+Calls: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Error in unserialize(node$con) : error reading from connection
+Calls: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Execution halted
+Execution halted
+Execution halted
