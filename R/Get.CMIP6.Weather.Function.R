@@ -20,7 +20,7 @@
 #' All `Years` values must be within these time periods. The QDC method benchmarks CMIP6 against the observational data from the [BARRA-R2](https://opus.nci.org.au/spaces/NDP/pages/264241166/BOM+BARRA2+ob53)
 #' dataset so should be used in combination with the [get.BARRA.weather()] rather than the [get.SILO.weather()] function for observed environments that are outside of the 1985-2014 time period of the CMIP6 QDC
 #' historical time period.
-#' 
+#'
 #' Weather variables returned include:
 #' * `daily_rain` - Daily rainfall (mm)
 #' * `max_temp` - Maximum temperature (°C)
@@ -41,7 +41,7 @@
 #'
 #' For further details see [Grose et al. 2023](https://doi.org/10.1016/j.cliser.2023.100368)
 #'
-#' Possible options for Shared Socio-economic Pathways (SSP) and equivalent Representative Concentration Pathways (RCP) 
+#' Possible options for Shared Socio-economic Pathways (SSP) and equivalent Representative Concentration Pathways (RCP)
 #' with expected temperature increase range:
 #' * `ssp126` - Sustainability (RCP2.6; 1.0-1.8°C)
 #' * `ssp245` - Middle of the road (RCP4.5; 1.3-2.4°C)
@@ -83,7 +83,6 @@ get.CMIP6.weather <- function(Envs,
                               ncores = NULL,
                               verbose = TRUE,
                               dlprompt = FALSE) {
-  
   pos.GCM <- c("ACCESS-CM2", "ACCESS-ESM1-5", "CMCC-ESM2", "CNRM-ESM2-1", "EC-Earth3", "MPI-ESM1-2-HR", "NorESM2-MM", "UKESM1-0-LL")
   runs.codes <- c("r4i1p1f1", "r6i1p1f1", "r1i1p1f1", "r1i1p1f2", "r1i1p1f1", "r1i1p1f1", "r1i1p1f1", "r1i1p1f2")
   names(runs.codes) <- pos.GCM
@@ -107,19 +106,19 @@ get.CMIP6.weather <- function(Envs,
     "qdc-multiplicative-monthly-q100-linear-rsdscs-clipped"
   )
   names(method) <- vars
- 
+
   dl.size <- 647893838 * length(GCMs) * length(SSPs) * length(vars) * length(Years)
   if (verbose) download_data(dlprompt, dl.size)
-  
+
   if (is.null(ncores)) {
     ncores <- min(parallel::detectCores(), length(vars))
   }
 
-  #Error checks
+  # Error checks
   if (verbose & !is.numeric(Lats)) stop("Lat values not numeric")
   if (verbose & !is.numeric(Lons)) stop("Lon values not numeric")
-  if(verbose & sum(duplicated(Envs))>0) stop(paste("Duplicated Envs:",Envs[duplicated(Envs)]))
-    
+  if (verbose & sum(duplicated(Envs)) > 0) stop(paste("Duplicated Envs:", Envs[duplicated(Envs)]))
+
   if (verbose & length(unique(c(length(Envs), length(Lats), length(Lons)))) > 1) {
     print(sapply(list("Envs" = Envs, "Lats" = Lats, "Lons" = Lons), length))
     stop("Lengths of Envs, Lats or Lons differ")
@@ -127,12 +126,12 @@ get.CMIP6.weather <- function(Envs,
 
   yrs.in.spans <- sapply(Years, function(x) sum(sapply(year.spans, function(s) sum(x %in% s)) == 1))
   if (verbose & sum(yrs.in.spans == 0) > 0) {
-    stop(paste("Years outside of CMIP6 range:",Years[yrs.in.spans == 0]))
+    stop(paste("Years outside of CMIP6 range:", Years[yrs.in.spans == 0]))
   }
 
   if (verbose & sum(!GCMs %in% pos.GCM) > 0) {
-    cat("\nPossible options include:", pos.GCM,"\n")
-    stop(paste("\nInvalid GCM names:", paste(GCMs[!GCMs %in% pos.GCM],collapse=" ")))
+    cat("\nPossible options include:", pos.GCM, "\n")
+    stop(paste("\nInvalid GCM names:", paste(GCMs[!GCMs %in% pos.GCM], collapse = " ")))
   }
   if (verbose & sum(!SSPs %in% pos.SSP) > 0) {
     cat("\nPossible options include:", pos.SSP)
@@ -221,7 +220,7 @@ get.CMIP6.weather <- function(Envs,
             cat(Years[y], "|", sep = "")
           }
           nc.data <- nc.process(tmp.dir[y])
-          yr<- stringr::str_sub(dimnames(nc.data)[[3]][1],1,4)
+          yr <- stringr::str_sub(dimnames(nc.data)[[3]][1], 1, 4)
           file.remove(tmp.dir[y])
           lon.ind <- sapply(Lons, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[1]]) - as.numeric(x))))
           lat.ind <- sapply(Lats, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[2]]) - as.numeric(x))))
@@ -253,9 +252,11 @@ get.CMIP6.weather <- function(Envs,
       names(all.vars.weather) <- c("daily_rain", "max_temp", "min_temp", "relhumidity", "radiation")
 
       # Calculate VPD
-      all.vars.weather$vp_deficit <- vpdfun(tmin = all.vars.weather$min_temp,
-                                            tmax = all.vars.weather$max_temp,
-                                            relh = all.vars.weather$relhumidity)
+      all.vars.weather$vp_deficit <- vpdfun(
+        tmin = all.vars.weather$min_temp,
+        tmax = all.vars.weather$max_temp,
+        relh = all.vars.weather$relhumidity
+      )
       all.vars.weather <- all.vars.weather[!names(all.vars.weather) == "relhumidity"]
 
       Lats.full <- as.numeric(sapply(rownames(all.vars.weather$radiation), function(x) stringr::str_split(x, pattern = "_")[[1]][3]))

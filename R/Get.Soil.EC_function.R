@@ -36,10 +36,10 @@ get.S.ECs <- function(Envs,
   lonlats.full <- data.frame("Loc" = paste(Lons, Lats, sep = "_"), "longitude" = Lons, "latitude" = Lats)
   lonlats.sub <- lonlats.full[!duplicated(lonlats.full$Loc), ]
 
-  
-  dl.size <- 1304 * length(atts) * 6
+
+  dl.size <- 300000000 * length(atts) * 6
   if (verbose) download_data(dlprompt, dl.size)
-  
+
   if (is.null(ncores)) {
     ncores <- min(parallel::detectCores(), length(atts))
   }
@@ -81,32 +81,25 @@ get.S.ECs <- function(Envs,
       ncol = length(depths),
       dimnames = list(Envs, paste(atts[a], depths, sep = "_"))
     )
-    for (d in 1:length(depths)) {
-      if (verbose == TRUE) {
-        cat("\n", atts[a], "at", depths[d], "\n")
-      }
-      r <- NULL
-      try(r <- terra::rast(paste("/vsicurl/", rasters$StagingPath[d], sep = "")))
-      if (!is.null(r)) {
-        vals <- unlist(terra::extract(r, as.matrix(lonlats.sub[, c("longitude", "latitude")])))
-        trys <- 10
-        while (sum(is.na(vals)) > 0 & trys > 0) {
-          trys <- trys - 1
-          na.ind <- which(is.na(vals))
-          vals[is.na(vals)] <- sapply(na.ind, function(x) {
-            mean(na.omit(sapply(list(
-              c(0.01, 0.01),
-              c(-0.01, 0.01),
-              c(0.01, -0.01),
-              c(-0.01, 0.01)
-            ), function(c) {
-              unlist(terra::extract(r, as.matrix(lonlats.sub[x, c("longitude", "latitude")]) + c))
-            })))
-          })
+
+    for (d in 1:ncol(all.depth.soil)) {
+      r <- terra::rast(paste("/vsicurl/", rasters$StagingPath[d], sep = ""))
+      vals <- terra::extract(x = r, y = lonlats.sub[, c("longitude", "latitude")], search_radius = 100)[, 2]
+      trys <- 10
+      rad <- 500
+      while (trys > 0 & sum(is.na(vals)) > 0) { # try filling in NAS with increasing search radius
+        trys <- trys - 1
+        which.nas <- which(is.na(vals))
+        if (length(which.nas) < 2) {
+          vals[which.nas] <- unique(terra::extract(x = r, y = lonlats.sub[which.nas, c("longitude", "latitude")], search_radius = rad)[, 2])
         }
-        names(vals) <- lonlats.sub$Loc
-        all.depth.soil[, d] <- vals[lonlats.full$Loc]
+        if (length(which.nas) > 1) {
+          vals[which.nas] <- terra::extract(x = r, y = lonlats.sub[which.nas, c("longitude", "latitude")], search_radius = rad)[, 2]
+        }
+        rad <- rad + 500
       }
+      names(vals) <- lonlats.sub$Loc
+      all.depth.soil[, d] <- vals[lonlats.full$Loc]
     }
     gc()
     if (verbose & sum(!complete.cases(all.depth.soil)) > 0) {

@@ -32,7 +32,7 @@ This vignette runs through an example workflow to derive Environmental Covariate
 The EC4MET package can be installed from Github and loaded from your library. Built with `r getRversion()`.
 
 ```{r setup}
-#devtools::install_github("NickFlagleaf/EC4MET", build_vignettes = T)
+# devtools::install_github("NickFlagleaf/EC4MET", build_vignettes = T)
 library(EC4MET)
 ```
 
