@@ -82,7 +82,7 @@ get.BARRA.weather <- function(Envs,
     if (verbose) {
       cat("\nRunning in parallel...")
     }
-    file.remove("BARRA_download_log.txt")
+    file.remove("BARRA_download_log.txt",showWarnings = FALSE)
     cl <- parallel::makeCluster(ncores, outfile = "BARRA_download_log.txt")
     doParallel::registerDoParallel(cl)
     if (verbose) {
@@ -92,7 +92,7 @@ get.BARRA.weather <- function(Envs,
     `%dopar%` <- foreach::`%dopar%`
   }
 
-  all.vars.weather <- foreach::foreach(v = seq_along(vars), .combine = list, .multicombine = T) %dopar% {
+  all.vars.weather <- foreach::foreach(v = seq_along(vars), .combine = list, .multicombine = T,.export = "nc.process") %dopar% {
     if (verbose) {
       cat("\nStarting", vars[v])
     }

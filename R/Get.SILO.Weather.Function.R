@@ -120,7 +120,7 @@ get.SILO.weather <- function(Envs,
 
     if (isTRUE(ncores > 1)) { # Run in parallel
       if (verbose) cat("\nRunning in parallel...")
-      file.remove("SILO_download_log.txt")
+      file.remove("SILO_download_log.txt",showWarnings = FALSE)
       cl <- parallel::makeCluster(ncores, outfile = "SILO_download_log.txt")
       doParallel::registerDoParallel(cl)
       if (verbose) {
@@ -135,7 +135,7 @@ get.SILO.weather <- function(Envs,
       `%dopar%` <- foreach::`%do%`
     }
 
-    all.vars.weather <- foreach::foreach(v = seq_along(vars), .combine = list, .multicombine = T) %dopar% {
+    all.vars.weather <- foreach::foreach(v = seq_along(vars), .combine = list, .multicombine = T,.export = "nc.process") %dopar% {
       all.yrs.weather <- matrix(NA, nrow = length(Envs), ncol = 365, dimnames = list(Envs, 1:365))
       if (verbose) print(paste("Starting", vars[v]))
       if (verbose) cat("\nDownloading .nc files...\n")

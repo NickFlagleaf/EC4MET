@@ -16,10 +16,11 @@
 #' @param dlprompt Logical. Should the user be prompted approve the total download size? Default it TRUE.
 #'
 #' @details
-#' The CMPI6 QDC dataset includes climate projections for historical (1985-2014) and two future periods of years (2035-2064 and 2070-2099).
-#' All `Years` values must be within these time periods. The QDC method benchmarks CMIP6 against the observational data from the [BARRA-R2](https://opus.nci.org.au/spaces/NDP/pages/264241166/BOM+BARRA2+ob53)
-#' dataset so should be used in combination with the [get.BARRA.weather()] rather than the [get.SILO.weather()] function for observed environments that are outside of the 1985-2014 time period of the CMIP6 QDC
-#' historical time period.
+#' The CMPI6 QDC dataset is hosted on the [CSIRO data server](https://data-cbr.csiro.au/thredds/catalog/catch_all/qdc-cmip6/QDC-CMIP6/BARRA-R2/catalog.html) 
+#' includes climate projections for historical (1985-2014) and two future periods of years (2035-2064 and 2070-2099). All `Years` values must be within these time periods. 
+#' The QDC method benchmarks CMIP6 against the observational data from the [BARRA-R2](https://opus.nci.org.au/spaces/NDP/pages/264241166/BOM+BARRA2+ob53)
+#' dataset so should be used in combination with the [get.BARRA.weather()] rather than the [get.SILO.weather()] function for observed environments that are 
+#' outside of the 1985-2014 time period of the CMIP6 QDC historical time period.
 #'
 #' Weather variables returned include:
 #' * `daily_rain` - Daily rainfall (mm)
@@ -167,22 +168,27 @@ get.CMIP6.weather <- function(Envs,
         batch.years <- sapply(year.spans, function(x) Years[Years %in% x])
 
         # Bulk download for 2035-2064
+        if(length(batch.years$`1985-2014`)>0){
         addrs1985.2014 <- paste("https://data-cbr.csiro.au/thredds/fileServer/catch_all/qdc-cmip6/QDC-CMIP6/BARRA-R2/obs/historical/v1/day/", vars[v],
           "/AUS-05i/1985-2014/v20241104/", vars[v], "_day_BARRA-R2_historical_v1_AUS-05i_", batch.years$`1985-2014`, ".nc",
           sep = ""
-        )
+        )}else{addrs1985.2014<-NULL}
+        
+        if(length(batch.years$`2035-2064`)>0){
         addrs2035.2064 <- paste("https://data-cbr.csiro.au/thredds/fileServer/catch_all/qdc-cmip6/QDC-CMIP6/BARRA-R2/",
           GCMs[g], "/", SSPs[s], "/", runs.codes[GCMs[g]], "/day/", vars[v], "/AUS-05i/2035-2064/v20241104/",
           vars[v], "_day_", GCMs[g], "_", SSPs[s], "_", runs.codes[GCMs[g]], "_AUS-05i_", batch.years$`2035-2064`, "_", method[vars[v]],
           "_BARRA-R2-baseline-1985-2014_model-baseline-1985-2014.nc",
           sep = ""
-        )
+        )}else{addrs2035.2064<-NULL}
+        
+        if(length(batch.years$`2070-2099`)>0){
         addrs2070.2099 <- paste("https://data-cbr.csiro.au/thredds/fileServer/catch_all/qdc-cmip6/QDC-CMIP6/BARRA-R2/",
           GCMs[g], "/", SSPs[s], "/", runs.codes[GCMs[g]], "/day/", vars[v], "/AUS-05i/2070-2099/v20241104/",
           vars[v], "_day_", GCMs[g], "_", SSPs[s], "_", runs.codes[GCMs[g]], "_AUS-05i_", batch.years$`2070-2099`, "_", method[vars[v]],
           "_BARRA-R2-baseline-1985-2014_model-baseline-1985-2014.nc",
           sep = ""
-        )
+        )}else{addrs2070.2099<-NULL}
 
         addrs <- c(addrs1985.2014, addrs2035.2064, addrs2070.2099)
 
@@ -190,15 +196,16 @@ get.CMIP6.weather <- function(Envs,
         tmp.dir <- gsub("\\", "/", tmp.dir, fixed = T)
         tmp.dir <- paste(tmp.dir, "_", Years, sep = "")
         cat("\nDownloading .nc files...")
-        options(timeout = max(500, getOption("timeout")))
-        utils::download.file(url = addrs, destfile = tmp.dir, method = "libcurl", quiet = T, mode = "wb", )
-
-
+        options(timeout = max(50000, getOption("timeout")))
+        tictoc::tic()
+        print(Sys.time())
+        utils::download.file(url = addrs, destfile = tmp.dir, method = "libcurl", quiet = T, mode = "wb")
+        print(tictoc::toc(quiet = T)$callback_msg)
         if (isTRUE(ncores > 1)) { # Run in parallel
           if (verbose) {
             cat("\nRunning in parallel...")
           }
-          file.remove("CMIP6_download_log.txt")
+          file.remove("CMIP6_download_log.txt",showWarnings = FALSE)
           cl <- parallel::makeCluster(ncores, outfile = "CMIP6_download_log.txt")
           doParallel::registerDoParallel(cl)
           if (verbose) {
@@ -210,12 +217,12 @@ get.CMIP6.weather <- function(Envs,
 
         if (isTRUE(ncores == 1)) { # Run in series
           if (verbose) {
-            cat("\nRunning in series")
+            cat("\nRunning in series...")
             `%dopar%` <- foreach::`%do%`
           }
         }
 
-        all.yrs.weather <- foreach::foreach(y = seq_along(tmp.dir), .combine = rbind, .multicombine = T) %dopar% {
+        all.yrs.weather <- foreach::foreach(y = seq_along(tmp.dir), .combine = rbind, .multicombine = T,.export = "nc.process") %dopar% {
           if (verbose) {
             cat(Years[y], "|", sep = "")
           }
@@ -242,8 +249,8 @@ get.CMIP6.weather <- function(Envs,
           }
           Sys.sleep(5)
           file.remove("CMIP6_download_log.txt")
-          gc(full = T)
         }
+        gc(full = T)
         colnames(all.yrs.weather) <- 1:ncol(all.yrs.weather)
         all.vars.weather[[v]] <- all.yrs.weather
       }
