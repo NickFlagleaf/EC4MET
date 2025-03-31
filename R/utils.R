@@ -72,39 +72,27 @@ TTfun <- function(Tci, cardT) {
 }
 
 
-#SMI estimation function
+# SMI estimation functions
 
-tmins<-weather$data$min_temp[5,]
-tmaxs<-weather$data$max_temp[5,]
-Tave<-(tmins+tmaxs)/2
-dls<-weather$data$day_length[5,]
-prs<-weather$data$daily_rain[5,]
-
-#Potential Evapotranspiration----
-PETthorn<-function(Tave,dl){
-  Tm<-mean(Tave)
+# Potential Evapotranspiration----
+PETthorn <- function(Tave, dl) {
+  Tm <- mean(Tave)
   N <- dl[1:length(Tave)] # day lengths
-  I <- ((max(0,Tm))/5)^1.514    # heat index
-  a <- (6.75e-07 * I^3) - (7.71e-05 * I^2 ) + 0.49239
-  pet <- 16 * (N/360) * ((10*Tave)/I)^a
-  pet[Tave < 0]<-0
+  I <- ((max(0, Tm)) / 5)^1.514 # heat index
+  a <- (6.75e-07 * I^3) - (7.71e-05 * I^2) + 0.49239
+  pet <- 16 * (N / 360) * ((10 * Tave) / I)^a
+  pet[Tave < 0] <- 0
   return(pet)
 }
 
-#Soil moisture index function----
-SMIfun<-function(prs,tmins,tmaxs,dls,AWC,cs=2.428571,cr=0.01236147,cd=0.9644389,smi.start=0.2){
-  Tave<-(tmins+tmaxs)/2
-  PETs<-PETthorn(Tave = Tave,dl = dls)
-  smi<-c()
-  smi[1]<-smi.start
-  for(i in 1:(length(prs)-1)){
-    smi[i+1]<-max(0,min(1, (smi[i] / ((1+(PETs[i]/(AWC * cs))) * cd) ) + (prs[i]*cr) ))
+# Soil moisture index function----
+SMIfun <- function(prs, tmins, tmaxs, dls, AWC, cs = 2.428571, cr = 0.01236147, cd = 0.9644389, smi.start = 0.2) {
+  Tave <- (tmins + tmaxs) / 2
+  PETs <- PETthorn(Tave = Tave, dl = dls)
+  smi <- c()
+  smi[1] <- smi.start
+  for (i in 1:(length(prs) - 1)) {
+    smi[i + 1] <- min(1, (smi[i] / ((1 + (PETs[i] / (AWC * cs))) * cd)) + (prs[i] * cr))
   }
   return(smi)
 }
-
-
-
-
-
-

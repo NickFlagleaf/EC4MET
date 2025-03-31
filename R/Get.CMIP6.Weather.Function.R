@@ -16,10 +16,10 @@
 #' @param dlprompt Logical. Should the user be prompted approve the total download size? Default it TRUE.
 #'
 #' @details
-#' The CMPI6 QDC dataset is hosted on the [CSIRO data server](https://data-cbr.csiro.au/thredds/catalog/catch_all/qdc-cmip6/QDC-CMIP6/BARRA-R2/catalog.html) 
-#' includes climate projections for historical (1985-2014) and two future periods of years (2035-2064 and 2070-2099). All `Years` values must be within these time periods. 
+#' The CMPI6 QDC dataset is hosted on the [CSIRO data server](https://data-cbr.csiro.au/thredds/catalog/catch_all/qdc-cmip6/QDC-CMIP6/BARRA-R2/catalog.html)
+#' includes climate projections for historical (1985-2014) and two future periods of years (2035-2064 and 2070-2099). All `Years` values must be within these time periods.
 #' The QDC method benchmarks CMIP6 against the observational data from the [BARRA-R2](https://opus.nci.org.au/spaces/NDP/pages/264241166/BOM+BARRA2+ob53)
-#' dataset so should be used in combination with the [get.BARRA.weather()] rather than the [get.SILO.weather()] function for observed environments that are 
+#' dataset so should be used in combination with the [get.BARRA.weather()] rather than the [get.SILO.weather()] function for observed environments that are
 #' outside of the 1985-2014 time period of the CMIP6 QDC historical time period.
 #'
 #' Weather variables returned include:
@@ -29,6 +29,9 @@
 #' * `vp_deficit` - Vapour pressure deficit (hPa)
 #' * `radiation` - Solar exposure, consisting of both direct and diffuse components (MJ m<sup>-2</sup>)
 #' * `day_lengths` - Time between sunrise and sunset (h) not taken from CMIP6 QDC
+#'
+#' VPD in hPa is calculated as \eqn{ VPD = 10(es - ea) }, where \eqn{ es = 0.6108 \times \exp(\frac{17.27 \times T_{ave}}{T_{ave} + 237.3}) },
+#' \eqn{T_{ave} } is the mean temperature in °C, \deqn{ ea = \frac{RH}{100} \times es }, and \eqn{RH} is the relative humidity (%).
 #'
 #' Possible options for Global Climate Models (GCM):
 #' * `ACCESS-CM2` - A much hotter future, and drier in most regions except the southeast
@@ -168,27 +171,36 @@ get.CMIP6.weather <- function(Envs,
         batch.years <- sapply(year.spans, function(x) Years[Years %in% x])
 
         # Bulk download for 2035-2064
-        if(length(batch.years$`1985-2014`)>0){
-        addrs1985.2014 <- paste("https://data-cbr.csiro.au/thredds/fileServer/catch_all/qdc-cmip6/QDC-CMIP6/BARRA-R2/obs/historical/v1/day/", vars[v],
-          "/AUS-05i/1985-2014/v20241104/", vars[v], "_day_BARRA-R2_historical_v1_AUS-05i_", batch.years$`1985-2014`, ".nc",
-          sep = ""
-        )}else{addrs1985.2014<-NULL}
-        
-        if(length(batch.years$`2035-2064`)>0){
-        addrs2035.2064 <- paste("https://data-cbr.csiro.au/thredds/fileServer/catch_all/qdc-cmip6/QDC-CMIP6/BARRA-R2/",
-          GCMs[g], "/", SSPs[s], "/", runs.codes[GCMs[g]], "/day/", vars[v], "/AUS-05i/2035-2064/v20241104/",
-          vars[v], "_day_", GCMs[g], "_", SSPs[s], "_", runs.codes[GCMs[g]], "_AUS-05i_", batch.years$`2035-2064`, "_", method[vars[v]],
-          "_BARRA-R2-baseline-1985-2014_model-baseline-1985-2014.nc",
-          sep = ""
-        )}else{addrs2035.2064<-NULL}
-        
-        if(length(batch.years$`2070-2099`)>0){
-        addrs2070.2099 <- paste("https://data-cbr.csiro.au/thredds/fileServer/catch_all/qdc-cmip6/QDC-CMIP6/BARRA-R2/",
-          GCMs[g], "/", SSPs[s], "/", runs.codes[GCMs[g]], "/day/", vars[v], "/AUS-05i/2070-2099/v20241104/",
-          vars[v], "_day_", GCMs[g], "_", SSPs[s], "_", runs.codes[GCMs[g]], "_AUS-05i_", batch.years$`2070-2099`, "_", method[vars[v]],
-          "_BARRA-R2-baseline-1985-2014_model-baseline-1985-2014.nc",
-          sep = ""
-        )}else{addrs2070.2099<-NULL}
+        if (length(batch.years$`1985-2014`) > 0) {
+          addrs1985.2014 <- paste("https://data-cbr.csiro.au/thredds/fileServer/catch_all/qdc-cmip6/QDC-CMIP6/BARRA-R2/obs/historical/v1/day/", vars[v],
+            "/AUS-05i/1985-2014/v20241104/", vars[v], "_day_BARRA-R2_historical_v1_AUS-05i_", batch.years$`1985-2014`, ".nc",
+            sep = ""
+          )
+        } else {
+          addrs1985.2014 <- NULL
+        }
+
+        if (length(batch.years$`2035-2064`) > 0) {
+          addrs2035.2064 <- paste("https://data-cbr.csiro.au/thredds/fileServer/catch_all/qdc-cmip6/QDC-CMIP6/BARRA-R2/",
+            GCMs[g], "/", SSPs[s], "/", runs.codes[GCMs[g]], "/day/", vars[v], "/AUS-05i/2035-2064/v20241104/",
+            vars[v], "_day_", GCMs[g], "_", SSPs[s], "_", runs.codes[GCMs[g]], "_AUS-05i_", batch.years$`2035-2064`, "_", method[vars[v]],
+            "_BARRA-R2-baseline-1985-2014_model-baseline-1985-2014.nc",
+            sep = ""
+          )
+        } else {
+          addrs2035.2064 <- NULL
+        }
+
+        if (length(batch.years$`2070-2099`) > 0) {
+          addrs2070.2099 <- paste("https://data-cbr.csiro.au/thredds/fileServer/catch_all/qdc-cmip6/QDC-CMIP6/BARRA-R2/",
+            GCMs[g], "/", SSPs[s], "/", runs.codes[GCMs[g]], "/day/", vars[v], "/AUS-05i/2070-2099/v20241104/",
+            vars[v], "_day_", GCMs[g], "_", SSPs[s], "_", runs.codes[GCMs[g]], "_AUS-05i_", batch.years$`2070-2099`, "_", method[vars[v]],
+            "_BARRA-R2-baseline-1985-2014_model-baseline-1985-2014.nc",
+            sep = ""
+          )
+        } else {
+          addrs2070.2099 <- NULL
+        }
 
         addrs <- c(addrs1985.2014, addrs2035.2064, addrs2070.2099)
 
@@ -205,7 +217,7 @@ get.CMIP6.weather <- function(Envs,
           if (verbose) {
             cat("\nRunning in parallel...")
           }
-          file.remove("CMIP6_download_log.txt",showWarnings = FALSE)
+          file.remove("CMIP6_download_log.txt", showWarnings = FALSE)
           cl <- parallel::makeCluster(ncores, outfile = "CMIP6_download_log.txt")
           doParallel::registerDoParallel(cl)
           if (verbose) {
@@ -222,7 +234,7 @@ get.CMIP6.weather <- function(Envs,
           }
         }
 
-        all.yrs.weather <- foreach::foreach(y = seq_along(tmp.dir), .combine = rbind, .multicombine = T,.export = "nc.process") %dopar% {
+        all.yrs.weather <- foreach::foreach(y = seq_along(tmp.dir), .combine = rbind, .multicombine = T, .export = "nc.process") %dopar% {
           if (verbose) {
             cat(Years[y], "|", sep = "")
           }

@@ -20,10 +20,14 @@
 #' * `vp_deficit` - Vapour pressure deficit (hPa)
 #' * `radiation` - Solar exposure, consisting of both direct and diffuse components (MJ m<sup>-2</sup>)
 #' * `day_lengths` - Time between sunrise and sunset (h) not taken from BARRA-R2
+#' 
+#' VPD in hPa is calculated as \eqn{ VPD = 10(es - ea) }, where \deqn{ es = 0.6108 \times \exp(\frac{17.27 \times T_{ave}}{T_{ave} + 237.3}) },
+#' \eqn{T_{ave} } is the mean temperature in °C, \deqn{ ea = \frac{RH}{100} \times es }, and \eqn{RH} is the relative humidity (%).
+#' 
 #'
 #' @returns A list of length 2:
 #' * `$data` is a list of matrices of weather data for each weather variable.
-#' Each data matrix has environment names as rows and days of the ywar as columns
+#' Each data matrix has environment names as rows and days of the year as columns
 #' * `$Env.info` is a data frame of environment names and coordinate values for environments included in the data.
 #'
 #' @seealso [get.SILO.weather()]
@@ -82,7 +86,7 @@ get.BARRA.weather <- function(Envs,
     if (verbose) {
       cat("\nRunning in parallel...")
     }
-    file.remove("BARRA_download_log.txt",showWarnings = FALSE)
+    file.remove("BARRA_download_log.txt", showWarnings = FALSE)
     cl <- parallel::makeCluster(ncores, outfile = "BARRA_download_log.txt")
     doParallel::registerDoParallel(cl)
     if (verbose) {
@@ -92,7 +96,7 @@ get.BARRA.weather <- function(Envs,
     `%dopar%` <- foreach::`%dopar%`
   }
 
-  all.vars.weather <- foreach::foreach(v = seq_along(vars), .combine = list, .multicombine = T,.export = "nc.process") %dopar% {
+  all.vars.weather <- foreach::foreach(v = seq_along(vars), .combine = list, .multicombine = T, .export = "nc.process") %dopar% {
     if (verbose) {
       cat("\nStarting", vars[v])
     }
@@ -111,6 +115,7 @@ get.BARRA.weather <- function(Envs,
       tmp.dir <- tempfile()
       tmp.dir <- gsub("\\", "/", tmp.dir, fixed = T)
       tmp.dir <- paste(tmp.dir, "_", 1:length(addrs), sep = "")
+      options(timeout = max(50000, getOption("timeout")))
       utils::download.file(url = addrs, destfile = tmp.dir, method = "libcurl", quiet = T, mode = "wb")
 
       for (m in 1:length(mons)) {

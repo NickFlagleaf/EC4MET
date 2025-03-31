@@ -4,7 +4,15 @@
 \alias{get.S.ECs}
 \title{Get environmental covariates from soils data}
 \usage{
-get.S.ECs(Envs, Lats, Lons, ncores = NULL, verbose = TRUE, dlprompt = FALSE)
+get.S.ECs(
+  Envs,
+  Lats,
+  Lons,
+  API.key = NULL,
+  ncores = NULL,
+  verbose = TRUE,
+  dlprompt = FALSE
+)
 }
 \arguments{
 \item{Envs}{Vector of environment names character strings.}

@@ -53,10 +53,11 @@ Extract weather data from the Coupled Model Intercomparison Project phase 6 usin
 \href{https://doi.org/10.25919/03by-9y62}{CMIP6 QDC} weather data resource for a set of environments with defined latitude and longitude coordinates.
 }
 \details{
-The CMPI6 QDC dataset includes climate projections for historical (1985-2014) and two future periods of years (2035-2064 and 2070-2099).
-All \code{Years} values must be within these time periods. The QDC method benchmarks CMIP6 against the observational data from the \href{https://opus.nci.org.au/spaces/NDP/pages/264241166/BOM+BARRA2+ob53}{BARRA-R2}
-dataset so should be used in combination with the \code{\link[=get.BARRA.weather]{get.BARRA.weather()}} rather than the \code{\link[=get.SILO.weather]{get.SILO.weather()}} function for observed environments that are outside of the 1985-2014 time period of the CMIP6 QDC
-historical time period.
+The CMPI6 QDC dataset is hosted on the \href{https://data-cbr.csiro.au/thredds/catalog/catch_all/qdc-cmip6/QDC-CMIP6/BARRA-R2/catalog.html}{CSIRO data server}
+includes climate projections for historical (1985-2014) and two future periods of years (2035-2064 and 2070-2099). All \code{Years} values must be within these time periods.
+The QDC method benchmarks CMIP6 against the observational data from the \href{https://opus.nci.org.au/spaces/NDP/pages/264241166/BOM+BARRA2+ob53}{BARRA-R2}
+dataset so should be used in combination with the \code{\link[=get.BARRA.weather]{get.BARRA.weather()}} rather than the \code{\link[=get.SILO.weather]{get.SILO.weather()}} function for observed environments that are
+outside of the 1985-2014 time period of the CMIP6 QDC historical time period.
 
 Weather variables returned include:
 \itemize{
@@ -67,6 +68,9 @@ Weather variables returned include:
 \item \code{radiation} - Solar exposure, consisting of both direct and diffuse components (MJ m\if{html}{\out{<sup>}}-2\if{html}{\out{</sup>}})
 \item \code{day_lengths} - Time between sunrise and sunset (h) not taken from CMIP6 QDC
 }
+
+VPD in hPa is calculated as \eqn{ VPD = 10(es - ea) }, where \eqn{ es = 0.6108 \times \exp(\frac{17.27 \times T_{ave}}{T_{ave} + 237.3}) },
+\eqn{T_{ave} } is the mean temperature in °C, \deqn{ ea = \frac{RH}{100} \times es }, and \eqn{RH} is the relative humidity (\%).
 
 Possible options for Global Climate Models (GCM):
 \itemize{

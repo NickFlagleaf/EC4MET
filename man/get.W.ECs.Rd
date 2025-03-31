@@ -16,7 +16,7 @@ get.W.ECs(
 \arguments{
 \item{weather}{A list of length 2. Weather data as outputted from the \code{\link[=get.SILO.weather]{get.SILO.weather()}}.
 
-\code{weather$data} is a list of data matrices for each covariate with rows as environments and days of the year as columns. Weather covariate names for list items should be:
+\code{weather$data} is a list of data matrices for each covariate with rows as environments and days of the year as columns. Required weather covariate names for list items include:
 \itemize{
 \item \code{daily_rain}
 \item \code{max_temp}
@@ -24,6 +24,8 @@ get.W.ECs(
 \item \code{vp_deficit}
 \item \code{radiation}
 }
+
+Additionally, if \code{\link[=add.SMI]{add.SMI()}} has also been use to estimate soil moisture index for the input \code{weather} object, them average SMI per stage ECs will also be calculated.
 
 \code{weather$Env.info} is a data frame of info for each environment but is not required for this function.}
 
@@ -87,6 +89,7 @@ Other abbreviations for ECs calculated between growth stage intervals and combin
 \item \code{AveVPD} - Average vapour pressure deficit (hPa)
 \item \code{AvePQ} - Average photothermal quotient (MJ m\if{html}{\out{<sup>}}-2\if{html}{\out{</sup>}} day\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}} °C\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}})
 \item \code{AveDL} - Average day length (hr)
+\item \code{AveSMI} - Average Soil Moisture index (if \code{\link[=add.SMI]{add.SMI()}} function has been used)
 }
 
 For example, \code{TotRain_He2Flw} indicates the total rainfall between the heading and flowering growth stages.
@@ -108,5 +111,5 @@ Weed research, 14(6), 415-421.
 }
 }
 \seealso{
-\code{\link[=get.S.ECs]{get.S.ECs()}}, \code{\link[=get.BARRA.weather]{get.BARRA.weather()}}, \code{\link[=get.SILO.weather]{get.SILO.weather()}}
+\code{\link[=get.S.ECs]{get.S.ECs()}}, \code{\link[=get.BARRA.weather]{get.BARRA.weather()}}, \code{\link[=get.SILO.weather]{get.SILO.weather()}}, \code{\link[=add.SMI]{add.SMI()}}
 }

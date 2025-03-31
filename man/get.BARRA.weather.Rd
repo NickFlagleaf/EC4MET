@@ -34,7 +34,7 @@ use the maximum available cores up to 5. If running in parallel, an output log t
 A list of length 2:
 \itemize{
 \item \verb{$data} is a list of matrices of weather data for each weather variable.
-Each data matrix has environment names as rows and days of the ywar as columns
+Each data matrix has environment names as rows and days of the year as columns
 \item \verb{$Env.info} is a data frame of environment names and coordinate values for environments included in the data.
 }
 }
@@ -52,6 +52,9 @@ Weather variables returned include:
 \item \code{radiation} - Solar exposure, consisting of both direct and diffuse components (MJ m\if{html}{\out{<sup>}}-2\if{html}{\out{</sup>}})
 \item \code{day_lengths} - Time between sunrise and sunset (h) not taken from BARRA-R2
 }
+
+VPD in hPa is calculated as \eqn{ VPD = 10(es - ea) }, where \eqn{ es = 0.6108 \times \exp(\frac{17.27 \times T_{ave}}{T_{ave} + 237.3}) },
+\eqn{T_{ave} } is the mean temperature in °C, \deqn{ ea = \frac{RH}{100} \times es }, and \eqn{RH} is the relative humidity (\%).
 }
 \references{
 Su, C.H., Dharssi, I., Le Marshall, J., Le, T., Rennie, S., Smith, A., Stassen, C., Steinle, P., Torrance, J., Wang, C. and Warren, R.A., 2022.

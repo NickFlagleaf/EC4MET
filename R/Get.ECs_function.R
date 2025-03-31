@@ -4,12 +4,14 @@
 #'
 #' @param weather A list of length 2. Weather data as outputted from the [get.SILO.weather()].
 #'
-#' `weather$data` is a list of data matrices for each covariate with rows as environments and days of the year as columns. Weather covariate names for list items should be:
+#' `weather$data` is a list of data matrices for each covariate with rows as environments and days of the year as columns. Required weather covariate names for list items include:
 #' * `daily_rain`
 #' * `max_temp`
 #' * `min_temp`
 #' * `vp_deficit`
 #' * `radiation`
+#' 
+#' Additionally, if [add.SMI()] has also been use to estimate soil moisture index for the input `weather` object, them average SMI per stage ECs will also be calculated.
 #'
 #' `weather$Env.info` is a data frame of info for each environment but is not required for this function.
 #'
@@ -54,6 +56,7 @@
 #' * `AveVPD` - Average vapour pressure deficit (hPa)
 #' * `AvePQ` - Average photothermal quotient (MJ m<sup>-2</sup> day<sup>-1</sup> °C<sup>-1</sup>)
 #' * `AveDL` - Average day length (hr)
+#' * `AveSMI` - Average Soil Moisture index (if [add.SMI()] function has been used)
 #'
 #' For example, `TotRain_He2Flw` indicates the total rainfall between the heading and flowering growth stages.
 #'
@@ -68,7 +71,7 @@
 #' * `$gs.dates` - A data frame of estimated dates in yyyy-mm-dd format of each growth stage per environment with environment names as rows and abbreviated
 #' growth stage names as columns.
 #'
-#' @seealso [get.S.ECs()], [get.BARRA.weather()], [get.SILO.weather()]
+#' @seealso [get.S.ECs()], [get.BARRA.weather()], [get.SILO.weather()], [add.SMI()] 
 #'
 #' @references
 #' * Fradgley et al. (2025) Prediction of Australian wheat genotype by environment interactions and mega-environments,
@@ -342,9 +345,28 @@ get.W.ECs <- function(weather,
     if (verbose) cat(" :)\n")
   }
 
+  { # mean SMI per stage---------
+    if("smi" %in% names(weather$data)){
+    MeanSMIper.stage <- matrix(NA,
+                              nrow = length(Envs), ncol = length(interval.names),
+                              dimnames = list(Envs, paste("AveSMI_", interval.names, sep = ""))
+    )
+    stps <- round(seq(1, length(Envs), length.out = 100))
+    for (e in 1:length(Envs)) {
+      yr.smis <- unlist(weather$data$smi[e, ])
+      stgs <- unlist(all.env.stages[e, ])
+      MeanSMIper.stage[e, ] <- sapply(2:ncol(all.env.stages), function(s) mean(yr.smis[as.numeric(sowdays[e] + stgs[(s - 1):s])]))
+      if (verbose == TRUE & e %in% stps) {
+        cat("\rStarting mean day lengths per stage ", round(e / length(Envs) * 100), "%", sep = "")
+      }
+    }
+    if (verbose) cat(" :)\n")
+    }
+  }
+  
 
   # Make weather matrix------
-  Wmat <- cbind.data.frame(ndays.ECs, rain.ECs, temp.ECS, sunECs, AveVPD.per.stage, MeanDLper.stage)
+  Wmat <- cbind.data.frame(ndays.ECs, rain.ECs, temp.ECS, sunECs, AveVPD.per.stage, MeanDLper.stage, MeanSMIper.stage)
 
   rownames(Wmat) <- Envs
 
@@ -358,7 +380,7 @@ get.W.ECs <- function(weather,
 
   ECvars <- apply(Wmat, 2, var)
   if (verbose & sum(ECvars == 0) > 0) {
-    cat(paste("\nECs with zero variance:", paste(names(ECvars)[ECvars == 0], "\n", collapse = " ")))
+    cat(paste("\nECs with zero variance:\n", paste(names(ECvars)[ECvars == 0], "\n", collapse = " ")))
   }
 
   GS.dates <- t(sapply(1:nrow(all.env.stages), function(x) as.character(sow.dates[x] + unlist(all.env.stages[x, ]) - 1)))

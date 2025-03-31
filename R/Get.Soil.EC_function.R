@@ -1,4 +1,4 @@
-#' @title Get environmental covariates from soils data
+#' @title Get soil data from SLGA
 #'
 #' @description A function to derive soil Environmental Covariates (ECs) for multiple soil attributes at multiple depths
 #' from the [SLGA](https://esoil.io/TERNLandscapes/Public/Pages/SLGA/index.html) data resource.
@@ -27,6 +27,7 @@
 get.S.ECs <- function(Envs,
                       Lats,
                       Lons,
+                      API.key = NULL,
                       ncores = NULL,
                       verbose = TRUE,
                       dlprompt = FALSE) {
@@ -68,7 +69,7 @@ get.S.ECs <- function(Envs,
 
   all.env.soil <- foreach::foreach(a = seq_along(atts), .combine = cbind, .multicombine = T) %dopar% {
     if (verbose == TRUE) {
-      cat("\nStarting", atts[a], "\n")
+      cat("\nStarting", atts[a])
     }
     rasters <- SLGACloud::getProductMetaData(
       Detail = "High", Attribute = atts[a],
@@ -83,7 +84,17 @@ get.S.ECs <- function(Envs,
     )
 
     for (d in 1:ncol(all.depth.soil)) {
-      r <- terra::rast(paste("/vsicurl/", rasters$StagingPath[d], sep = ""))
+      if(!is.null(API.key)){
+      key <- paste0('apikey:', API.key)
+      url<-gsub("https://","@",rasters$COGsPath[d])
+      r <- try(terra::rast(paste("/vsicurl/https://",key,url, sep = "")),silent = T)
+      if( class(r)=="try-error"){
+        r <- terra::rast(paste("/vsicurl/",rasters$StagingPath[d], sep = ""))
+        }
+      }
+      if(is.null(API.key)){
+        r <- terra::rast(paste("/vsicurl/",rasters$StagingPath[d], sep = ""))
+      }
       vals <- terra::extract(x = r, y = lonlats.sub[, c("longitude", "latitude")], search_radius = 100)[, 2]
       trys <- 10
       rad <- 500
@@ -115,6 +126,7 @@ get.S.ECs <- function(Envs,
     }
     Sys.sleep(2)
     file.remove("SLGA_soil_download_log.txt")
+    closeAllConnections()
   }
 
   gc(full = T)
@@ -125,6 +137,18 @@ get.S.ECs <- function(Envs,
     newx[is.na(newx)] <- med
     return(newx)
   })
+  
   all.env.soil <- all.env.soil[, apply(all.env.soil, 2, stats::var) > 0]
+  
+  isnas <- sum(is.nan(unlist(all.env.soil)) | is.na(unlist(all.env.soil)))
+  if (verbose) cat(paste(isnas, "NAs returned"))
+  
+  if (verbose & isnas > 0) {
+    cat(paste("\n NAs at:\n", paste(all.env.soil[!complete.cases(all.env.soil)], collapse = " ")))
+    cat(paste("\n For:\n", paste(colnames(all.env.soil)[!complete.cases(t(all.env.soil))], collapse = " ")))
+  }
+  
   return(all.env.soil)
 }
+
+
