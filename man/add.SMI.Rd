@@ -4,10 +4,16 @@
 \alias{add.SMI}
 \title{Add estimated Soil Moisture Index (SMI) to weather data}
 \usage{
-add.SMI(weather)
+add.SMI(weather, verbose = TRUE, API.key = NULL)
 }
 \arguments{
-\item{weather}{A list of length 2. Weather data as outputted from the \code{\link[=get.SILO.weather]{get.SILO.weather()}}.
+\item{weather}{A list of length 2. Weather data as outputted from the \code{\link[=get.SILO.weather]{get.SILO.weather()}}.}
+
+\item{verbose}{Logical. Should progress be printed? Default if TRUE.}
+
+\item{API.key}{Optional API key for  TERN API. You can register for a key on the TERN \href{https://account.tern.org.au/}{webpages}. Default NULL
+will download tiffs from the SLGA staging paths and may take longer to process large datasets. For large datasets with more than 100 unique locations,
+SLGA tiff files will be temporarily downloaded rather than read directly from the API.
 
 \code{weather$data} is a list of data matrices for each covariate with rows as environments and days of the year as columns. Weather covariate names for list items should include:
 \itemize{

@@ -6,6 +6,9 @@
 #' @param Envs Vector of environment names character strings.
 #' @param Lats Vector of latitude numeric values for each environment.
 #' @param Lons Vector of longitude numeric values for each environment.
+#' @param API.key Optional API key for  TERN API. You can register for a key on the TERN [webpages](https://account.tern.org.au/). Default NULL
+#' will download tiffs from the SLGA staging paths and may take longer to process large datasets. For large datasets with more than 100 unique locations,
+#' SLGA tiff files will be temporarily downloaded rather than read directly from the API. 
 #' @param ncores Number (integer) of cores to use for parallel processing. Use `1` to run sequentially in series. The default (`NULL`) will
 #' use the maximum available cores. If running in parallel, an output log text file will be created in the working directory.
 #' @param verbose Logical. Should progress be printed? Default if TRUE.
@@ -67,7 +70,7 @@ get.S.ECs <- function(Envs,
     `%dopar%` <- foreach::`%dopar%`
   }
 
-  all.env.soil <- foreach::foreach(a = seq_along(atts), .combine = cbind, .multicombine = T) %dopar% {
+  all.env.soil <- foreach::foreach(a = seq_along(atts), .combine = cbind, .multicombine = T,.export = "dl.extrct.tifs") %dopar% {
     if (verbose == TRUE) {
       cat("\nStarting", atts[a])
     }
@@ -77,46 +80,23 @@ get.S.ECs <- function(Envs,
       isCurrentVersion = 1
     )
     depths <- paste(rasters$UpperDepth_m, "-", rasters$LowerDepth_m, "m", sep = "")
-    all.depth.soil <- matrix(NA,
-      nrow = length(Envs),
-      ncol = length(depths),
-      dimnames = list(Envs, paste(atts[a], depths, sep = "_"))
-    )
-
-    for (d in 1:ncol(all.depth.soil)) {
-      if(!is.null(API.key)){
-      key <- paste0('apikey:', API.key)
-      url<-gsub("https://","@",rasters$COGsPath[d])
-      r <- try(terra::rast(paste("/vsicurl/https://",key,url, sep = "")),silent = T)
-      if( class(r)=="try-error"){
-        r <- terra::rast(paste("/vsicurl/",rasters$StagingPath[d], sep = ""))
-        }
-      }
-      if(is.null(API.key)){
-        r <- terra::rast(paste("/vsicurl/",rasters$StagingPath[d], sep = ""))
-      }
-      vals <- terra::extract(x = r, y = lonlats.sub[, c("longitude", "latitude")], search_radius = 100)[, 2]
-      trys <- 10
-      rad <- 500
-      while (trys > 0 & sum(is.na(vals)) > 0) { # try filling in NAS with increasing search radius
-        trys <- trys - 1
-        which.nas <- which(is.na(vals))
-        if (length(which.nas) < 2) {
-          vals[which.nas] <- unique(terra::extract(x = r, y = lonlats.sub[which.nas, c("longitude", "latitude")], search_radius = rad)[, 2])
-        }
-        if (length(which.nas) > 1) {
-          vals[which.nas] <- terra::extract(x = r, y = lonlats.sub[which.nas, c("longitude", "latitude")], search_radius = rad)[, 2]
-        }
-        rad <- rad + 500
-      }
-      names(vals) <- lonlats.sub$Loc
-      all.depth.soil[, d] <- vals[lonlats.full$Loc]
+    
+    dl.n.limit<-100
+    if(nrow(lonlats.sub) < dl.n.limit){
+      AWCdata<-api.extrct(rasters = rasters,crds = lonlats.sub,API.key = API.key)
     }
+    
+    if(nrow(lonlats.sub) > dl.n.limit){
+      AWCdata<-dl.extrct.tifs(addrs = rasters$StagingPath,crds = lonlats.sub)
+    }
+    AWCdata<-data.frame(AWCdata[lonlats.full$Loc,])
+    colnames(AWCdata)<-paste(atts[a], depths, sep = "_")
+    
     gc()
-    if (verbose & sum(!complete.cases(all.depth.soil)) > 0) {
-      cat("\n NAs returned for:\n", rownames(all.depth.soil)[!complete.cases(all.depth.soil)], "\n")
+    if (verbose & sum(!complete.cases(AWCdata)) > 0) {
+      cat("\n NAs returned for:\n", rownames(AWCdata)[!complete.cases(AWCdata)], "\n")
     }
-    return(all.depth.soil)
+    return(AWCdata)
   }
   if (isTRUE(ncores > 1)) { # Run in parallel
     parallel::stopCluster(cl)
@@ -125,10 +105,11 @@ get.S.ECs <- function(Envs,
       cat("\nFinished parallel :)\n")
     }
     Sys.sleep(2)
-    file.remove("SLGA_soil_download_log.txt")
     closeAllConnections()
-  }
+    file.remove("SLGA_soil_download_log.txt")
+    }
 
+  rownames(all.env.soil)<-Envs
   gc(full = T)
   all.env.soil <- all.env.soil[, !colnames(all.env.soil) == "Env"]
   all.env.soil <- apply(all.env.soil, 2, function(x) {

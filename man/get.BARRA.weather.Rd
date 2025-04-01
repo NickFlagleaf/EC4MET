@@ -53,7 +53,7 @@ Weather variables returned include:
 \item \code{day_lengths} - Time between sunrise and sunset (h) not taken from BARRA-R2
 }
 
-VPD in hPa is calculated as \eqn{ VPD = 10(es - ea) }, where \eqn{ es = 0.6108 \times \exp(\frac{17.27 \times T_{ave}}{T_{ave} + 237.3}) },
+VPD in hPa is calculated as \eqn{ VPD = 10(es - ea) }, where \deqn{ es = 0.6108 \times \exp(\frac{17.27 \times T_{ave}}{T_{ave} + 237.3}) },
 \eqn{T_{ave} } is the mean temperature in °C, \deqn{ ea = \frac{RH}{100} \times es }, and \eqn{RH} is the relative humidity (\%).
 }
 \references{

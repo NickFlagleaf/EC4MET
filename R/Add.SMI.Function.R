@@ -4,6 +4,10 @@
 #' get weather functions such as [get.SILO.weather()].
 #'
 #' @param weather A list of length 2. Weather data as outputted from the [get.SILO.weather()].
+#' @param verbose Logical. Should progress be printed? Default if TRUE.
+#' @param API.key Optional API key for  TERN API. You can register for a key on the TERN [webpages](https://account.tern.org.au/). Default NULL
+#' will download tiffs from the SLGA staging paths and may take longer to process large datasets. For large datasets with more than 100 unique locations,
+#' SLGA tiff files will be temporarily downloaded rather than read directly from the API.  
 #'
 #' `weather$data` is a list of data matrices for each covariate with rows as environments and days of the year as columns. Weather covariate names for list items should include:
 #' * `daily_rain`
@@ -27,34 +31,40 @@
 #'
 #' @export
 
-add.SMI <- function(weather) {
+add.SMI <- function(weather,verbose=TRUE) {
   
-  awc.urls<-c(
-    "/vsicurl/https://esoil.io/TERNLandscapes/Public/Products/TERN/SLGA/AWC/AWC_000_005_EV_N_P_AU_TRN_N_20210614.tif",
-    "/vsicurl/https://esoil.io/TERNLandscapes/Public/Products/TERN/SLGA/AWC/AWC_005_015_EV_N_P_AU_TRN_N_20210614.tif",
-    "/vsicurl/https://esoil.io/TERNLandscapes/Public/Products/TERN/SLGA/AWC/AWC_015_030_EV_N_P_AU_TRN_N_20210614.tif",
-    "/vsicurl/https://esoil.io/TERNLandscapes/Public/Products/TERN/SLGA/AWC/AWC_030_060_EV_N_P_AU_TRN_N_20210614.tif",
-    "/vsicurl/https://esoil.io/TERNLandscapes/Public/Products/TERN/SLGA/AWC/AWC_060_100_EV_N_P_AU_TRN_N_20210614.tif",
-    "/vsicurl/https://esoil.io/TERNLandscapes/Public/Products/TERN/SLGA/AWC/AWC_100_200_EV_N_P_AU_TRN_N_20210614.tif"
+  rasters <- SLGACloud::getProductMetaData(
+    Detail = "High", Attribute = "Available Water Capacity",
+    Component = "Modelled-Value",
+    isCurrentVersion = 1
   )
-  
-  rs <- sapply(awc.urls,function(x) terra::rast(x))
-  AWCdata <- matrix(NA, nrow = nrow(weather$Env.info), ncol = 6, dimnames = list(
-    weather$Env.info$Environment,
-    c("0-0.05m", "0.05-0.15m", "0.15-0.3m", "0.3-0.6m", "0.6-1m", "1-2m")
-  ))
-  for (d in 1:length(rs)) {
-    cat("\rGetting available water data: ", round(d / length(rs) * 100, 0), "%", sep = "")
-    vals <- terra::extract(x = rs[[d]], y = weather$Env.info[, c("Lon", "Lat")], search_radius = 5000)
-    AWCdata[, d] <- vals[, 2]
-  }
 
+  Lats<-weather$Env.info$Lat
+  Lons<-weather$Env.info$Lon
+  lonlats.full <- data.frame("Loc" = paste(Lons, Lats, sep = "_"), "longitude" = Lons, "latitude" = Lats)
+  lonlats.sub <- lonlats.full[!duplicated(lonlats.full$Loc), ]
+  
+  dl.n.limit<-100
+  if(nrow(lonlats.sub) < dl.n.limit){
+    AWCdata<-api.extrct(rasters = rasters,crds = lonlats.sub)
+  }
+  
+  if(nrow(lonlats.sub) > dl.n.limit){
+    AWCdata<-dl.extrct.tifs(addrs = rasters$StagingPath,crds = lonlats.sub)
+  }
+  
+  colnames(AWCdata)<-paste(paste(rasters$LowerDepth_m,rasters$UpperDepth_m,sep = "-"),"m",sep="")
+  AWCdata<-AWCdata[lonlats.full$Loc,]
   Envs <- weather$Env.info$Environment
+  rownames(AWCdata)<-Envs
   ndays <- 100
   dayrange <- 1:365
+  stps <- round(seq(1, length(Envs), length.out = 100))
   smips <- t(sapply(Envs, function(e) {
+    if(verbose & e %in% Envs[stps]){
     cat("\r", rep("", 50))
     cat("\rProgress: ", round(which(Envs == e) / length(Envs) * 100), "%", sep = "")
+    }
     pr <- weather$data$daily_rain[e, ]
     tmax <- weather$data$max_temp[e, ]
     tmin <- weather$data$min_temp[e, ]
@@ -67,4 +77,3 @@ add.SMI <- function(weather) {
   weather$data$smi <- smips
   return(weather)
 }
-
