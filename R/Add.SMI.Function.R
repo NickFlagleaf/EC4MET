@@ -3,17 +3,10 @@
 #' @description This function uses daily rainfall and temperature to estimate a SMI from a weather data object that has been output from
 #' get weather functions such as [get.SILO.weather()].
 #'
-#' @param weather A list of length 2. Weather data as outputted from the [get.SILO.weather()].
-#' @param verbose Logical. Should progress be printed? Default if TRUE.
-#' @param API.key Optional API key for  TERN API. You can register for a key on the TERN [webpages](https://account.tern.org.au/). Default NULL
-#' will download tiffs from the SLGA staging paths and may take longer to process large datasets. For large datasets with more than 100 unique locations,
-#' SLGA tiff files will be temporarily downloaded rather than read directly from the API.  
-#'
-#' `weather$data` is a list of data matrices for each covariate with rows as environments and days of the year as columns. Weather covariate names for list items should include:
+#' @param weather A list of length 2. Weather data as outputted from the [get.SILO.weather()]. Weather covariate names for list items should include:
 #' * `daily_rain`
 #' * `max_temp`
-#'
-#' `weather$Env.info` is a data frame of info for each environment but is not required for this function.
+#' @param verbose Logical. Should progress be printed? Default if TRUE.
 #'
 #' @details
 #' A simplified SMI is calculated based on a dynamic water balance model where soil moisture is proportionally dried by daily evapotranspiration 

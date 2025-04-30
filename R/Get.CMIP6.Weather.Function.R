@@ -209,10 +209,9 @@ get.CMIP6.weather <- function(Envs,
         tmp.dir <- paste(tmp.dir, "_", Years, sep = "")
         cat("\nDownloading .nc files...")
         options(timeout = max(50000, getOption("timeout")))
-        tictoc::tic()
-        print(Sys.time())
+
         utils::download.file(url = addrs, destfile = tmp.dir, method = "libcurl", quiet = T, mode = "wb")
-        print(tictoc::toc(quiet = T)$callback_msg)
+ 
         if (isTRUE(ncores > 1)) { # Run in parallel
           if (verbose) {
             cat("\nRunning in parallel...")

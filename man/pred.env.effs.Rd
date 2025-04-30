@@ -4,7 +4,7 @@
 \alias{pred.env.effs}
 \title{Predict environmental effects}
 \usage{
-pred.env.effs(train.ECs, new.ECs, E.effs)
+pred.env.effs(train.ECs, new.ECs, E.effs, verbose = TRUE)
 }
 \arguments{
 \item{train.ECs}{A data frame of weather and/or soil ECs for observed environments as output from the \code{\link[=get.W.ECs]{get.W.ECs()}} or \code{\link[=get.S.ECs]{get.S.ECs()}} functions.}
@@ -13,6 +13,8 @@ pred.env.effs(train.ECs, new.ECs, E.effs)
 
 \item{E.effs}{A data frame of several or a vector of a single environmental effects parameters fitted from a multi-environmnet trial analysis mixed model.
 Latent environmental effect factor loadings that decompose GxE can be defined as described by \href{https://doi.org/10.3389/fpls.2021.737462}{Smith et al (2021)}}
+
+\item{verbose}{Logical. Should progress be printed? Default if TRUE.}
 }
 \value{
 A data frame of environmental effect predictions for the new environments with environments as rows and environmental effect variates as columns.

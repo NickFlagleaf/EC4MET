@@ -11,7 +11,7 @@
 #' * `vp_deficit`
 #' * `radiation`
 #' 
-#' Additionally, if [add.SMI()] has also been use to estimate soil moisture index for the input `weather` object, them average SMI per stage ECs will also be calculated.
+#' Additionally, if [add.SMI()] has also been use to estimate soil moisture index for the input `weather` object, then average SMI per stage ECs will also be calculated.
 #'
 #' `weather$Env.info` is a data frame of info for each environment but is not required for this function.
 #'
@@ -357,21 +357,26 @@ get.W.ECs <- function(weather,
       stgs <- unlist(all.env.stages[e, ])
       MeanSMIper.stage[e, ] <- sapply(2:ncol(all.env.stages), function(s) mean(yr.smis[as.numeric(sowdays[e] + stgs[(s - 1):s])]))
       if (verbose == TRUE & e %in% stps) {
-        cat("\rStarting mean day lengths per stage ", round(e / length(Envs) * 100), "%", sep = "")
+        cat("\rStarting mean SMI per stage ", round(e / length(Envs) * 100), "%", sep = "")
       }
     }
     if (verbose) cat(" :)\n")
+    }else{
+      MeanSMIper.stage<-c()
     }
   }
   
 
   # Make weather matrix------
-  Wmat <- cbind.data.frame(ndays.ECs, rain.ECs, temp.ECS, sunECs, AveVPD.per.stage, MeanDLper.stage, MeanSMIper.stage)
-
+  if("smi" %in% names(weather$data)){
+    Wmat <- cbind.data.frame(ndays.ECs, rain.ECs, temp.ECS, sunECs, AveVPD.per.stage, MeanDLper.stage, MeanSMIper.stage)
+  }else{
+    Wmat <- cbind.data.frame(ndays.ECs, rain.ECs, temp.ECS, sunECs, AveVPD.per.stage, MeanDLper.stage)
+  }
   rownames(Wmat) <- Envs
 
   isnas <- sum(is.nan(unlist(Wmat)) | is.na(unlist(Wmat)))
-  if (verbose) cat(paste(isnas, "NAs returned"))
+  if (verbose) cat(paste(isnas, "NAs returned\n"))
 
   if (verbose & isnas > 0) {
     cat(paste("\n NAs at:\n", paste(Envs[!complete.cases(Wmat)], collapse = " ")))
@@ -380,7 +385,7 @@ get.W.ECs <- function(weather,
 
   ECvars <- apply(Wmat, 2, var)
   if (verbose & sum(ECvars == 0) > 0) {
-    cat(paste("\nECs with zero variance:\n", paste(names(ECvars)[ECvars == 0], "\n", collapse = " ")))
+    cat(paste("ECs with zero variance:\n", paste(names(ECvars)[ECvars == 0], "\n", collapse = " ")))
   }
 
   GS.dates <- t(sapply(1:nrow(all.env.stages), function(x) as.character(sow.dates[x] + unlist(all.env.stages[x, ]) - 1)))

@@ -6,9 +6,6 @@
 #' @param Envs Vector of environment names character strings.
 #' @param Lats Vector of latitude numeric values for each environment.
 #' @param Lons Vector of longitude numeric values for each environment.
-#' @param API.key Optional API key for  TERN API. You can register for a key on the TERN [webpages](https://account.tern.org.au/). Default NULL
-#' will download tiffs from the SLGA staging paths and may take longer to process large datasets. For large datasets with more than 100 unique locations,
-#' SLGA tiff files will be temporarily downloaded rather than read directly from the API. 
 #' @param ncores Number (integer) of cores to use for parallel processing. Use `1` to run sequentially in series. The default (`NULL`) will
 #' use the maximum available cores. If running in parallel, an output log text file will be created in the working directory.
 #' @param verbose Logical. Should progress be printed? Default if TRUE.
@@ -30,7 +27,6 @@
 get.S.ECs <- function(Envs,
                       Lats,
                       Lons,
-                      API.key = NULL,
                       ncores = NULL,
                       verbose = TRUE,
                       dlprompt = FALSE) {
@@ -83,7 +79,7 @@ get.S.ECs <- function(Envs,
     
     dl.n.limit<-100
     if(nrow(lonlats.sub) < dl.n.limit){
-      AWCdata<-api.extrct(rasters = rasters,crds = lonlats.sub,API.key = API.key)
+      AWCdata<-api.extrct(rasters = rasters,crds = lonlats.sub)
     }
     
     if(nrow(lonlats.sub) > dl.n.limit){

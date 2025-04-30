@@ -4,24 +4,16 @@
 \alias{add.SMI}
 \title{Add estimated Soil Moisture Index (SMI) to weather data}
 \usage{
-add.SMI(weather, verbose = TRUE, API.key = NULL)
+add.SMI(weather, verbose = TRUE)
 }
 \arguments{
-\item{weather}{A list of length 2. Weather data as outputted from the \code{\link[=get.SILO.weather]{get.SILO.weather()}}.}
-
-\item{verbose}{Logical. Should progress be printed? Default if TRUE.}
-
-\item{API.key}{Optional API key for  TERN API. You can register for a key on the TERN \href{https://account.tern.org.au/}{webpages}. Default NULL
-will download tiffs from the SLGA staging paths and may take longer to process large datasets. For large datasets with more than 100 unique locations,
-SLGA tiff files will be temporarily downloaded rather than read directly from the API.
-
-\code{weather$data} is a list of data matrices for each covariate with rows as environments and days of the year as columns. Weather covariate names for list items should include:
+\item{weather}{A list of length 2. Weather data as outputted from the \code{\link[=get.SILO.weather]{get.SILO.weather()}}. Weather covariate names for list items should include:
 \itemize{
 \item \code{daily_rain}
 \item \code{max_temp}
-}
+}}
 
-\code{weather$Env.info} is a data frame of info for each environment but is not required for this function.}
+\item{verbose}{Logical. Should progress be printed? Default if TRUE.}
 }
 \value{
 The same \code{weather} list object as inputted with the addition of a matrix of daily SMI values in \code{...$data$smi}.

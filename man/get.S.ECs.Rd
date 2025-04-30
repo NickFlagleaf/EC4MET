@@ -4,15 +4,7 @@
 \alias{get.S.ECs}
 \title{Get soil data from SLGA}
 \usage{
-get.S.ECs(
-  Envs,
-  Lats,
-  Lons,
-  API.key = NULL,
-  ncores = NULL,
-  verbose = TRUE,
-  dlprompt = FALSE
-)
+get.S.ECs(Envs, Lats, Lons, ncores = NULL, verbose = TRUE, dlprompt = FALSE)
 }
 \arguments{
 \item{Envs}{Vector of environment names character strings.}
@@ -20,10 +12,6 @@ get.S.ECs(
 \item{Lats}{Vector of latitude numeric values for each environment.}
 
 \item{Lons}{Vector of longitude numeric values for each environment.}
-
-\item{API.key}{Optional API key for  TERN API. You can register for a key on the TERN \href{https://account.tern.org.au/}{webpages}. Default NULL
-will download tiffs from the SLGA staging paths and may take longer to process large datasets. For large datasets with more than 100 unique locations,
-SLGA tiff files will be temporarily downloaded rather than read directly from the API.}
 
 \item{ncores}{Number (integer) of cores to use for parallel processing. Use \code{1} to run sequentially in series. The default (\code{NULL}) will
 use the maximum available cores. If running in parallel, an output log text file will be created in the working directory.}
