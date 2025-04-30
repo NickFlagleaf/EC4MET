@@ -10,7 +10,7 @@ test_that("Get W ECs works", {
   obs.weather.ECs <- get.W.ECs(
     weather = tst.wthr,
     sow.dates = c("05/05/2020", "20/06/2021"),
-    verbose=F
+    verbose = F
   )
 
   expect_equal(

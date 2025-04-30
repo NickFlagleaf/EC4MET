@@ -16,11 +16,12 @@
 #' @param dlprompt Logical. Should the user be prompted approve the total download size? Default it TRUE.
 #'
 #' @details
-#' The CMPI6 QDC dataset includes climate projections for historical (1985-2014) and two future periods of years (2035-2064 and 2070-2099).
-#' All `Years` values must be within these time periods. The QDC method benchmarks CMIP6 against the observational data from the [BARRA-R2](https://opus.nci.org.au/spaces/NDP/pages/264241166/BOM+BARRA2+ob53)
-#' dataset so should be used in combination with the [get.BARRA.weather()] rather than the [get.SILO.weather()] function for observed environments that are outside of the 1985-2014 time period of the CMIP6 QDC
-#' historical time period.
-#' 
+#' The CMPI6 QDC dataset is hosted on the [CSIRO data server](https://data-cbr.csiro.au/thredds/catalog/catch_all/qdc-cmip6/QDC-CMIP6/BARRA-R2/catalog.html)
+#' includes climate projections for historical (1985-2014) and two future periods of years (2035-2064 and 2070-2099). All `Years` values must be within these time periods.
+#' The QDC method benchmarks CMIP6 against the observational data from the [BARRA-R2](https://opus.nci.org.au/spaces/NDP/pages/264241166/BOM+BARRA2+ob53)
+#' dataset so should be used in combination with the [get.BARRA.weather()] rather than the [get.SILO.weather()] function for observed environments that are
+#' outside of the 1985-2014 time period of the CMIP6 QDC historical time period.
+#'
 #' Weather variables returned include:
 #' * `daily_rain` - Daily rainfall (mm)
 #' * `max_temp` - Maximum temperature (°C)
@@ -28,6 +29,9 @@
 #' * `vp_deficit` - Vapour pressure deficit (hPa)
 #' * `radiation` - Solar exposure, consisting of both direct and diffuse components (MJ m<sup>-2</sup>)
 #' * `day_lengths` - Time between sunrise and sunset (h) not taken from CMIP6 QDC
+#'
+#' VPD in hPa is calculated as \eqn{ VPD = 10(es - ea) }, where \eqn{ es = 0.6108 \times \exp(\frac{17.27 \times T_{ave}}{T_{ave} + 237.3}) },
+#' \eqn{T_{ave} } is the mean temperature in °C, \deqn{ ea = \frac{RH}{100} \times es }, and \eqn{RH} is the relative humidity (%).
 #'
 #' Possible options for Global Climate Models (GCM):
 #' * `ACCESS-CM2` - A much hotter future, and drier in most regions except the southeast
@@ -41,7 +45,7 @@
 #'
 #' For further details see [Grose et al. 2023](https://doi.org/10.1016/j.cliser.2023.100368)
 #'
-#' Possible options for Shared Socio-economic Pathways (SSP) and equivalent Representative Concentration Pathways (RCP) 
+#' Possible options for Shared Socio-economic Pathways (SSP) and equivalent Representative Concentration Pathways (RCP)
 #' with expected temperature increase range:
 #' * `ssp126` - Sustainability (RCP2.6; 1.0-1.8°C)
 #' * `ssp245` - Middle of the road (RCP4.5; 1.3-2.4°C)
@@ -83,7 +87,6 @@ get.CMIP6.weather <- function(Envs,
                               ncores = NULL,
                               verbose = TRUE,
                               dlprompt = FALSE) {
-  
   pos.GCM <- c("ACCESS-CM2", "ACCESS-ESM1-5", "CMCC-ESM2", "CNRM-ESM2-1", "EC-Earth3", "MPI-ESM1-2-HR", "NorESM2-MM", "UKESM1-0-LL")
   runs.codes <- c("r4i1p1f1", "r6i1p1f1", "r1i1p1f1", "r1i1p1f2", "r1i1p1f1", "r1i1p1f1", "r1i1p1f1", "r1i1p1f2")
   names(runs.codes) <- pos.GCM
@@ -107,19 +110,19 @@ get.CMIP6.weather <- function(Envs,
     "qdc-multiplicative-monthly-q100-linear-rsdscs-clipped"
   )
   names(method) <- vars
- 
+
   dl.size <- 647893838 * length(GCMs) * length(SSPs) * length(vars) * length(Years)
   if (verbose) download_data(dlprompt, dl.size)
-  
+
   if (is.null(ncores)) {
     ncores <- min(parallel::detectCores(), length(vars))
   }
 
-  #Error checks
+  # Error checks
   if (verbose & !is.numeric(Lats)) stop("Lat values not numeric")
   if (verbose & !is.numeric(Lons)) stop("Lon values not numeric")
-  if(verbose & sum(duplicated(Envs))>0) stop(paste("Duplicated Envs:",Envs[duplicated(Envs)]))
-    
+  if (verbose & sum(duplicated(Envs)) > 0) stop(paste("Duplicated Envs:", Envs[duplicated(Envs)]))
+
   if (verbose & length(unique(c(length(Envs), length(Lats), length(Lons)))) > 1) {
     print(sapply(list("Envs" = Envs, "Lats" = Lats, "Lons" = Lons), length))
     stop("Lengths of Envs, Lats or Lons differ")
@@ -127,12 +130,12 @@ get.CMIP6.weather <- function(Envs,
 
   yrs.in.spans <- sapply(Years, function(x) sum(sapply(year.spans, function(s) sum(x %in% s)) == 1))
   if (verbose & sum(yrs.in.spans == 0) > 0) {
-    stop(paste("Years outside of CMIP6 range:",Years[yrs.in.spans == 0]))
+    stop(paste("Years outside of CMIP6 range:", Years[yrs.in.spans == 0]))
   }
 
   if (verbose & sum(!GCMs %in% pos.GCM) > 0) {
-    cat("\nPossible options include:", pos.GCM,"\n")
-    stop(paste("\nInvalid GCM names:", paste(GCMs[!GCMs %in% pos.GCM],collapse=" ")))
+    cat("\nPossible options include:", pos.GCM, "\n")
+    stop(paste("\nInvalid GCM names:", paste(GCMs[!GCMs %in% pos.GCM], collapse = " ")))
   }
   if (verbose & sum(!SSPs %in% pos.SSP) > 0) {
     cat("\nPossible options include:", pos.SSP)
@@ -168,22 +171,36 @@ get.CMIP6.weather <- function(Envs,
         batch.years <- sapply(year.spans, function(x) Years[Years %in% x])
 
         # Bulk download for 2035-2064
-        addrs1985.2014 <- paste("https://data-cbr.csiro.au/thredds/fileServer/catch_all/qdc-cmip6/QDC-CMIP6/BARRA-R2/obs/historical/v1/day/", vars[v],
-          "/AUS-05i/1985-2014/v20241104/", vars[v], "_day_BARRA-R2_historical_v1_AUS-05i_", batch.years$`1985-2014`, ".nc",
-          sep = ""
-        )
-        addrs2035.2064 <- paste("https://data-cbr.csiro.au/thredds/fileServer/catch_all/qdc-cmip6/QDC-CMIP6/BARRA-R2/",
-          GCMs[g], "/", SSPs[s], "/", runs.codes[GCMs[g]], "/day/", vars[v], "/AUS-05i/2035-2064/v20241104/",
-          vars[v], "_day_", GCMs[g], "_", SSPs[s], "_", runs.codes[GCMs[g]], "_AUS-05i_", batch.years$`2035-2064`, "_", method[vars[v]],
-          "_BARRA-R2-baseline-1985-2014_model-baseline-1985-2014.nc",
-          sep = ""
-        )
-        addrs2070.2099 <- paste("https://data-cbr.csiro.au/thredds/fileServer/catch_all/qdc-cmip6/QDC-CMIP6/BARRA-R2/",
-          GCMs[g], "/", SSPs[s], "/", runs.codes[GCMs[g]], "/day/", vars[v], "/AUS-05i/2070-2099/v20241104/",
-          vars[v], "_day_", GCMs[g], "_", SSPs[s], "_", runs.codes[GCMs[g]], "_AUS-05i_", batch.years$`2070-2099`, "_", method[vars[v]],
-          "_BARRA-R2-baseline-1985-2014_model-baseline-1985-2014.nc",
-          sep = ""
-        )
+        if (length(batch.years$`1985-2014`) > 0) {
+          addrs1985.2014 <- paste("https://data-cbr.csiro.au/thredds/fileServer/catch_all/qdc-cmip6/QDC-CMIP6/BARRA-R2/obs/historical/v1/day/", vars[v],
+            "/AUS-05i/1985-2014/v20241104/", vars[v], "_day_BARRA-R2_historical_v1_AUS-05i_", batch.years$`1985-2014`, ".nc",
+            sep = ""
+          )
+        } else {
+          addrs1985.2014 <- NULL
+        }
+
+        if (length(batch.years$`2035-2064`) > 0) {
+          addrs2035.2064 <- paste("https://data-cbr.csiro.au/thredds/fileServer/catch_all/qdc-cmip6/QDC-CMIP6/BARRA-R2/",
+            GCMs[g], "/", SSPs[s], "/", runs.codes[GCMs[g]], "/day/", vars[v], "/AUS-05i/2035-2064/v20241104/",
+            vars[v], "_day_", GCMs[g], "_", SSPs[s], "_", runs.codes[GCMs[g]], "_AUS-05i_", batch.years$`2035-2064`, "_", method[vars[v]],
+            "_BARRA-R2-baseline-1985-2014_model-baseline-1985-2014.nc",
+            sep = ""
+          )
+        } else {
+          addrs2035.2064 <- NULL
+        }
+
+        if (length(batch.years$`2070-2099`) > 0) {
+          addrs2070.2099 <- paste("https://data-cbr.csiro.au/thredds/fileServer/catch_all/qdc-cmip6/QDC-CMIP6/BARRA-R2/",
+            GCMs[g], "/", SSPs[s], "/", runs.codes[GCMs[g]], "/day/", vars[v], "/AUS-05i/2070-2099/v20241104/",
+            vars[v], "_day_", GCMs[g], "_", SSPs[s], "_", runs.codes[GCMs[g]], "_AUS-05i_", batch.years$`2070-2099`, "_", method[vars[v]],
+            "_BARRA-R2-baseline-1985-2014_model-baseline-1985-2014.nc",
+            sep = ""
+          )
+        } else {
+          addrs2070.2099 <- NULL
+        }
 
         addrs <- c(addrs1985.2014, addrs2035.2064, addrs2070.2099)
 
@@ -191,15 +208,15 @@ get.CMIP6.weather <- function(Envs,
         tmp.dir <- gsub("\\", "/", tmp.dir, fixed = T)
         tmp.dir <- paste(tmp.dir, "_", Years, sep = "")
         cat("\nDownloading .nc files...")
-        options(timeout = max(500, getOption("timeout")))
-        utils::download.file(url = addrs, destfile = tmp.dir, method = "libcurl", quiet = T, mode = "wb", )
+        options(timeout = max(50000, getOption("timeout")))
 
-
+        utils::download.file(url = addrs, destfile = tmp.dir, method = "libcurl", quiet = T, mode = "wb")
+ 
         if (isTRUE(ncores > 1)) { # Run in parallel
           if (verbose) {
             cat("\nRunning in parallel...")
           }
-          file.remove("CMIP6_download_log.txt")
+          file.remove("CMIP6_download_log.txt", showWarnings = FALSE)
           cl <- parallel::makeCluster(ncores, outfile = "CMIP6_download_log.txt")
           doParallel::registerDoParallel(cl)
           if (verbose) {
@@ -211,17 +228,17 @@ get.CMIP6.weather <- function(Envs,
 
         if (isTRUE(ncores == 1)) { # Run in series
           if (verbose) {
-            cat("\nRunning in series")
+            cat("\nRunning in series...")
             `%dopar%` <- foreach::`%do%`
           }
         }
 
-        all.yrs.weather <- foreach::foreach(y = seq_along(tmp.dir), .combine = rbind, .multicombine = T) %dopar% {
+        all.yrs.weather <- foreach::foreach(y = seq_along(tmp.dir), .combine = rbind, .multicombine = T, .export = "nc.process") %dopar% {
           if (verbose) {
             cat(Years[y], "|", sep = "")
           }
           nc.data <- nc.process(tmp.dir[y])
-          yr<- stringr::str_sub(dimnames(nc.data)[[3]][1],1,4)
+          yr <- stringr::str_sub(dimnames(nc.data)[[3]][1], 1, 4)
           file.remove(tmp.dir[y])
           lon.ind <- sapply(Lons, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[1]]) - as.numeric(x))))
           lat.ind <- sapply(Lats, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[2]]) - as.numeric(x))))
@@ -243,8 +260,8 @@ get.CMIP6.weather <- function(Envs,
           }
           Sys.sleep(5)
           file.remove("CMIP6_download_log.txt")
-          gc(full = T)
         }
+        gc(full = T)
         colnames(all.yrs.weather) <- 1:ncol(all.yrs.weather)
         all.vars.weather[[v]] <- all.yrs.weather
       }
@@ -253,9 +270,11 @@ get.CMIP6.weather <- function(Envs,
       names(all.vars.weather) <- c("daily_rain", "max_temp", "min_temp", "relhumidity", "radiation")
 
       # Calculate VPD
-      all.vars.weather$vp_deficit <- vpdfun(tmin = all.vars.weather$min_temp,
-                                            tmax = all.vars.weather$max_temp,
-                                            relh = all.vars.weather$relhumidity)
+      all.vars.weather$vp_deficit <- vpdfun(
+        tmin = all.vars.weather$min_temp,
+        tmax = all.vars.weather$max_temp,
+        relh = all.vars.weather$relhumidity
+      )
       all.vars.weather <- all.vars.weather[!names(all.vars.weather) == "relhumidity"]
 
       Lats.full <- as.numeric(sapply(rownames(all.vars.weather$radiation), function(x) stringr::str_split(x, pattern = "_")[[1]][3]))

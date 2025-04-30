@@ -2,7 +2,7 @@
 % Please edit documentation in R/Get.Soil.EC_function.R
 \name{get.S.ECs}
 \alias{get.S.ECs}
-\title{Get environmental covariates from soils data}
+\title{Get soil data from SLGA}
 \usage{
 get.S.ECs(Envs, Lats, Lons, ncores = NULL, verbose = TRUE, dlprompt = FALSE)
 }

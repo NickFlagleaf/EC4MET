@@ -1,4 +1,4 @@
-#' @title Get environmental covariates from soils data
+#' @title Get soil data from SLGA
 #'
 #' @description A function to derive soil Environmental Covariates (ECs) for multiple soil attributes at multiple depths
 #' from the [SLGA](https://esoil.io/TERNLandscapes/Public/Pages/SLGA/index.html) data resource.
@@ -36,10 +36,10 @@ get.S.ECs <- function(Envs,
   lonlats.full <- data.frame("Loc" = paste(Lons, Lats, sep = "_"), "longitude" = Lons, "latitude" = Lats)
   lonlats.sub <- lonlats.full[!duplicated(lonlats.full$Loc), ]
 
-  
-  dl.size <- 1304 * length(atts) * 6
+
+  dl.size <- 300000000 * length(atts) * 6
   if (verbose) download_data(dlprompt, dl.size)
-  
+
   if (is.null(ncores)) {
     ncores <- min(parallel::detectCores(), length(atts))
   }
@@ -66,9 +66,9 @@ get.S.ECs <- function(Envs,
     `%dopar%` <- foreach::`%dopar%`
   }
 
-  all.env.soil <- foreach::foreach(a = seq_along(atts), .combine = cbind, .multicombine = T) %dopar% {
+  all.env.soil <- foreach::foreach(a = seq_along(atts), .combine = cbind, .multicombine = T,.export = "dl.extrct.tifs") %dopar% {
     if (verbose == TRUE) {
-      cat("\nStarting", atts[a], "\n")
+      cat("\nStarting", atts[a])
     }
     rasters <- SLGACloud::getProductMetaData(
       Detail = "High", Attribute = atts[a],
@@ -76,43 +76,23 @@ get.S.ECs <- function(Envs,
       isCurrentVersion = 1
     )
     depths <- paste(rasters$UpperDepth_m, "-", rasters$LowerDepth_m, "m", sep = "")
-    all.depth.soil <- matrix(NA,
-      nrow = length(Envs),
-      ncol = length(depths),
-      dimnames = list(Envs, paste(atts[a], depths, sep = "_"))
-    )
-    for (d in 1:length(depths)) {
-      if (verbose == TRUE) {
-        cat("\n", atts[a], "at", depths[d], "\n")
-      }
-      r <- NULL
-      try(r <- terra::rast(paste("/vsicurl/", rasters$StagingPath[d], sep = "")))
-      if (!is.null(r)) {
-        vals <- unlist(terra::extract(r, as.matrix(lonlats.sub[, c("longitude", "latitude")])))
-        trys <- 10
-        while (sum(is.na(vals)) > 0 & trys > 0) {
-          trys <- trys - 1
-          na.ind <- which(is.na(vals))
-          vals[is.na(vals)] <- sapply(na.ind, function(x) {
-            mean(na.omit(sapply(list(
-              c(0.01, 0.01),
-              c(-0.01, 0.01),
-              c(0.01, -0.01),
-              c(-0.01, 0.01)
-            ), function(c) {
-              unlist(terra::extract(r, as.matrix(lonlats.sub[x, c("longitude", "latitude")]) + c))
-            })))
-          })
-        }
-        names(vals) <- lonlats.sub$Loc
-        all.depth.soil[, d] <- vals[lonlats.full$Loc]
-      }
+    
+    dl.n.limit<-100
+    if(nrow(lonlats.sub) < dl.n.limit){
+      AWCdata<-api.extrct(rasters = rasters,crds = lonlats.sub)
     }
+    
+    if(nrow(lonlats.sub) > dl.n.limit){
+      AWCdata<-dl.extrct.tifs(addrs = rasters$StagingPath,crds = lonlats.sub)
+    }
+    AWCdata<-data.frame(AWCdata[lonlats.full$Loc,])
+    colnames(AWCdata)<-paste(atts[a], depths, sep = "_")
+    
     gc()
-    if (verbose & sum(!complete.cases(all.depth.soil)) > 0) {
-      cat("\n NAs returned for:\n", rownames(all.depth.soil)[!complete.cases(all.depth.soil)], "\n")
+    if (verbose & sum(!complete.cases(AWCdata)) > 0) {
+      cat("\n NAs returned for:\n", rownames(AWCdata)[!complete.cases(AWCdata)], "\n")
     }
-    return(all.depth.soil)
+    return(AWCdata)
   }
   if (isTRUE(ncores > 1)) { # Run in parallel
     parallel::stopCluster(cl)
@@ -121,9 +101,11 @@ get.S.ECs <- function(Envs,
       cat("\nFinished parallel :)\n")
     }
     Sys.sleep(2)
+    closeAllConnections()
     file.remove("SLGA_soil_download_log.txt")
-  }
+    }
 
+  rownames(all.env.soil)<-Envs
   gc(full = T)
   all.env.soil <- all.env.soil[, !colnames(all.env.soil) == "Env"]
   all.env.soil <- apply(all.env.soil, 2, function(x) {
@@ -132,6 +114,18 @@ get.S.ECs <- function(Envs,
     newx[is.na(newx)] <- med
     return(newx)
   })
+  
   all.env.soil <- all.env.soil[, apply(all.env.soil, 2, stats::var) > 0]
+  
+  isnas <- sum(is.nan(unlist(all.env.soil)) | is.na(unlist(all.env.soil)))
+  if (verbose) cat(paste(isnas, "NAs returned"))
+  
+  if (verbose & isnas > 0) {
+    cat(paste("\n NAs at:\n", paste(all.env.soil[!complete.cases(all.env.soil)], collapse = " ")))
+    cat(paste("\n For:\n", paste(colnames(all.env.soil)[!complete.cases(t(all.env.soil))], collapse = " ")))
+  }
+  
   return(all.env.soil)
 }
+
+

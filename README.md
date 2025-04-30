@@ -1,6 +1,4 @@
-
-
-# EC4MET <a href="https://github.com/NickFlagleaf/EC4MET/tree/main"><img src="man/figures/logo.png" align="right" height="200" alt="" /></a>
+# EC4MET <a href="https://github.com/NickFlagleaf/EC4MET/tree/main"><img src="man/figures/logo.png" align="right" height="200"/></a>
 
 <!-- badges: start -->
 
@@ -8,7 +6,7 @@
 
 <!-- badges: end -->
 
-##   Derive ECs for METs
+## Derive ECs for METs
 
 Derive environmental covariates (ECs) for crop trial environments to model environmental effects and genotype by environment interactions
 
@@ -26,8 +24,9 @@ devtools::install_github("NickFlagleaf/EC4MET",build_vignettes = T)
 
 ### Example work flow
 
-Load package and example dataset of info for trial environments between 2020 and 2022: 
-```
+Load package and example dataset of info for trial environments between 2020 and 2022:
+
+```         
 library(EC4MET) 
 data("CAIGE20_22envs")
 ```

@@ -1,3 +1,7 @@
 docs
 .Rproj.user
 inst/doc
+.Rhistory
+/doc/
+/Meta/
+workings.R
