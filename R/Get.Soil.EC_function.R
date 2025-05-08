@@ -88,7 +88,7 @@ get.S.ECs <- function(Envs,
     AWCdata<-data.frame(AWCdata[lonlats.full$Loc,])
     colnames(AWCdata)<-paste(atts[a], depths, sep = "_")
     
-    gc()
+    gc(full = T)
     if (verbose & sum(!complete.cases(AWCdata)) > 0) {
       cat("\n NAs returned for:\n", rownames(AWCdata)[!complete.cases(AWCdata)], "\n")
     }
@@ -114,8 +114,6 @@ get.S.ECs <- function(Envs,
     newx[is.na(newx)] <- med
     return(newx)
   })
-  
-  all.env.soil <- all.env.soil[, apply(all.env.soil, 2, stats::var) > 0]
   
   isnas <- sum(is.nan(unlist(all.env.soil)) | is.na(unlist(all.env.soil)))
   if (verbose) cat(paste(isnas, "NAs returned"))
