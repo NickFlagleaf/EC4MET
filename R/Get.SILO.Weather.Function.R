@@ -120,7 +120,7 @@ get.SILO.weather <- function(Envs,
 
     if (isTRUE(ncores > 1)) { # Run in parallel
       if (verbose) cat("\nRunning in parallel...")
-      file.remove("SILO_download_log.txt", showWarnings = FALSE)
+      if("SILO_download_log.txt" %in% dir()){file.remove("SILO_download_log.txt", showWarnings = FALSE)}
       cl <- parallel::makeCluster(ncores, outfile = "SILO_download_log.txt")
       doParallel::registerDoParallel(cl)
       if (verbose) {
@@ -143,8 +143,8 @@ get.SILO.weather <- function(Envs,
       tmp.dir <- tempfile()
       tmp.dir <- gsub("\\", "/", tmp.dir, fixed = T)
       tmp.dir <- paste(tmp.dir, "_SILO", vars[v], "_", years, "_", sep = "")
-      options(timeout = max(500, getOption("timeout")))
-      utils::download.file(url = addrs, destfile = tmp.dir, method = "libcurl", quiet = T, mode = "wb", )
+      options(timeout = max(50000, getOption("timeout")))
+      utils::download.file(url = addrs, destfile = tmp.dir, method = "libcurl", quiet = T, mode = "wb")
 
       for (y in seq_along(years)) {
         if (verbose) cat(years[y], "|", sep = "")
@@ -175,9 +175,10 @@ get.SILO.weather <- function(Envs,
     if (isTRUE(ncores > 1)) { # if running in parallel
       parallel::stopCluster(cl)
       doParallel::stopImplicitCluster()
+      closeAllConnections()
       if (verbose) cat("\nFinished parallel :)")
       Sys.sleep(2)
-      file.remove("SILO_download_log.txt")
+      if("SILO_download_log.txt" %in% dir()){file.remove("SILO_download_log.txt")}
       gc(full = T)
     }
   }

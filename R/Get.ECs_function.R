@@ -28,8 +28,8 @@
 #'
 #' Custom values can be used to define other crop phenologies and growth rates
 #'
-#' @param DTH.TT Optional. Estimated thermal time from sowing that heading growth stage occurs. Default value is 1285.
-#' @param verbose Logical. Should progress be printed? Default if TRUE.
+#' @param DTH.TT Optional. Estimated thermal time from sowing that heading growth stage occurs. Default value = 1285.
+#' @param verbose Logical. Should progress be printed? Default = TRUE.
 #'
 #' @details
 #' ECs are calculated for periods between crop growth stages that are estimated based on a thermal time degree days model defined by the `cardT` parameters.

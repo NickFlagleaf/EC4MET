@@ -6,7 +6,7 @@
 #' @param new.ECs A data frame of weather and/or soil ECs for new environments as output from the [get.W.ECs()] or [get.S.ECs()] functions.
 #' @param E.effs A data frame of several or a vector of a single environmental effects parameters fitted from a multi-environmnet trial analysis mixed model.
 #' Latent environmental effect factor loadings that decompose GxE can be defined as described by [Smith et al (2021)](https://doi.org/10.3389/fpls.2021.737462)
-#' @param verbose Logical. Should progress be printed? Default if TRUE.
+#' @param verbose Logical. Should progress be printed? Default = TRUE.
 #'
 #' @returns A data frame of environmental effect predictions for the new environments with environments as rows and environmental effect variates as columns.
 #'
