@@ -12,8 +12,8 @@
 #' @param SSPs Vector of SSP names to get data from. For options see Details below.
 #' @param ncores Number (integer) of cores to use for parallel processing of gridded data up to 5 cores. Use `1` to run in series. The default (`NULL`) will
 #' use the maximum available cores up to 5. If running in parallel, an output log text file will be created in the working directory.
-#' @param verbose Logical. Should progress be printed? Default if TRUE.
-#' @param dlprompt Logical. Should the user be prompted approve the total download size? Default it TRUE.
+#' @param verbose Logical. Should progress be printed? Default = TRUE.
+#' @param dlprompt Logical. Should the user be prompted approve the total download size? Default = TRUE.
 #'
 #' @details
 #' The CMPI6 QDC dataset is hosted on the [CSIRO data server](https://data-cbr.csiro.au/thredds/catalog/catch_all/qdc-cmip6/QDC-CMIP6/BARRA-R2/catalog.html)
