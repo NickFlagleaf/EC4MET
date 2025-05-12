@@ -140,7 +140,11 @@ api.extrct<-function(rasters,crds){
   
   for (d in 1:nrow(rasters)) {
     r <- terra::rast(paste("/vsicurl/",rasters$StagingPath[d], sep = ""))
+    if(nrow(crds)==1){
+    vals <- unique(terra::extract(x = r, y = crds[,c("longitude", "latitude")], search_radius = 50)[, 2])
+    }else{
     vals <- terra::extract(x = r, y = crds[,c("longitude", "latitude")], search_radius = 50)[, 2]
+    }
     trys <- 10
     rad <- 500
     while (trys > 0 & sum(is.na(vals)) > 0) { # try filling in NAS with increasing search radius

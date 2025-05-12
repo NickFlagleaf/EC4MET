@@ -25,7 +25,7 @@ get.W.ECs(
 \item \code{radiation}
 }
 
-Additionally, if \code{\link[=add.SMI]{add.SMI()}} has also been use to estimate soil moisture index for the input \code{weather} object, them average SMI per stage ECs will also be calculated.
+Additionally, if \code{\link[=add.SMI]{add.SMI()}} has also been use to estimate soil moisture index for the input \code{weather} object, then average SMI per stage ECs will also be calculated.
 
 \code{weather$Env.info} is a data frame of info for each environment but is not required for this function.}
 
