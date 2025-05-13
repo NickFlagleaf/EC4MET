@@ -115,8 +115,9 @@ get.BARRA.weather <- function(Envs,
       tmp.dir <- tempfile()
       tmp.dir <- gsub("\\", "/", tmp.dir, fixed = T)
       tmp.dir <- paste(tmp.dir, "_", 1:length(addrs), sep = "")
-      options(timeout = max(50000, getOption("timeout")))
-      utils::download.file(url = addrs, destfile = tmp.dir, method = "libcurl", quiet = T, mode = "wb")
+      options(timeout = max(80000, getOption("timeout")))
+      utils::download.file(url = addrs[1:6], destfile = tmp.dir[1:6], method = "libcurl", quiet = T, mode = "wb")
+      utils::download.file(url = addrs[7:12], destfile = tmp.dir[7:12], method = "libcurl", quiet = T, mode = "wb")
 
       for (m in 1:length(mons)) {
         if (verbose) {

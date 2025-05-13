@@ -14,7 +14,7 @@ pred.env.effs(train.ECs, new.ECs, E.effs, verbose = TRUE)
 \item{E.effs}{A data frame of several or a vector of a single environmental effects parameters fitted from a multi-environmnet trial analysis mixed model.
 Latent environmental effect factor loadings that decompose GxE can be defined as described by \href{https://doi.org/10.3389/fpls.2021.737462}{Smith et al (2021)}}
 
-\item{verbose}{Logical. Should progress be printed? Default if TRUE.}
+\item{verbose}{Logical. Should progress be printed? Default = TRUE.}
 }
 \value{
 A data frame of environmental effect predictions for the new environments with environments as rows and environmental effect variates as columns.

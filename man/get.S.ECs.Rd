@@ -16,9 +16,9 @@ get.S.ECs(Envs, Lats, Lons, ncores = NULL, verbose = TRUE, dlprompt = FALSE)
 \item{ncores}{Number (integer) of cores to use for parallel processing. Use \code{1} to run sequentially in series. The default (\code{NULL}) will
 use the maximum available cores. If running in parallel, an output log text file will be created in the working directory.}
 
-\item{verbose}{Logical. Should progress be printed? Default if TRUE.}
+\item{verbose}{Logical. Should progress be printed? Default = TRUE.}
 
-\item{dlprompt}{Logical. Should the user be prompted approve the total download size? Default it FALSE.}
+\item{dlprompt}{Logical. Should the user be prompted approve the total download size? Default = FALSE.}
 }
 \value{
 A data frame of soil EC values with environment names as rows and covariates as columns.

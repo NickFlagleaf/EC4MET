@@ -26,9 +26,9 @@ get.SILO.weather(
 \item{ncores}{Number (integer) of cores to use for parallel processing of gridded data up to 5 cores. Use \code{1} to run in series. The default (\code{NULL}) will
 use the maximum available cores up to 5. If running in parallel, an output log text file will be created in the working directory.}
 
-\item{verbose}{Logical. Should progress be printed? Default if TRUE.}
+\item{verbose}{Logical. Should progress be printed? Default = TRUE.}
 
-\item{dlprompt}{Logical. Should the user be prompted approve the total download size? Default it FALSE}
+\item{dlprompt}{Logical. Should the user be prompted approve the total download size? Default = FALSE}
 }
 \value{
 A list of length 2:
