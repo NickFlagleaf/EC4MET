@@ -46,9 +46,9 @@ Custom values can be used to define other crop growth parameters.}
 
 Custom values can be used to define other crop phenologies and growth rates}
 
-\item{DTH.TT}{Optional. Estimated thermal time from sowing that heading growth stage occurs. Default value is 1285.}
+\item{DTH.TT}{Optional. Estimated thermal time from sowing that heading growth stage occurs. Default value = 1285.}
 
-\item{verbose}{Logical. Should progress be printed? Default if TRUE.}
+\item{verbose}{Logical. Should progress be printed? Default = TRUE.}
 }
 \value{
 A list of length 2:
