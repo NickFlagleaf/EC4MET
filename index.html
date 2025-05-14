@@ -74,74 +74,14 @@
 <div class="section level2">
 <h2 id="derive-ecs-for-mets">Derive ECs for METs<a class="anchor" aria-label="anchor" href="#derive-ecs-for-mets"></a>
 </h2>
-<p>Derive environmental covariates (ECs) for crop trial environments to model environmental effects and genotype by environment interactions</p>
+<p>EC4MET derives environmental data and defines covariates (ECs) for crop trial environments in Australia to model environmental effects and genotype by environment interactions.</p>
+<p>An example workflow is detailed in the <a href="https://nickflagleaf.github.io/EC4MET/articles/EC4MET-workflow-example.html">vignette</a>.</p>
 <hr>
 <div class="section level3">
 <h3 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h3>
 <p>To install from Github using devtools:</p>
 <pre><code><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"NickFlagleaf/EC4MET"</span>,build_vignettes <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></code></pre>
-<hr>
-</div>
-<div class="section level3">
-<h3 id="example-work-flow">Example work flow<a class="anchor" aria-label="anchor" href="#example-work-flow"></a>
-</h3>
-<p>Load package and example dataset of info for trial environments between 2020 and 2022:</p>
-<pre><code><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://nickflagleaf.github.io/EC4MET/">EC4MET</a></span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"CAIGE20_22envs"</span><span class="op">)</span></span></code></pre>
-<p>The example data set includes environment names, lat and lon values and sowing dates for 18 trial environments as well as fitted environmental main effects and factor loadings from a factor analytic mixed model multi-environment trial analysis:</p>
-<pre><code><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">CAIGE20_22envs</span><span class="op">)</span></span></code></pre>
-<p>Get daily weather data from <a href="https://www.longpaddock.qld.gov.au/silo/" class="external-link">SILO</a> for each observed environment with the <code>get.SILO.weather</code> function:</p>
-<pre><code><span><span class="va">obs.wthr</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/get.SILO.weather.html">get.SILO.weather</a></span><span class="op">(</span>Envs <span class="op">=</span> <span class="va">CAIGE20_22envs</span><span class="op">$</span><span class="va">Environment</span>,</span>
-<span>                             Lats <span class="op">=</span> <span class="va">CAIGE20_22envs</span><span class="op">$</span><span class="va">Lat</span>,</span>
-<span>                             Lons <span class="op">=</span> <span class="va">CAIGE20_22envs</span><span class="op">$</span><span class="va">Long</span>,</span>
-<span>                             Years <span class="op">=</span> <span class="va">CAIGE20_22envs</span><span class="op">$</span><span class="va">Year</span><span class="op">)</span></span></code></pre>
-<p>Calculate ECs based on the daily weather data with the <code>get.W.ECs</code> function:</p>
-<pre><code><span><span class="va">obs.weather.ECs</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/get.W.ECs.html">get.W.ECs</a></span><span class="op">(</span>weather <span class="op">=</span> <span class="va">obs.wthr</span>,</span>
-<span>                             sow.dates <span class="op">=</span> <span class="va">CAIGE20_22envs</span><span class="op">$</span><span class="va">Sowing.date</span><span class="op">)</span></span></code></pre>
-<p>Derive ECs from <a href="https://www.clw.csiro.au/aclep/soilandlandscapegrid/GetData-R_package.html" class="external-link">SLGA</a> soil data with the <code>get.S.ECs</code> function:</p>
-<pre><code><span><span class="va">obs.soil.ECs</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/get.S.ECs.html">get.S.ECs</a></span><span class="op">(</span>Envs <span class="op">=</span> <span class="va">CAIGE20_22envs</span><span class="op">$</span><span class="va">Environment</span>,</span>
-<span>                          Lats <span class="op">=</span> <span class="va">CAIGE20_22envs</span><span class="op">$</span><span class="va">Lat</span>,</span>
-<span>                          Lons <span class="op">=</span> <span class="va">CAIGE20_22envs</span><span class="op">$</span><span class="va">Long</span><span class="op">)</span></span></code></pre>
-<p>Load example dataset for 1697 locations in the Australian grain belt from 2018 to 2020 and get weather and soil ECs for all environments.</p>
-<pre><code><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"wheat.area.envs"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">wheat.area.wthr</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/get.SILO.weather.html">get.SILO.weather</a></span><span class="op">(</span>Envs <span class="op">=</span> <span class="va">wheat.area.envs</span><span class="op">$</span><span class="va">Env</span>,</span>
-<span>                                    Lats <span class="op">=</span> <span class="va">wheat.area.envs</span><span class="op">$</span><span class="va">Lat</span>,</span>
-<span>                                    Lons <span class="op">=</span> <span class="va">wheat.area.envs</span><span class="op">$</span><span class="va">Lon</span>,</span>
-<span>                                    Years <span class="op">=</span> <span class="va">wheat.area.envs</span><span class="op">$</span><span class="va">Year</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">wheat.area.wthr.ECs</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/get.W.ECs.html">get.W.ECs</a></span><span class="op">(</span>weather <span class="op">=</span> <span class="va">wheat.area.wthr</span>,</span>
-<span>                                 sow.dates <span class="op">=</span> <span class="va">wheat.area.envs</span><span class="op">$</span><span class="va">sow.dates</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">wheat.area.soil.ECs</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/get.S.ECs.html">get.S.ECs</a></span><span class="op">(</span>Envs <span class="op">=</span> <span class="va">wheat.area.envs</span><span class="op">$</span><span class="va">Env</span>,</span>
-<span>                                 Lats <span class="op">=</span> <span class="va">wheat.area.envs</span><span class="op">$</span><span class="va">Lat</span>,</span>
-<span>                                 Lons <span class="op">=</span> <span class="va">wheat.area.envs</span><span class="op">$</span><span class="va">Lon</span><span class="op">)</span></span></code></pre>
-<p>Combine weather and soil ECs for the observed and all wheat belt environments</p>
-<pre><code><span><span class="va">obsECs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">obs.weather.ECs</span><span class="op">$</span><span class="va">ECs</span>, <span class="va">obs.soil.ECs</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">wheat.area.ECs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">wheat.area.wthr.ECs</span><span class="op">$</span><span class="va">ECs</span>, <span class="va">wheat.area.soil.ECs</span><span class="op">)</span></span></code></pre>
-<p>Predict environmental effects for all wheat belt environments based on the observed ECs</p>
-<pre><code><span><span class="va">obs.env.effs</span> <span class="op">&lt;-</span> <span class="va">CAIGE20_22envs</span><span class="op">[</span> ,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Main_E_effect"</span>,<span class="st">"FA1"</span>,<span class="st">"FA2"</span>,<span class="st">"FA3"</span><span class="op">)</span><span class="op">]</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">obs.env.effs</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">CAIGE20_22envs</span><span class="op">$</span><span class="va">Environment</span></span>
-<span></span>
-<span><span class="va">wheat.area.preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/pred.env.effs.html">pred.env.effs</a></span><span class="op">(</span>train.ECs <span class="op">=</span> <span class="va">obsECs</span>,</span>
-<span>                                  new.ECs <span class="op">=</span> <span class="va">wheat.area.ECs</span>,</span>
-<span>                                  E.effs <span class="op">=</span> <span class="va">obs.env.effs</span><span class="op">)</span></span></code></pre>
-<p>Plot the iClasses environment types for all environments in the Australian grain belt on maps:</p>
-<pre><code><span><span class="va">iclasses</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">wheat.area.preds</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"FA1"</span>,<span class="st">"FA2"</span>,<span class="st">"FA3"</span><span class="op">)</span><span class="op">]</span>,<span class="fl">1</span>,<span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">x</span> <span class="op">&gt;</span> <span class="fl">0</span>, <span class="st">"p"</span>, <span class="st">"n"</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">""</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">iclass.cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"#30123BFF"</span>,<span class="st">"#1AE4B6FF"</span>,<span class="st">"#FABA39FF"</span>,<span class="st">"#7A0403FF"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">iclass.cols</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">iclasses</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">2</span><span class="op">)</span>, mar<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
-<span>  <span class="kw">for</span><span class="op">(</span><span class="va">y</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">wheat.area.envs</span><span class="op">$</span><span class="va">Year</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
-<span>    <span class="fu">oz</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/oz/man/oz.html" class="external-link">oz</a></span><span class="op">(</span><span class="op">)</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/graphics/points.html" class="external-link">points</a></span><span class="op">(</span><span class="va">wheat.area.envs</span><span class="op">$</span><span class="va">Lon</span><span class="op">[</span><span class="va">wheat.area.envs</span><span class="op">$</span><span class="va">Year</span> <span class="op">==</span> <span class="va">y</span><span class="op">]</span>,</span>
-<span>           <span class="va">wheat.area.envs</span><span class="op">$</span><span class="va">Lat</span><span class="op">[</span><span class="va">wheat.area.envs</span><span class="op">$</span><span class="va">Year</span> <span class="op">==</span> <span class="va">y</span><span class="op">]</span>, pch<span class="op">=</span><span class="fl">15</span>, cex<span class="op">=</span><span class="fl">.5</span>,</span>
-<span>           col<span class="op">=</span><span class="va">iclass.cols</span><span class="op">[</span><span class="va">iclasses</span><span class="op">[</span><span class="va">wheat.area.envs</span><span class="op">$</span><span class="va">Year</span> <span class="op">==</span> <span class="va">y</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/graphics/mtext.html" class="external-link">mtext</a></span><span class="op">(</span>text <span class="op">=</span> <span class="va">y</span>, side <span class="op">=</span> <span class="fl">3</span>, line <span class="op">=</span> <span class="op">-</span><span class="fl">1.5</span>, cex<span class="op">=</span><span class="fl">1.2</span><span class="op">)</span></span>
-<span>    <span class="op">}</span></span></code></pre>
 <hr>
 </div>
 </div>
