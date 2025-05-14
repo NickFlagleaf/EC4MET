@@ -3,7 +3,7 @@ pkgdown: 2.1.2
 pkgdown_sha: ~
 articles:
   EC4MET-workflow-example: EC4MET-workflow-example.html
-last_built: 2025-05-14T01:21Z
+last_built: 2025-05-14T01:32Z
 urls:
   reference: https://nickflagleaf.github.io/EC4MET/reference
   article: https://nickflagleaf.github.io/EC4MET/articles
