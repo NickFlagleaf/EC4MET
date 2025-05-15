@@ -24,7 +24,7 @@ This vignette runs through an example workflow to derive Environmental Covariate
 
 # Installing EC4MET
 
-The EC4MET package can be installed from Github and loaded from your library. Built with R `getRversion()`.
+The EC4MET package can be installed from Github and loaded from your library.
 
 ```{r setup}
 # devtools::install_github("NickFlagleaf/EC4MET", build_vignettes = T)
@@ -90,7 +90,7 @@ dim(obs.weather.ECs$ECs)
 head(obs.weather.ECs$gs.dates)
 ```
 
-As well as weather related ECs, soil attribute covariates can be extracted using the `get.S.ECs` function from the [SLGA](https://www.clw.csiro.au/aclep/soilandlandscapegrid/GetData-R_package.html) data resource [@grundy2015]. The soil EC data matrix is also in the same format with 36 environments as rows and 96 soil ECS as columns
+As well as weather related ECs, soil attribute covariates can be extracted using the `get.S.ECs` function from the [SLGA](https://www.clw.csiro.au/aclep/soilandlandscapegrid/GetData-R_package.html) data resource [@grundy2015].
 
 ```{r Get SLGA ECs, message=FALSE, warning=FALSE}
 obs.soil.ECs <- get.S.ECs(
@@ -155,7 +155,7 @@ obsECs <- cbind(obs.weather.ECs$ECs, obs.soil.ECs)
 wheat.area.ECs <- cbind(wheat.area.wthr.ECs$ECs, wheat.area.soil.ECs)
 ```
 
-##Predict into unobserved environments
+## Predict into unobserved environments
 
 Predict environmental effects defibed in the observed environments dataset for all wheat belt environments based on the ECs using the `pred.env.effs()` function:
 
