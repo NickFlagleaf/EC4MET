@@ -87,7 +87,7 @@ Other abbreviations for ECs calculated between growth stage intervals and combin
 \item \code{Ndays>34} - Number of hot days that max temp was over 34 °C
 \item \code{AveSR} -  Average solar radiation (MJ m\if{html}{\out{<sup>}}-2\if{html}{\out{</sup>}})
 \item \code{AveVPD} - Average vapour pressure deficit (hPa)
-\item \code{AvePQ} - Average photothermal quotient (MJ m\if{html}{\out{<sup>}}-2\if{html}{\out{</sup>}} day\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}} °C\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}})
+\item \code{AvePQ} - Average photothermal quotient (MJ m\if{html}{\out{<sup>}}-2\if{html}{\out{</sup>}} day\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}} °C\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}}) with a base temperature of 1°C
 \item \code{AveDL} - Average day length (hr)
 \item \code{AveSMI} - Average Soil Moisture index (if \code{\link[=add.SMI]{add.SMI()}} function has been used)
 }
