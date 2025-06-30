@@ -209,9 +209,19 @@ get.CMIP6.weather <- function(Envs,
         tmp.dir <- gsub("\\", "/", tmp.dir, fixed = T)
         tmp.dir <- paste(tmp.dir, "_", Years, sep = "")
         cat("\nDownloading .nc files...")
-        options(timeout = max(50000, getOption("timeout")))
+        options(timeout = max(80000, getOption("timeout")))
 
         utils::download.file(url = addrs, destfile = tmp.dir, method = "libcurl", quiet = T, mode = "wb")
+        finfo<-file.info(tmp.dir)
+        tryagain<-which(finfo$size<500000000)
+        if(length(tryagain)>0){
+          utils::download.file(url = addrs[tryagain], destfile = tmp.dir[tryagain], method = "libcurl", quiet = T, mode = "wb")
+        }
+        finfo<-file.info(tmp.dir)
+        tryagain<-which(finfo$size<500000000)
+        if(length(tryagain)>0){
+          utils::download.file(url = addrs[tryagain], destfile = tmp.dir[tryagain], method = "libcurl", quiet = T, mode = "wb")
+        }
  
         if (isTRUE(ncores > 1)) { # Run in parallel
           if (verbose) {
