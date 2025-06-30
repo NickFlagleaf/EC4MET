@@ -6,8 +6,9 @@
 #' @param Envs Vector of environment names character strings.
 #' @param Lats Vector of latitude numeric values for each environment in the same order as `Envs`.
 #' @param Lons Vector of longitude numeric values for each environment in the same order as `Envs`.
-#' @param Years Vector of year integer values. Unlike [get.SILO.weather()] and [get.BARRA.weather()], `Years` should to be the same
-#' length as `Envs`. Data for all locations in `Envs` will be extracted for all `Years`. Must be within the possible
+#' @param Years Vector of year integer values. Unlike [get.SILO.weather()] and [get.BARRA.weather()], `Years` should not be the same
+#' length as `Envs`. Data for all locations in `Envs` will be extracted for all `Years`. Values must be within the possible time ranges of 1985:2014, 2035-2064, 
+#' or 2070-2099.
 #' @param GCMs Vector of GCM names to get data from. For options see Details below.
 #' @param SSPs Vector of SSP names to get data from. For options see Details below.
 #' @param ncores Number (integer) of cores to use for parallel processing of gridded data up to 5 cores. Use `1` to run in series. The default (`NULL`) will
@@ -37,7 +38,7 @@
 #' * `ACCESS-CM2` - A much hotter future, and drier in most regions except the southeast
 #' * `ACCESS-ESM1-5` - A hotter and much drier future
 #' * `CMCC-ESM2` - A much hotter future with little change in mean rainfall (with regional exceptions)
-#' * `CNRMESM2-1` - A much hotter future, much drier especially in the east, but wetter in the northwest
+#' * `CNRM-ESM2-1` - A much hotter future, much drier especially in the east, but wetter in the northwest
 #' * `EC-Earth3` - A hotter and much wetter future for much of Australia (except southwest Western Australia)
 #' * `MPI-ESM1-2-HR` - Lower warming, mid-range changes in rainfall
 #' * `NorESM2-MM` - Lower warming, mid-range changes in rainfall
@@ -168,7 +169,7 @@ get.CMIP6.weather <- function(Envs,
           cat("\n#Starting ", vars[v], "#", sep = "")
         }
 
-        batch.years <- sapply(year.spans, function(x) Years[Years %in% x])
+        batch.years <- lapply(year.spans, function(x) Years[Years %in% x])
 
         # Bulk download for 2035-2064
         if (length(batch.years$`1985-2014`) > 0) {
