@@ -254,7 +254,7 @@ get.CMIP6.weather <- function(Envs,
           lon.ind <- sapply(Lons, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[1]]) - as.numeric(x))))
           lat.ind <- sapply(Lats, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[2]]) - as.numeric(x))))
           env.weather <- t(sapply(seq_len(length(lon.ind)), function(x) nc.data[lon.ind[x], lat.ind[x], ]))
-          rownames(env.weather) <- paste(yr, Envs, sep = "_")
+          rownames(env.weather) <- paste(yr, Lons, Lats, sep = "_")
           env.weather <- env.weather[, 1:365]
           if (verbose & sum(is.na(env.weather)) > 0) {
             NAenvs <- Envs[!complete.cases(env.weather)]
