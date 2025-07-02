@@ -31,8 +31,8 @@ or 2070-2099.}
 
 \item{SSPs}{Vector of SSP names to get data from. For options see Details below.}
 
-\item{ncores}{Number (integer) of cores to use for parallel processing of gridded data up to 5 cores. Use \code{1} to run in series. The default (\code{NULL}) will
-use the maximum available cores up to 5. If running in parallel, an output log text file will be created in the working directory.}
+\item{ncores}{Number (integer) of cores to use for parallel processing of gridded data. Use \code{1} to run in series. The default (\code{NULL}) will
+use the one less than the maximum available. If running in parallel, an output log text file will be created in the working directory.}
 
 \item{verbose}{Logical. Should progress be printed? Default = TRUE.}
 

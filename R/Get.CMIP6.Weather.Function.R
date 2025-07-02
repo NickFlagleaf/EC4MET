@@ -11,8 +11,8 @@
 #' or 2070-2099.
 #' @param GCMs Vector of GCM names to get data from. For options see Details below.
 #' @param SSPs Vector of SSP names to get data from. For options see Details below.
-#' @param ncores Number (integer) of cores to use for parallel processing of gridded data up to 5 cores. Use `1` to run in series. The default (`NULL`) will
-#' use the maximum available cores up to 5. If running in parallel, an output log text file will be created in the working directory.
+#' @param ncores Number (integer) of cores to use for parallel processing of gridded data. Use `1` to run in series. The default (`NULL`) will
+#' use the one less than the maximum available. If running in parallel, an output log text file will be created in the working directory.
 #' @param verbose Logical. Should progress be printed? Default = TRUE.
 #' @param dlprompt Logical. Should the user be prompted approve the total download size? Default = TRUE.
 #'
@@ -116,7 +116,7 @@ get.CMIP6.weather <- function(Envs,
   if (verbose) download_data(dlprompt, dl.size)
 
   if (is.null(ncores)) {
-    ncores <- min(parallel::detectCores(), length(vars))
+    ncores <- parallel::detectCores()-1
   }
 
   # Error checks
@@ -152,6 +152,7 @@ get.CMIP6.weather <- function(Envs,
     stop("Lats out of range of CMIP6 QD data: -57.97 to -12.98")
   }
 
+  if(!capabilities("libcurl")){warning("libcurl is not supported!")}
 
   all.GCM.weather <- list()
   for (g in seq_along(GCMs)) {
@@ -227,7 +228,7 @@ get.CMIP6.weather <- function(Envs,
           if (verbose) {
             cat("\nRunning in parallel...")
           }
-          file.remove("CMIP6_download_log.txt", showWarnings = FALSE)
+          suppressWarnings(file.remove("CMIP6_download_log.txt"))
           cl <- parallel::makeCluster(ncores, outfile = "CMIP6_download_log.txt")
           doParallel::registerDoParallel(cl)
           if (verbose) {
