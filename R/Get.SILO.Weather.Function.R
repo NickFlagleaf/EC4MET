@@ -178,7 +178,7 @@ get.SILO.weather <- function(Envs,
       closeAllConnections()
       if (verbose) cat("\nFinished parallel :)")
       Sys.sleep(2)
-      if("SILO_download_log.txt" %in% dir()){file.remove("SILO_download_log.txt")}
+      if("SILO_download_log.txt" %in% dir()){ suppressWarnings(file.remove("SILO_download_log.txt"))}
       gc(full = T)
     }
   }

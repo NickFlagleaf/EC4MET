@@ -161,7 +161,7 @@ get.BARRA.weather <- function(Envs,
       cat("\nFinished parallel :)\n")
     }
     Sys.sleep(2)
-    file.remove("BARRA_download_log.txt")
+    suppressWarnings(file.remove("BARRA_download_log.txt"))
   }
   gc(full = T)
   
