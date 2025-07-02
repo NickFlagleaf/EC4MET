@@ -7,7 +7,7 @@
 #' @param Lats Vector of latitude numeric values for each environment in the same order as `Envs`.
 #' @param Lons Vector of longitude numeric values for each environment in the same order as `Envs`.
 #' @param Years Vector of year integer values for each environment in the same order as `Envs`.
-#' @param ncores Number (integer) of cores to use for parallel processing of gridded data up to 5 cores. Use `1` to run in series. The default (`NULL`) will
+#' @param ncores Number (integer) of cores to use for parallel processing of gridded data over muliple years. Use `1` to run in series. The default (`NULL`) will
 #' use the maximum available cores up to 5. If running in parallel, an output log text file will be created in the working directory.
 #' @param verbose Logical. Should progress be printed? Default = TRUE.
 #' @param dlprompt Logical. Should the user be prompted approve the total download size? Default = TRUE.
@@ -70,9 +70,9 @@ get.BARRA.weather <- function(Envs,
   if (verbose) download_data(dlprompt, dl.size)
 
   if (is.null(ncores)) {
-    ncores <- min(parallel::detectCores(), length(vars))
+    ncores <- min(parallel::detectCores(), length(Years))
   }
-  ncores <- min(ncores, length(vars))
+  ncores <- min(ncores, length(Years))
 
   if (isTRUE(ncores == 1)) { # Run in series
     if (verbose) {
@@ -81,7 +81,28 @@ get.BARRA.weather <- function(Envs,
     `%dopar%` <- foreach::`%do%`
   }
 
-
+  cat("\nDownloading .nc files...\n")
+  #DL files in series
+  all.vars.weather <- list()
+  for (v in seq_along(vars)) {
+    if (verbose) {
+      cat(vars[v], ":", sep = "")
+    }
+    for (y in seq_along(years)) {
+      if (verbose) {
+        cat(years[y], "|", sep = "")
+      }
+      addrs <- paste("https://thredds.nci.org.au/thredds/fileServer/ob53/output/reanalysis/AUS-11/BOM/ERA5/historical/hres/BARRA-R2/v1/day/",
+                 vars[v], "/latest/", vars[v], "_AUS-11_ERA5_historical_hres_BOM_BARRA-R2_v1_day_", years, mons, "-", years, mons, ".nc",
+                 sep = ""
+                 )
+      tmp.dir <- tempdir()
+      tmp.dir <- gsub("\\", "/", tmp.dir, fixed = T)
+      tmp.files <- paste(tmp.dir,"/",paste(vars[v], years[y], mons, sep="_"), ".nc", sep = "")
+      options(timeout = max(80000, getOption("timeout")))
+      utils::download.file(url = addrs, destfile = tmp.files, method = "libcurl", quiet = T, mode = "wb")
+    }
+    
   if (isTRUE(ncores > 1)) { # Run in parallel
     if (verbose) {
       cat("\nRunning in parallel...")
@@ -96,39 +117,21 @@ get.BARRA.weather <- function(Envs,
     `%dopar%` <- foreach::`%dopar%`
   }
 
-  all.vars.weather <- foreach::foreach(v = seq_along(vars), .combine = list, .multicombine = T, .export = "nc.process") %dopar% {
+  all.yrs.weather <- foreach::foreach(y = seq_along(years), .combine = rbind, .multicombine = T, .export = "nc.process") %dopar% {
     if (verbose) {
-      cat("\nStarting", vars[v])
+      cat("\nStarting", years[y])
     }
-    all.yrs.weather <- matrix(NA, nrow = length(Envs), ncol = 365, dimnames = list(Envs, 1:365))
-    for (y in seq_along(years)) {
-      if (verbose) {
-        cat("\n", years[y], "|", sep = "")
-      }
       all.mons.weather <- list()
-
-      cat("\nDownloading .nc files...\n")
-      addrs <- paste("https://thredds.nci.org.au/thredds/fileServer/ob53/output/reanalysis/AUS-11/BOM/ERA5/historical/hres/BARRA-R2/v1/day/",
-        vars[v], "/latest/", vars[v], "_AUS-11_ERA5_historical_hres_BOM_BARRA-R2_v1_day_", years[y], mons, "-", years[y], mons, ".nc",
-        sep = ""
-      )
-      tmp.dir <- tempfile()
-      tmp.dir <- gsub("\\", "/", tmp.dir, fixed = T)
-      tmp.dir <- paste(tmp.dir, "_", 1:length(addrs), sep = "")
-      options(timeout = max(80000, getOption("timeout")))
-      utils::download.file(url = addrs[1:4], destfile = tmp.dir[1:4], method = "libcurl", quiet = T, mode = "wb")
-      utils::download.file(url = addrs[5:8], destfile = tmp.dir[5:8], method = "libcurl", quiet = T, mode = "wb")
-      utils::download.file(url = addrs[9:12], destfile = tmp.dir[9:12], method = "libcurl", quiet = T, mode = "wb")
-
       for (m in 1:length(mons)) {
         if (verbose) {
           cat(month.abb[m], "|", sep = "")
         }
-        nc.data <- nc.process(tmp.dir[m])
-        file.remove(tmp.dir[m])
+        nc.path <- paste(tmp.dir,"/",paste(vars[v], years[y], mons[m], sep="_"), ".nc", sep = "")
+        nc.data <- nc.process(nc.path)
+        file.remove(nc.path)
         all.mons.weather[[m]] <- nc.data
-        gc(full = T)
       }
+      gc(full = T)
 
       tnames <- unlist(lapply(all.mons.weather, function(x) dimnames(x)[[3]]))
       all.mons.weather <- abind::abind(all.mons.weather, along = 3)
@@ -147,16 +150,10 @@ get.BARRA.weather <- function(Envs,
         env.weather <- cbind(env.weather, matrix(NA, nrow = nrow(env.weather), ncol = 365 - ncol(env.weather)))
       }
       rownames(env.weather) <- env.info.yr.sub$Environment
-      all.yrs.weather[rownames(env.weather), ] <- as.matrix(env.weather)
-      if (verbose & sum(is.na(env.weather)) > 0) {
-        NAenvs <- Envs[!complete.cases(env.weather)]
-        cat("\nNAs returned at ", paste(NAenvs, collapse = " "))
-      }
-    }
-    gc(full = T)
-    return(all.yrs.weather)
+      colnames(env.weather) <- 1:ncol(env.weather)
+      return(env.weather)
   }
-  if (isTRUE(ncores > 1)) { # Run in parallel
+    if (isTRUE(ncores > 1)) { # Run in parallel
     parallel::stopCluster(cl)
     doParallel::stopImplicitCluster()
 
@@ -166,7 +163,17 @@ get.BARRA.weather <- function(Envs,
     Sys.sleep(2)
     file.remove("BARRA_download_log.txt")
   }
-
+  gc(full = T)
+  
+  all.yrs.weather<-all.yrs.weather[Envs,]
+  if (verbose & sum(is.na(all.yrs.weather)) > 0) {
+        NAenvs <- Envs[!complete.cases(all.yrs.weather)]
+        cat("\nNAs returned at ", paste(NAenvs, collapse = " "))
+  }
+  
+  all.vars.weather[[v]] <- all.yrs.weather
+  }
+  
   names(all.vars.weather) <- vars
 
   all.vars.weather$pr <- all.vars.weather$pr * 86400 # convert "kg m-2 s-1" to "mm day-1"
