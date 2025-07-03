@@ -145,7 +145,7 @@ get.BARRA.weather <- function(Envs,
       env.info.yr.sub$lat.ind <- sapply(env.info.yr.sub$Lat, function(x) which.min(abs(as.numeric(dimnames(all.mons.weather)[[2]]) - as.numeric(x))))
       env.weather <- sapply(seq_len(nrow(env.info.yr.sub)), function(x) all.mons.weather[env.info.yr.sub$lon.ind[x], env.info.yr.sub$lat.ind[x], ])
       env.weather <- t(env.weather)
-      env.weather <- as.data.frame(env.weather, row.names = env.info.yr.sub$Environment)[, 1:365]
+      env.weather <- as.matrix(env.weather, row.names = env.info.yr.sub$Environment)[, 1:365]
       if (ncol(env.weather) < 365) {
         env.weather <- cbind(env.weather, matrix(NA, nrow = nrow(env.weather), ncol = 365 - ncol(env.weather)))
       }
