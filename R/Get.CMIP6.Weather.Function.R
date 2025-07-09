@@ -6,12 +6,13 @@
 #' @param Envs Vector of environment names character strings.
 #' @param Lats Vector of latitude numeric values for each environment in the same order as `Envs`.
 #' @param Lons Vector of longitude numeric values for each environment in the same order as `Envs`.
-#' @param Years Vector of year integer values. Unlike [get.SILO.weather()] and [get.BARRA.weather()], `Years` should to be the same
-#' length as `Envs`. Data for all locations in `Envs` will be extracted for all `Years`. Must be within the possible
+#' @param Years Vector of year integer values. Unlike [get.SILO.weather()] and [get.BARRA.weather()], `Years` should not be the same
+#' length as `Envs`. Data for all locations in `Envs` will be extracted for all `Years`. Values must be within the possible time ranges of 1985:2014, 2035-2064, 
+#' or 2070-2099.
 #' @param GCMs Vector of GCM names to get data from. For options see Details below.
 #' @param SSPs Vector of SSP names to get data from. For options see Details below.
-#' @param ncores Number (integer) of cores to use for parallel processing of gridded data up to 5 cores. Use `1` to run in series. The default (`NULL`) will
-#' use the maximum available cores up to 5. If running in parallel, an output log text file will be created in the working directory.
+#' @param ncores Number (integer) of cores to use for parallel processing of gridded data. Use `1` to run in series. The default (`NULL`) will
+#' use the one less than the maximum available. If running in parallel, an output log text file will be created in the working directory.
 #' @param verbose Logical. Should progress be printed? Default = TRUE.
 #' @param dlprompt Logical. Should the user be prompted approve the total download size? Default = TRUE.
 #'
@@ -37,7 +38,7 @@
 #' * `ACCESS-CM2` - A much hotter future, and drier in most regions except the southeast
 #' * `ACCESS-ESM1-5` - A hotter and much drier future
 #' * `CMCC-ESM2` - A much hotter future with little change in mean rainfall (with regional exceptions)
-#' * `CNRMESM2-1` - A much hotter future, much drier especially in the east, but wetter in the northwest
+#' * `CNRM-ESM2-1` - A much hotter future, much drier especially in the east, but wetter in the northwest
 #' * `EC-Earth3` - A hotter and much wetter future for much of Australia (except southwest Western Australia)
 #' * `MPI-ESM1-2-HR` - Lower warming, mid-range changes in rainfall
 #' * `NorESM2-MM` - Lower warming, mid-range changes in rainfall
@@ -115,7 +116,7 @@ get.CMIP6.weather <- function(Envs,
   if (verbose) download_data(dlprompt, dl.size)
 
   if (is.null(ncores)) {
-    ncores <- min(parallel::detectCores(), length(vars))
+    ncores <- parallel::detectCores()-1
   }
 
   # Error checks
@@ -151,6 +152,7 @@ get.CMIP6.weather <- function(Envs,
     stop("Lats out of range of CMIP6 QD data: -57.97 to -12.98")
   }
 
+  if(!capabilities("libcurl")){warning("libcurl is not supported!")}
 
   all.GCM.weather <- list()
   for (g in seq_along(GCMs)) {
@@ -168,7 +170,7 @@ get.CMIP6.weather <- function(Envs,
           cat("\n#Starting ", vars[v], "#", sep = "")
         }
 
-        batch.years <- sapply(year.spans, function(x) Years[Years %in% x])
+        batch.years <- lapply(year.spans, function(x) Years[Years %in% x])
 
         # Bulk download for 2035-2064
         if (length(batch.years$`1985-2014`) > 0) {
@@ -208,15 +210,25 @@ get.CMIP6.weather <- function(Envs,
         tmp.dir <- gsub("\\", "/", tmp.dir, fixed = T)
         tmp.dir <- paste(tmp.dir, "_", Years, sep = "")
         cat("\nDownloading .nc files...")
-        options(timeout = max(50000, getOption("timeout")))
+        options(timeout = max(80000, getOption("timeout")))
 
         utils::download.file(url = addrs, destfile = tmp.dir, method = "libcurl", quiet = T, mode = "wb")
+        finfo<-file.info(tmp.dir)
+        tryagain<-which(finfo$size<500000000)
+        if(length(tryagain)>0){
+          utils::download.file(url = addrs[tryagain], destfile = tmp.dir[tryagain], method = "libcurl", quiet = T, mode = "wb")
+        }
+        finfo<-file.info(tmp.dir)
+        tryagain<-which(finfo$size<500000000)
+        if(length(tryagain)>0){
+          utils::download.file(url = addrs[tryagain], destfile = tmp.dir[tryagain], method = "libcurl", quiet = T, mode = "wb")
+        }
  
         if (isTRUE(ncores > 1)) { # Run in parallel
           if (verbose) {
             cat("\nRunning in parallel...")
           }
-          file.remove("CMIP6_download_log.txt", showWarnings = FALSE)
+          suppressWarnings(file.remove("CMIP6_download_log.txt"))
           cl <- parallel::makeCluster(ncores, outfile = "CMIP6_download_log.txt")
           doParallel::registerDoParallel(cl)
           if (verbose) {
@@ -243,7 +255,7 @@ get.CMIP6.weather <- function(Envs,
           lon.ind <- sapply(Lons, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[1]]) - as.numeric(x))))
           lat.ind <- sapply(Lats, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[2]]) - as.numeric(x))))
           env.weather <- t(sapply(seq_len(length(lon.ind)), function(x) nc.data[lon.ind[x], lat.ind[x], ]))
-          rownames(env.weather) <- paste(yr, Envs, sep = "_")
+          rownames(env.weather) <- paste(yr, Lons, Lats, sep = "_")
           env.weather <- env.weather[, 1:365]
           if (verbose & sum(is.na(env.weather)) > 0) {
             NAenvs <- Envs[!complete.cases(env.weather)]

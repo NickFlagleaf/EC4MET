@@ -23,15 +23,16 @@ get.CMIP6.weather(
 
 \item{Lons}{Vector of longitude numeric values for each environment in the same order as \code{Envs}.}
 
-\item{Years}{Vector of year integer values. Unlike \code{\link[=get.SILO.weather]{get.SILO.weather()}} and \code{\link[=get.BARRA.weather]{get.BARRA.weather()}}, \code{Years} should to be the same
-length as \code{Envs}. Data for all locations in \code{Envs} will be extracted for all \code{Years}. Must be within the possible}
+\item{Years}{Vector of year integer values. Unlike \code{\link[=get.SILO.weather]{get.SILO.weather()}} and \code{\link[=get.BARRA.weather]{get.BARRA.weather()}}, \code{Years} should not be the same
+length as \code{Envs}. Data for all locations in \code{Envs} will be extracted for all \code{Years}. Values must be within the possible time ranges of 1985:2014, 2035-2064,
+or 2070-2099.}
 
 \item{GCMs}{Vector of GCM names to get data from. For options see Details below.}
 
 \item{SSPs}{Vector of SSP names to get data from. For options see Details below.}
 
-\item{ncores}{Number (integer) of cores to use for parallel processing of gridded data up to 5 cores. Use \code{1} to run in series. The default (\code{NULL}) will
-use the maximum available cores up to 5. If running in parallel, an output log text file will be created in the working directory.}
+\item{ncores}{Number (integer) of cores to use for parallel processing of gridded data. Use \code{1} to run in series. The default (\code{NULL}) will
+use the one less than the maximum available. If running in parallel, an output log text file will be created in the working directory.}
 
 \item{verbose}{Logical. Should progress be printed? Default = TRUE.}
 
@@ -77,7 +78,7 @@ Possible options for Global Climate Models (GCM):
 \item \code{ACCESS-CM2} - A much hotter future, and drier in most regions except the southeast
 \item \code{ACCESS-ESM1-5} - A hotter and much drier future
 \item \code{CMCC-ESM2} - A much hotter future with little change in mean rainfall (with regional exceptions)
-\item \code{CNRMESM2-1} - A much hotter future, much drier especially in the east, but wetter in the northwest
+\item \code{CNRM-ESM2-1} - A much hotter future, much drier especially in the east, but wetter in the northwest
 \item \code{EC-Earth3} - A hotter and much wetter future for much of Australia (except southwest Western Australia)
 \item \code{MPI-ESM1-2-HR} - Lower warming, mid-range changes in rainfall
 \item \code{NorESM2-MM} - Lower warming, mid-range changes in rainfall

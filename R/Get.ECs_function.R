@@ -54,7 +54,7 @@
 #' * `Ndays>34` - Number of hot days that max temp was over 34 °C
 #' * `AveSR` -  Average solar radiation (MJ m<sup>-2</sup>)
 #' * `AveVPD` - Average vapour pressure deficit (hPa)
-#' * `AvePQ` - Average photothermal quotient (MJ m<sup>-2</sup> day<sup>-1</sup> °C<sup>-1</sup>)
+#' * `AvePQ` - Average photothermal quotient (MJ m<sup>-2</sup> day<sup>-1</sup> °C<sup>-1</sup>) with a base temperature of 1°C
 #' * `AveDL` - Average day length (hr)
 #' * `AveSMI` - Average Soil Moisture index (if [add.SMI()] function has been used)
 #'
@@ -296,6 +296,7 @@ get.W.ECs <- function(weather,
       stgs <- unlist(all.env.stages[e, ])
       yr.sr <- unlist(weather$data$radiation[e, ])
       yr.tmean <- unlist(mean.temp[e, ])
+      yr.tmean[yr.tmean<=1]<-1
       sowday <- sowdays[e]
       AveSR.per.stage[e, ] <- sapply(2:ncol(all.env.stages), function(s) mean(yr.sr[(sowday + stgs[s - 1]):(sowday + stgs[s])]))
       AvePQ.per.stage[e, ] <- sapply(2:ncol(all.env.stages), function(s) {
@@ -377,6 +378,9 @@ get.W.ECs <- function(weather,
 
   isnas <- sum(is.nan(unlist(Wmat)) | is.na(unlist(Wmat)))
   if (verbose) cat(paste(isnas, "NAs returned\n"))
+  
+  isinfs <- sum(is.infinite(unlist(Wmat))) 
+  if (verbose & isinfs > 0) cat(paste(isinfs, "infinite values returned\n"))
 
   if (verbose & isnas > 0) {
     cat(paste("\n NAs at:\n", paste(Envs[!complete.cases(Wmat)], collapse = " ")))
