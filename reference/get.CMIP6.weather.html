@@ -79,8 +79,9 @@ CMIP6 QDC weather data resource for a set of environments with defined latitude 
 
 
 <dt id="arg-years">Years<a class="anchor" aria-label="anchor" href="#arg-years"></a></dt>
-<dd><p>Vector of year integer values. Unlike <code><a href="get.SILO.weather.html">get.SILO.weather()</a></code> and <code><a href="get.BARRA.weather.html">get.BARRA.weather()</a></code>, <code>Years</code> should to be the same
-length as <code>Envs</code>. Data for all locations in <code>Envs</code> will be extracted for all <code>Years</code>. Must be within the possible</p></dd>
+<dd><p>Vector of year integer values. Unlike <code><a href="get.SILO.weather.html">get.SILO.weather()</a></code> and <code><a href="get.BARRA.weather.html">get.BARRA.weather()</a></code>, <code>Years</code> should not be the same
+length as <code>Envs</code>. Data for all locations in <code>Envs</code> will be extracted for all <code>Years</code>. Values must be within the possible time ranges of 1985:2014, 2035-2064,
+or 2070-2099.</p></dd>
 
 
 <dt id="arg-gcms">GCMs<a class="anchor" aria-label="anchor" href="#arg-gcms"></a></dt>
@@ -92,8 +93,8 @@ length as <code>Envs</code>. Data for all locations in <code>Envs</code> will be
 
 
 <dt id="arg-ncores">ncores<a class="anchor" aria-label="anchor" href="#arg-ncores"></a></dt>
-<dd><p>Number (integer) of cores to use for parallel processing of gridded data up to 5 cores. Use <code>1</code> to run in series. The default (<code>NULL</code>) will
-use the maximum available cores up to 5. If running in parallel, an output log text file will be created in the working directory.</p></dd>
+<dd><p>Number (integer) of cores to use for parallel processing of gridded data. Use <code>1</code> to run in series. The default (<code>NULL</code>) will
+use the one less than the maximum available. If running in parallel, an output log text file will be created in the working directory.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
@@ -130,7 +131,7 @@ outside of the 1985-2014 time period of the CMIP6 QDC historical time period.</p
 <p>Possible options for Global Climate Models (GCM):</p><ul><li><p><code>ACCESS-CM2</code> - A much hotter future, and drier in most regions except the southeast</p></li>
 <li><p><code>ACCESS-ESM1-5</code> - A hotter and much drier future</p></li>
 <li><p><code>CMCC-ESM2</code> - A much hotter future with little change in mean rainfall (with regional exceptions)</p></li>
-<li><p><code>CNRMESM2-1</code> - A much hotter future, much drier especially in the east, but wetter in the northwest</p></li>
+<li><p><code>CNRM-ESM2-1</code> - A much hotter future, much drier especially in the east, but wetter in the northwest</p></li>
 <li><p><code>EC-Earth3</code> - A hotter and much wetter future for much of Australia (except southwest Western Australia)</p></li>
 <li><p><code>MPI-ESM1-2-HR</code> - Lower warming, mid-range changes in rainfall</p></li>
 <li><p><code>NorESM2-MM</code> - Lower warming, mid-range changes in rainfall</p></li>
