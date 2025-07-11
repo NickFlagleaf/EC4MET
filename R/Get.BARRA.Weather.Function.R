@@ -117,7 +117,7 @@ get.BARRA.weather <- function(Envs,
     if (verbose) {
       cat("\nRunning in parallel...")
     }
-    file.remove("BARRA_download_log.txt", showWarnings = FALSE)
+    suppressWarnings(file.remove("BARRA_download_log.txt", showWarnings = FALSE))
     cl <- parallel::makeCluster(ncores, outfile = "BARRA_download_log.txt")
     doParallel::registerDoParallel(cl)
     if (verbose) {

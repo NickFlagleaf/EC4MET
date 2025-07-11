@@ -276,8 +276,8 @@ get.CMIP6.weather <- function(Envs,
           if (verbose) {
             cat("\nFinished parallel :)")
           }
-          Sys.sleep(5)
-          file.remove("CMIP6_download_log.txt")
+          Sys.sleep(2)
+          suppressWarnings(file.remove("CMIP6_download_log.txt"))
         }
         gc(full = T)
         colnames(all.yrs.weather) <- 1:ncol(all.yrs.weather)
