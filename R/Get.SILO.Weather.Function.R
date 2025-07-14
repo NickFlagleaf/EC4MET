@@ -81,12 +81,12 @@ get.SILO.weather <- function(Envs,
     tmp.dir <- tempfile()
     tmp.dir <- gsub("\\", "/", tmp.dir, fixed = T)
     tmp.dir <- paste(tmp.dir, "_", 1:length(urls), sep = "")
-    utils::download.file(url = urls, destfile = tmp.dir, method = "libcurl", quiet = T, mode = "wb")
+    try(utils::download.file(url = urls, destfile = tmp.dir, method = "libcurl", quiet = T, mode = "wb"))
 
     finfo<-file.info(tmp.dir)
     tryagain<-which(finfo$size<29000  | is.na(finfo$size))
     if(length(tryagain)>0){
-      utils::download.file(url = urls[tryagain], destfile = tmp.dir[tryagain], method = "libcurl", quiet = T, mode = "wb")
+      try(utils::download.file(url = urls[tryagain], destfile = tmp.dir[tryagain], method = "libcurl", quiet = T, mode = "wb"))
     }
     
     
@@ -156,7 +156,7 @@ get.SILO.weather <- function(Envs,
       finfo<-file.info(tmp.dir)
       tryagain<-which(finfo$size<40000000 | is.na(finfo$size))
       if(length(tryagain)>0){
-        utils::download.file(url = addrs[tryagain], destfile = tmp.dir[tryagain], method = "libcurl", quiet = T, mode = "wb")
+        try(utils::download.file(url = addrs[tryagain], destfile = tmp.dir[tryagain], method = "libcurl", quiet = T, mode = "wb"))
       }
       
       for (y in seq_along(years)) {
@@ -168,7 +168,7 @@ get.SILO.weather <- function(Envs,
         )
         nc.data <- try(nc.process(tmp.dir[y]))
         if(class(nc.data)=="try-error"){
-          utils::download.file(url = addrs[y], destfile = tmp.dir[y], method = "libcurl", quiet = T, mode = "wb")
+          try(utils::download.file(url = addrs[y], destfile = tmp.dir[y], method = "libcurl", quiet = T, mode = "wb"))
           nc.data <- try(nc.process(tmp.dir[y]))
         }
         file.remove(tmp.dir[y])

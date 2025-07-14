@@ -94,12 +94,12 @@ get.BARRA.weather <- function(Envs,
       tmp.dir <- gsub("\\", "/", tmp.dir, fixed = T)
       tmp.files <- paste(tmp.dir,"/",paste(vars[v], years[y], mons, sep="_"), ".nc", sep = "")
       options(timeout = max(80000, getOption("timeout")))
-      utils::download.file(url = addrs, destfile = tmp.files, method = "libcurl", quiet = T, mode = "wb")
+      try(utils::download.file(url = addrs, destfile = tmp.files, method = "libcurl", quiet = T, mode = "wb"))
       
       finfo<-file.info(tmp.files)
       tryagain<-which(finfo$size<30000000 | is.na(finfo$size))
       if(length(tryagain)>0){
-        utils::download.file(url = addrs[tryagain], destfile = tmp.files[tryagain], method = "libcurl", quiet = T, mode = "wb")
+        try(utils::download.file(url = addrs[tryagain], destfile = tmp.files[tryagain], method = "libcurl", quiet = T, mode = "wb"))
       }
       
     }
@@ -139,7 +139,7 @@ get.BARRA.weather <- function(Envs,
         nc.path <- paste(tmp.dir,"/",paste(vars[v], years[y], mons[m], sep="_"), ".nc", sep = "")
         nc.data <- try(nc.process(nc.path))
         if(class(nc.data)=="try-error"){
-          utils::download.file(url = addrs[y], destfile = nc.path, method = "libcurl", quiet = T, mode = "wb")
+          try(utils::download.file(url = addrs[y], destfile = nc.path, method = "libcurl", quiet = T, mode = "wb"))
           nc.data <- try(nc.process(nc.path))
         }
         file.remove(nc.path)

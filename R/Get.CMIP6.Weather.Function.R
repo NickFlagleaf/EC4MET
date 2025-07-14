@@ -212,16 +212,16 @@ get.CMIP6.weather <- function(Envs,
         cat("\nDownloading .nc files...")
         options(timeout = max(80000, getOption("timeout")))
 
-        utils::download.file(url = addrs, destfile = tmp.dir, method = "libcurl", quiet = T, mode = "wb")
+        try(utils::download.file(url = addrs, destfile = tmp.dir, method = "libcurl", quiet = T, mode = "wb"))
         finfo<-file.info(tmp.dir)
         tryagain<-which(finfo$size<500000000 | is.na(finfo$size))
         if(length(tryagain)>0){
-          utils::download.file(url = addrs[tryagain], destfile = tmp.dir[tryagain], method = "libcurl", quiet = T, mode = "wb")
+          try(utils::download.file(url = addrs[tryagain], destfile = tmp.dir[tryagain], method = "libcurl", quiet = T, mode = "wb"))
         }
         finfo<-file.info(tmp.dir)
         tryagain<-which(finfo$size<500000000 | is.na(finfo$size))
         if(length(tryagain)>0){
-          utils::download.file(url = addrs[tryagain], destfile = tmp.dir[tryagain], method = "libcurl", quiet = T, mode = "wb")
+          try(utils::download.file(url = addrs[tryagain], destfile = tmp.dir[tryagain], method = "libcurl", quiet = T, mode = "wb"))
         }
  
         if (isTRUE(ncores > 1)) { # Run in parallel
@@ -252,7 +252,7 @@ get.CMIP6.weather <- function(Envs,
           nc.data <- try(nc.process(tmp.dir[y]))
           
           if(class(nc.data)=="try-error"){
-            utils::download.file(url = addrs[y], destfile = tmp.dir[y], method = "libcurl", quiet = T, mode = "wb")
+            try(utils::download.file(url = addrs[y], destfile = tmp.dir[y], method = "libcurl", quiet = T, mode = "wb"))
             nc.data <- try(nc.process(tmp.dir[y]))
           }
           
