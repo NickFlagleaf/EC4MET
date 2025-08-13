@@ -77,7 +77,7 @@ get.S.ECs <- function(Envs,
     )
     depths <- paste(rasters$UpperDepth_m, "-", rasters$LowerDepth_m, "m", sep = "")
     
-    dl.n.limit<-100
+    dl.n.limit<-500
     if(nrow(lonlats.sub) < dl.n.limit){
       AWCdata<-api.extrct(rasters = rasters,crds = lonlats.sub)
     }
