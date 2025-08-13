@@ -146,6 +146,9 @@ get.BARRA.weather <- function(Envs,
         all.mons.weather[[m]] <- nc.data
       }
       gc(full = T)
+      if (verbose) {
+        cat("\n")
+      }
 
       tnames <- unlist(lapply(all.mons.weather, function(x) dimnames(x)[[3]]))
       all.mons.weather <- abind::abind(all.mons.weather, along = 3)
