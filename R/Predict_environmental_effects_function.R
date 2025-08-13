@@ -35,7 +35,7 @@ pred.env.effs <- function(train.ECs, new.ECs, E.effs, verbose=TRUE, ntree=500) {
     randomForest::randomForest(x = train.ECs, y = x, ntree = ntree)
   })
 
-  cat("Training RF models\n")
+  cat("\nPredicting new envs\n")
   preds <- sapply(rfmods, function(x) {
     predict(x, newdata = new.ECs[, colnames(train.ECs)])
   })
