@@ -62,7 +62,7 @@ get.S.ECs <- function(Envs,
       cat(paste("\nProgress log output to:\n", getwd(), "/SLGA_soil_download_log.txt", sep = ""))
     }
     on.exit(closeAllConnections())
-    on.exit(file.remove("SLGA_soil_download_log.txt"))
+    on.exit(suppressWarnings(file.remove("SLGA_soil_download_log.txt")))
     `%dopar%` <- foreach::`%dopar%`
   }
 
@@ -77,7 +77,7 @@ get.S.ECs <- function(Envs,
     )
     depths <- paste(rasters$UpperDepth_m, "-", rasters$LowerDepth_m, "m", sep = "")
     
-    dl.n.limit<-100
+    dl.n.limit<-500
     if(nrow(lonlats.sub) < dl.n.limit){
       AWCdata<-api.extrct(rasters = rasters,crds = lonlats.sub)
     }
@@ -102,7 +102,7 @@ get.S.ECs <- function(Envs,
     }
     Sys.sleep(2)
     closeAllConnections()
-    file.remove("SLGA_soil_download_log.txt")
+    suppressWarnings(file.remove("SLGA_soil_download_log.txt"))
     }
 
   rownames(all.env.soil)<-Envs

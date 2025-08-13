@@ -81,8 +81,15 @@ get.SILO.weather <- function(Envs,
     tmp.dir <- tempfile()
     tmp.dir <- gsub("\\", "/", tmp.dir, fixed = T)
     tmp.dir <- paste(tmp.dir, "_", 1:length(urls), sep = "")
-    utils::download.file(url = urls, destfile = tmp.dir, method = "libcurl", quiet = T, mode = "wb")
+    try(utils::download.file(url = urls, destfile = tmp.dir, method = "libcurl", quiet = T, mode = "wb"))
 
+    finfo<-file.info(tmp.dir)
+    tryagain<-which(finfo$size<29000  | is.na(finfo$size))
+    if(length(tryagain)>0){
+      try(utils::download.file(url = urls[tryagain], destfile = tmp.dir[tryagain], method = "libcurl", quiet = T, mode = "wb"))
+    }
+    
+    
     all.env.weather <- list()
     for (e in 1:length(Envs)) {
       if (verbose == TRUE & e %in% round(seq(1, length(Envs), length.out = 100))) {
@@ -143,9 +150,15 @@ get.SILO.weather <- function(Envs,
       tmp.dir <- tempfile()
       tmp.dir <- gsub("\\", "/", tmp.dir, fixed = T)
       tmp.dir <- paste(tmp.dir, "_SILO", vars[v], "_", years, "_", sep = "")
-      options(timeout = max(50000, getOption("timeout")))
+      options(timeout = max(80000, getOption("timeout")))
       utils::download.file(url = addrs, destfile = tmp.dir, method = "libcurl", quiet = T, mode = "wb")
 
+      finfo<-file.info(tmp.dir)
+      tryagain<-which(finfo$size<40000000 | is.na(finfo$size))
+      if(length(tryagain)>0){
+        try(utils::download.file(url = addrs[tryagain], destfile = tmp.dir[tryagain], method = "libcurl", quiet = T, mode = "wb"))
+      }
+      
       for (y in seq_along(years)) {
         if (verbose) cat(years[y], "|", sep = "")
         env.info.yr.sub <- data.frame(
@@ -153,7 +166,11 @@ get.SILO.weather <- function(Envs,
           "Lat" = Lats[Years == years[y]],
           "Lon" = Lons[Years == years[y]]
         )
-        nc.data <- nc.process(tmp.dir[y])
+        nc.data <- try(nc.process(tmp.dir[y]))
+        if(class(nc.data)=="try-error"){
+          try(utils::download.file(url = addrs[y], destfile = tmp.dir[y], method = "libcurl", quiet = T, mode = "wb"))
+          nc.data <- try(nc.process(tmp.dir[y]))
+        }
         file.remove(tmp.dir[y])
         env.info.yr.sub$lon.ind <- sapply(env.info.yr.sub$Lon, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[1]]) - as.numeric(x))))
         env.info.yr.sub$lat.ind <- sapply(env.info.yr.sub$Lat, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[2]]) - as.numeric(x))))

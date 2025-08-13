@@ -7,8 +7,8 @@
 #' @param Lats Vector of latitude numeric values for each environment in the same order as `Envs`.
 #' @param Lons Vector of longitude numeric values for each environment in the same order as `Envs`.
 #' @param Years Vector of year integer values. Unlike [get.SILO.weather()] and [get.BARRA.weather()], `Years` should not be the same
-#' length as `Envs`. Data for all locations in `Envs` will be extracted for all `Years`. Values must be within the possible time ranges of 1985:2014, 2035-2064, 
-#' or 2070-2099.
+#' length as `Envs`. Data for all locations in `Envs` will be extracted for all `Years`. Values must be within the possible time ranges of 1985-2014, 2035-2064, 
+#' and 2070-2099.
 #' @param GCMs Vector of GCM names to get data from. For options see Details below.
 #' @param SSPs Vector of SSP names to get data from. For options see Details below.
 #' @param ncores Number (integer) of cores to use for parallel processing of gridded data. Use `1` to run in series. The default (`NULL`) will
@@ -212,16 +212,16 @@ get.CMIP6.weather <- function(Envs,
         cat("\nDownloading .nc files...")
         options(timeout = max(80000, getOption("timeout")))
 
-        utils::download.file(url = addrs, destfile = tmp.dir, method = "libcurl", quiet = T, mode = "wb")
+        try(utils::download.file(url = addrs, destfile = tmp.dir, method = "libcurl", quiet = T, mode = "wb"))
         finfo<-file.info(tmp.dir)
-        tryagain<-which(finfo$size<500000000)
+        tryagain<-which(finfo$size<500000000 | is.na(finfo$size))
         if(length(tryagain)>0){
-          utils::download.file(url = addrs[tryagain], destfile = tmp.dir[tryagain], method = "libcurl", quiet = T, mode = "wb")
+          try(utils::download.file(url = addrs[tryagain], destfile = tmp.dir[tryagain], method = "libcurl", quiet = T, mode = "wb"))
         }
         finfo<-file.info(tmp.dir)
-        tryagain<-which(finfo$size<500000000)
+        tryagain<-which(finfo$size<500000000 | is.na(finfo$size))
         if(length(tryagain)>0){
-          utils::download.file(url = addrs[tryagain], destfile = tmp.dir[tryagain], method = "libcurl", quiet = T, mode = "wb")
+          try(utils::download.file(url = addrs[tryagain], destfile = tmp.dir[tryagain], method = "libcurl", quiet = T, mode = "wb"))
         }
  
         if (isTRUE(ncores > 1)) { # Run in parallel
@@ -249,7 +249,13 @@ get.CMIP6.weather <- function(Envs,
           if (verbose) {
             cat(Years[y], "|", sep = "")
           }
-          nc.data <- nc.process(tmp.dir[y])
+          nc.data <- try(nc.process(tmp.dir[y]))
+          
+          if(class(nc.data)=="try-error"){
+            try(utils::download.file(url = addrs[y], destfile = tmp.dir[y], method = "libcurl", quiet = T, mode = "wb"))
+            nc.data <- try(nc.process(tmp.dir[y]))
+          }
+          
           yr <- stringr::str_sub(dimnames(nc.data)[[3]][1], 1, 4)
           file.remove(tmp.dir[y])
           lon.ind <- sapply(Lons, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[1]]) - as.numeric(x))))
@@ -270,8 +276,8 @@ get.CMIP6.weather <- function(Envs,
           if (verbose) {
             cat("\nFinished parallel :)")
           }
-          Sys.sleep(5)
-          file.remove("CMIP6_download_log.txt")
+          Sys.sleep(2)
+          suppressWarnings(file.remove("CMIP6_download_log.txt"))
         }
         gc(full = T)
         colnames(all.yrs.weather) <- 1:ncol(all.yrs.weather)

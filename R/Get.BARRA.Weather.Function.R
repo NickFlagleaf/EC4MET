@@ -94,8 +94,16 @@ get.BARRA.weather <- function(Envs,
       tmp.dir <- gsub("\\", "/", tmp.dir, fixed = T)
       tmp.files <- paste(tmp.dir,"/",paste(vars[v], years[y], mons, sep="_"), ".nc", sep = "")
       options(timeout = max(80000, getOption("timeout")))
-      utils::download.file(url = addrs, destfile = tmp.files, method = "libcurl", quiet = T, mode = "wb")
+      try(utils::download.file(url = addrs, destfile = tmp.files, method = "libcurl", quiet = T, mode = "wb"))
+      
+      finfo<-file.info(tmp.files)
+      tryagain<-which(finfo$size<30000000 | is.na(finfo$size))
+      if(length(tryagain)>0){
+        try(utils::download.file(url = addrs[tryagain], destfile = tmp.files[tryagain], method = "libcurl", quiet = T, mode = "wb"))
+      }
+      
     }
+    
     
     if (isTRUE(ncores == 1)) { # Run in series
       if (verbose) {
@@ -109,7 +117,7 @@ get.BARRA.weather <- function(Envs,
     if (verbose) {
       cat("\nRunning in parallel...")
     }
-    file.remove("BARRA_download_log.txt", showWarnings = FALSE)
+    suppressWarnings(file.remove("BARRA_download_log.txt", showWarnings = FALSE))
     cl <- parallel::makeCluster(ncores, outfile = "BARRA_download_log.txt")
     doParallel::registerDoParallel(cl)
     if (verbose) {
@@ -129,11 +137,18 @@ get.BARRA.weather <- function(Envs,
           cat(month.abb[m], "|", sep = "")
         }
         nc.path <- paste(tmp.dir,"/",paste(vars[v], years[y], mons[m], sep="_"), ".nc", sep = "")
-        nc.data <- nc.process(nc.path)
+        nc.data <- try(nc.process(nc.path))
+        if(class(nc.data)=="try-error"){
+          try(utils::download.file(url = addrs[y], destfile = nc.path, method = "libcurl", quiet = T, mode = "wb"))
+          nc.data <- try(nc.process(nc.path))
+        }
         file.remove(nc.path)
         all.mons.weather[[m]] <- nc.data
       }
       gc(full = T)
+      if (verbose) {
+        cat("\n")
+      }
 
       tnames <- unlist(lapply(all.mons.weather, function(x) dimnames(x)[[3]]))
       all.mons.weather <- abind::abind(all.mons.weather, along = 3)

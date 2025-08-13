@@ -24,8 +24,8 @@ get.CMIP6.weather(
 \item{Lons}{Vector of longitude numeric values for each environment in the same order as \code{Envs}.}
 
 \item{Years}{Vector of year integer values. Unlike \code{\link[=get.SILO.weather]{get.SILO.weather()}} and \code{\link[=get.BARRA.weather]{get.BARRA.weather()}}, \code{Years} should not be the same
-length as \code{Envs}. Data for all locations in \code{Envs} will be extracted for all \code{Years}. Values must be within the possible time ranges of 1985:2014, 2035-2064,
-or 2070-2099.}
+length as \code{Envs}. Data for all locations in \code{Envs} will be extracted for all \code{Years}. Values must be within the possible time ranges of 1985-2014, 2035-2064,
+and 2070-2099.}
 
 \item{GCMs}{Vector of GCM names to get data from. For options see Details below.}
 
