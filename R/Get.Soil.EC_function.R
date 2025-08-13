@@ -62,7 +62,7 @@ get.S.ECs <- function(Envs,
       cat(paste("\nProgress log output to:\n", getwd(), "/SLGA_soil_download_log.txt", sep = ""))
     }
     on.exit(closeAllConnections())
-    on.exit(file.remove("SLGA_soil_download_log.txt"))
+    on.exit(suppressWarnings(file.remove("SLGA_soil_download_log.txt")))
     `%dopar%` <- foreach::`%dopar%`
   }
 
@@ -102,7 +102,7 @@ get.S.ECs <- function(Envs,
     }
     Sys.sleep(2)
     closeAllConnections()
-    file.remove("SLGA_soil_download_log.txt")
+    suppressWarnings(file.remove("SLGA_soil_download_log.txt"))
     }
 
   rownames(all.env.soil)<-Envs
