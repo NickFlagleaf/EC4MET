@@ -37,7 +37,7 @@ add.SMI <- function(weather,verbose=TRUE) {
   lonlats.full <- data.frame("Loc" = paste(Lons, Lats, sep = "_"), "longitude" = Lons, "latitude" = Lats)
   lonlats.sub <- lonlats.full[!duplicated(lonlats.full$Loc), ]
   
-  dl.n.limit<-100
+  dl.n.limit<-500
   if(nrow(lonlats.sub) < dl.n.limit){
     AWCdata<-api.extrct(rasters = rasters,crds = lonlats.sub)
   }
