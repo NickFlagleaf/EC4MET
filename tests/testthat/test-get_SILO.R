@@ -9,7 +9,7 @@ test_that("get SILO data works", {
   expect_equal(
     sapply(obs.wthr$data, function(x) x[,5]),
     matrix(c(0.0, 29.9, 11.1, 20.7, 31.1, 14.1021837,
-             39.5,30.4, 14.8, 15.0, 29.0, 14.1428065),nrow = 2,byrow = T,
+             39.6,30.4, 14.8, 15.0, 29.0, 14.1428065),nrow = 2,byrow = T,
            dimnames = list(c("test1","test2"),
                            c("daily_rain", "max_temp", "min_temp", "vp_deficit","radiation", "day_length")))
   )

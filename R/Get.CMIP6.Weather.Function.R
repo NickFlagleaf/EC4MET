@@ -14,7 +14,7 @@
 #' @param ncores Number (integer) of cores to use for parallel processing of gridded data. Use `1` to run in series. The default (`NULL`) will
 #' use the one less than the maximum available. If running in parallel, an output log text file will be created in the working directory.
 #' @param verbose Logical. Should progress be printed? Default = TRUE.
-#' @param dlprompt Logical. Should the user be prompted approve the total download size? Default = TRUE.
+#' @param dlprompt Logical. Should the user be prompted to approve the total download size? Default = TRUE.
 #'
 #' @details
 #' The CMPI6 QDC dataset is hosted on the [CSIRO data server](https://data-cbr.csiro.au/thredds/catalog/catch_all/qdc-cmip6/QDC-CMIP6/BARRA-R2/catalog.html)
@@ -34,7 +34,7 @@
 #' VPD in hPa is calculated as \eqn{ VPD = 10(es - ea) }, where \eqn{ es = 0.6108 \times \exp(\frac{17.27 \times T_{ave}}{T_{ave} + 237.3}) },
 #' \eqn{T_{ave} } is the mean temperature in °C, \deqn{ ea = \frac{RH}{100} \times es }, and \eqn{RH} is the relative humidity (%).
 #'
-#' Possible options for Global Climate Models (GCM):
+#' Possible options for `GCMs` (Global Climate Models):
 #' * `ACCESS-CM2` - A much hotter future, and drier in most regions except the southeast
 #' * `ACCESS-ESM1-5` - A hotter and much drier future
 #' * `CMCC-ESM2` - A much hotter future with little change in mean rainfall (with regional exceptions)
@@ -46,7 +46,7 @@
 #'
 #' For further details see [Grose et al. 2023](https://doi.org/10.1016/j.cliser.2023.100368)
 #'
-#' Possible options for Shared Socio-economic Pathways (SSP) and equivalent Representative Concentration Pathways (RCP)
+#' Possible options for `SSPs` (Shared Socio-economic Pathways) and equivalent Representative Concentration Pathways (RCP)
 #' with expected temperature increase range:
 #' * `ssp126` - Sustainability (RCP2.6; 1.0-1.8°C)
 #' * `ssp245` - Middle of the road (RCP4.5; 1.3-2.4°C)

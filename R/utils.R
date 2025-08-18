@@ -106,7 +106,13 @@ dl.extrct.tifs<-function(addrs,crds){
   tmp.dir <- gsub("\\", "/", tmp.dir, fixed = T)
   tmp.dir <- paste(tmp.dir, "_", 1:length(addrs), sep = "")
   options(timeout = max(50000, getOption("timeout")))
-  utils::download.file(url = addrs, destfile = tmp.dir, method = "libcurl", quiet = T, mode = "wb")
+  try(utils::download.file(url = addrs, destfile = tmp.dir, method = "libcurl", quiet = T, mode = "wb"))
+  finfo<-file.info(tmp.dir)
+  tryagain<-which(finfo$size<1000000000 | is.na(finfo$size))
+  if(length(tryagain)>0){
+    try(utils::download.file(url = addrs[tryagain], destfile = tmp.dir[tryagain], method = "libcurl", quiet = T, mode = "wb"))
+    }
+  
   all.vals <- sapply(1:length(tmp.dir), function(d) {
     r<-terra::rast(tmp.dir[d])
     vals <- terra::extract(x = r, y = crds[,c("longitude", "latitude")], search_radius = 50)[, 2]
@@ -132,7 +138,7 @@ dl.extrct.tifs<-function(addrs,crds){
 
 
 
-#Download and extract SLGA tiffs function
+#extract SLGA data from API rasters function
 api.extrct<-function(rasters,crds){
   AWCdata <- matrix(NA, nrow = nrow(crds), ncol = nrow(rasters), dimnames = list(
     crds$Loc,paste(paste(rasters$LowerDepth_m,rasters$UpperDepth_m,sep = "-"),"m",sep="")
@@ -141,7 +147,7 @@ api.extrct<-function(rasters,crds){
   for (d in 1:nrow(rasters)) {
     r <- terra::rast(paste("/vsicurl/",rasters$StagingPath[d], sep = ""))
     if(nrow(crds)==1){
-    vals <- unique(terra::extract(x = r, y = crds[,c("longitude", "latitude")], search_radius = 50)[, 2])
+    vals <- unique(terra::extract(x = r, y = crds[,c("longitude", "latitude")], search_radius = 50))[, 2]
     }else{
     vals <- terra::extract(x = r, y = crds[,c("longitude", "latitude")], search_radius = 50)[, 2]
     }
@@ -163,4 +169,37 @@ api.extrct<-function(rasters,crds){
   return(AWCdata)
 }
 
+
+#read data from saved SLGA tiff file function
+tif.read<-function(rasters,crds,tif.dir,verbose){
+  files<-paste(rasters$Name,".tif",sep="")
+  miss.files<-files[!files %in% dir(tif.dir)]
+  if(length(miss.files)>0){ stop("SLGA TIFF files not in tif.dir:\n", paste(miss.files,collapse = "\n"),"\nTry dl.slga function again")}
+  
+  AWCdata<-sapply(files,function(t) {
+  if (verbose == TRUE) { cat("|") }
+  r <- terra::rast(paste(tif.dir,t,sep="/"))
+  if(nrow(crds)==1){
+    vals <- unique(terra::extract(x = r, y = crds[,c("longitude", "latitude")], search_radius = 50))[, 2]
+  }else{
+    vals <- terra::extract(x = r, y = crds[,c("longitude", "latitude")], search_radius = 50)[, 2]
+  }
+  trys <- 10
+  rad <- 500
+  while (trys > 0 & sum(is.na(vals)) > 0) { # try filling in NAS with increasing search radius
+    trys <- trys - 1
+    which.nas <- which(is.na(vals))
+    if (length(which.nas) < 2) {
+      vals[which.nas] <- unique(terra::extract(x = r, y = crds[which.nas, c("longitude", "latitude")], search_radius = rad)[, 2])
+    }
+    if (length(which.nas) > 1) {
+      vals[which.nas] <- terra::extract(x = r, y = crds[which.nas, c("longitude", "latitude")], search_radius = rad)[, 2]
+    }
+    rad <- rad + 500
+  }
+  return(vals)
+})
+  rownames(AWCdata)<-crds$Loc
+  return(AWCdata)
+}
 
