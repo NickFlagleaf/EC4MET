@@ -6,7 +6,8 @@
 #' @param weather A list of length 2. Weather data as outputted from the [get.SILO.weather()]. Weather covariate names for list items should include:
 #' * `daily_rain`
 #' * `max_temp`
-#' @param tif.dir Directory path where SLGA TIFF files are saves from using the [dl.slga()] function. If left as the default (`NULL`)  
+#' @param tif.dir Directory path where SLGA TIFF files are saves from using the [dl.slga()] function. If left as the default (`NULL`), files 
+#' will be downloaded from the SLGA API which may be time consuming with slow internet download speeds.
 #' @param verbose Logical. Should progress be printed? Default if TRUE.
 #'
 #' @details

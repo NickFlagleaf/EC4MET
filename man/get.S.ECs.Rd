@@ -21,7 +21,8 @@ get.S.ECs(
 
 \item{Lons}{Vector of longitude numeric values for each environment.}
 
-\item{tif.dir}{Directory path where SLGA TIFF files are saves from using the \code{\link[=dl.slga]{dl.slga()}} function. If left as the default (\code{NULL})}
+\item{tif.dir}{Directory path where SLGA TIFF files are saves from using the \code{\link[=dl.slga]{dl.slga()}} function. If left as the default (\code{NULL}), files
+will be downloaded from the SLGA API which may be time consuming with slow internet download speeds.}
 
 \item{ncores}{Number (integer) of cores to use for parallel processing. Use \code{1} to run sequentially in series. The default (\code{NULL}) will
 use the maximum available cores. If running in parallel, an output log text file will be created in the working directory.}

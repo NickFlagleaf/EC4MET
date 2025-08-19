@@ -15,7 +15,8 @@ add.SMI(weather, verbose = TRUE, tif.dir = NULL)
 
 \item{verbose}{Logical. Should progress be printed? Default if TRUE.}
 
-\item{tif.dir}{Directory path where SLGA TIFF files are saves from using the \code{\link[=dl.slga]{dl.slga()}} function. If left as the default (\code{NULL})}
+\item{tif.dir}{Directory path where SLGA TIFF files are saves from using the \code{\link[=dl.slga]{dl.slga()}} function. If left as the default (\code{NULL}), files
+will be downloaded from the SLGA API which may be time consuming with slow internet download speeds.}
 }
 \value{
 The same \code{weather} list object as inputted with the addition of a matrix of daily SMI values in \code{...$data$smi}.
