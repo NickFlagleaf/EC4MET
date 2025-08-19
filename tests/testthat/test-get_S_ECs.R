@@ -5,5 +5,5 @@ test_that("get SLGA data works", {
     Lons = c(138.4150, 117.8001, 152.2791),
     verbose = F, ncores = 1
   )
-  expect_equal(round(c(testSecs)[c(1, 5, 20, 200)], 2), c(1.39, 1.49, 4.00, 4.30))
+  expect_equal(round(c(as.matrix(testSecs))[c(1, 5, 20, 200)], 2), c(1.39, 1.49, 4.00, 4.30))
 })
