@@ -127,7 +127,7 @@ get.SILO.weather <- function(Envs,
 
     if (isTRUE(ncores > 1)) { # Run in parallel
       if (verbose) cat("\nRunning in parallel...")
-      if("SILO_download_log.txt" %in% dir()){file.remove("SILO_download_log.txt", showWarnings = FALSE)}
+      if("SILO_download_log.txt" %in% dir()){suppressWarnings(file.remove("SILO_download_log.txt", showWarnings = FALSE))}
       cl <- parallel::makeCluster(ncores, outfile = "SILO_download_log.txt")
       doParallel::registerDoParallel(cl)
       if (verbose) {
