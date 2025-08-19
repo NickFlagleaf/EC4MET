@@ -124,14 +124,12 @@ get.S.ECs <- function(Envs,
   all.env.soil <- all.env.soil[, !colnames(all.env.soil) == "Env"]
   if(verbose & sum(is.na(all.env.soil))>0){ warning(sum(is.na(all.env.soil))," Missing data points inputed with median")}
   
-  all.env.soil<-as.matrix(all.env.soil)
-  
-  isnas <- sum(is.nan(unlist(all.env.soil)) | is.na(unlist(all.env.soil)))
+  isnas <- sum(is.nan(unlist(as.matrix(all.env.soil))) | is.na(unlist(as.matrix(all.env.soil))))
   if (verbose) cat(paste(isnas, "NAs returned"))
   
   if (verbose & isnas > 0) {
-    cat(paste("\n NAs at:\n", paste(all.env.soil[!complete.cases(all.env.soil)], collapse = " ")))
-    cat(paste("\n For:\n", paste(colnames(all.env.soil)[!complete.cases(t(all.env.soil))], collapse = " ")))
+    cat(paste("\n NAs returned at:\n", paste(rownames(all.env.soil)[!complete.cases(as.matrix(all.env.soil))], collapse = ", ")))
+    cat(paste("\n NAs returned for:\n", paste(colnames(all.env.soil)[!complete.cases(t(all.env.soil))], collapse = ", ")))
   }
   return(all.env.soil)
 }
