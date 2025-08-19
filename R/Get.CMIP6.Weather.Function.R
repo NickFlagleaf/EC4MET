@@ -296,7 +296,7 @@ get.CMIP6.weather <- function(Envs,
       all.vars.weather <- all.vars.weather[!names(all.vars.weather) == "relhumidity"]
 
       Lats.full <- as.numeric(sapply(rownames(all.vars.weather$radiation), function(x) stringr::str_split(x, pattern = "_")[[1]][3]))
-      DLs <- t(sapply(Lats.full, function(x) chillR::daylength(latitude = x, JDay = 1:370, notimes.as.na = FALSE)$Daylength))
+      DLs <- t(sapply(Lats.full, function(x) daylength(latitude = x, JDay = 1:370, notimes.as.na = FALSE)$Daylength))
       rownames(DLs) <- rownames(all.vars.weather$radiation)
       all.vars.weather$day_length <- DLs
 

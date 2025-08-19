@@ -210,7 +210,7 @@ get.BARRA.weather <- function(Envs,
 
   all.vars.weather <- all.vars.weather[!names(all.vars.weather) == "relhumidity"]
 
-  DLs <- t(sapply(Lats, function(x) chillR::daylength(latitude = x, JDay = 1:370, notimes.as.na = FALSE)$Daylength))
+  DLs <- t(sapply(Lats, function(x) daylength(latitude = x, JDay = 1:370, notimes.as.na = FALSE)$Daylength))
   rownames(DLs) <- Envs
   all.vars.weather$day_length <- DLs
 

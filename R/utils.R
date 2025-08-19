@@ -203,3 +203,48 @@ tif.read<-function(rasters,crds,tif.dir,verbose){
   return(AWCdata)
 }
 
+
+#daylength function from the ChillR package
+daylength<-function (latitude, JDay, notimes.as.na = FALSE) 
+{
+  if (missing(latitude)) 
+    stop("'latitude' not specified")
+  if (missing(JDay)) 
+    stop("'JDay' not specified")
+  if (!isTRUE(all(is.numeric(JDay)))) 
+    stop("'JDay' contains non-numeric values")
+  if (length(latitude) > 1) 
+    stop("'latitude' has more than one element")
+  if (!is.numeric(latitude)) 
+    stop("'latitude' is not numeric")
+  if (latitude > 90 | latitude < (-90)) 
+    warning("'latitude' is usually between -90 and 90")
+  Gamma <- 2 * pi/365 * ((JDay) - 1)
+  Delta <- 180/pi * (0.006918 - 0.399912 * cos(Gamma) + 0.070257 * 
+                       sin(Gamma) - 0.006758 * cos(2 * Gamma) + 0.000907 * sin(2 * 
+                                                                                 (Gamma)) - 0.002697 * cos(3 * (Gamma)) + 0.00148 * sin(3 * 
+                                                                                                                                          (Gamma)))
+  CosWo <- (sin(-0.8333/360 * 2 * pi) - sin(latitude/360 * 
+                                              2 * pi) * sin(Delta/360 * 2 * pi))/(cos(latitude/360 * 
+                                                                                        2 * pi) * cos(Delta/360 * 2 * pi))
+  normal_days <- which(CosWo >= -1 & CosWo <= 1)
+  Sunrise <- rep(-99, length(CosWo))
+  Sunrise[normal_days] <- 12 - acos(CosWo[normal_days])/(15/360 * 
+                                                           2 * pi)
+  Sunset <- rep(-99, length(CosWo))
+  Sunset[normal_days] <- 12 + acos(CosWo[normal_days])/(15/360 * 
+                                                          2 * pi)
+  Daylength <- Sunset - Sunrise
+  Daylength[which(CosWo > 1)] <- 0
+  Daylength[which(CosWo < (-1))] <- 24
+  Sunrise[which(Daylength == 24)] <- 99
+  Sunset[which(Daylength == 24)] <- 99
+  if (notimes.as.na) {
+    Sunrise[which(Sunrise %in% c(-99, 99))] <- NA
+    Sunset[which(Sunset %in% c(-99, 99))] <- NA
+  }
+  Sunset[which(is.na(JDay))] <- NA
+  Sunrise[which(is.na(JDay))] <- NA
+  Daylength[which(is.na(JDay))] <- NA
+  return(list(Sunrise = Sunrise, Sunset = Sunset, Daylength = Daylength))
+}
