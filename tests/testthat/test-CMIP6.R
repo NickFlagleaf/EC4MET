@@ -5,7 +5,7 @@ test_that("get CMIP6 data works", {
                                 Lats = c(-31.2, -31.7),
                                 Lons = c(123.5, 150.5),
                                 Years = c(1990, 2090),
-                                ncores = 1, verbose = T,dlprompt = F)
+                                ncores = 1, verbose = F,dlprompt = F)
                                   
    expect_equal(
     round(c(cmip.tst$`CNRM-ESM2-1`$ssp370$data$max_temp[1:4,10]), 2),
