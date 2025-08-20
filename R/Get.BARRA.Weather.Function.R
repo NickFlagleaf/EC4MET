@@ -74,8 +74,7 @@ get.BARRA.weather <- function(Envs,
   }
   ncores <- min(ncores, length(Years))
 
-
-  cat("\nDownloading .nc files...\n")
+  if (verbose) { cat("\nDownloading .nc files...\n") }
   #DL files in series
   all.vars.weather <- list()
   for (v in seq_along(vars)) {
@@ -95,6 +94,12 @@ get.BARRA.weather <- function(Envs,
       tmp.files <- paste(tmp.dir,"/",paste(vars[v], years[y], mons, sep="_"), ".nc", sep = "")
       options(timeout = max(80000, getOption("timeout")))
       try(utils::download.file(url = addrs, destfile = tmp.files, method = "libcurl", quiet = T, mode = "wb"))
+      
+      finfo<-file.info(tmp.files)
+      tryagain<-which(finfo$size<30000000 | is.na(finfo$size))
+      if(length(tryagain)>0){
+        try(utils::download.file(url = addrs[tryagain], destfile = tmp.files[tryagain], method = "libcurl", quiet = T, mode = "wb"))
+      }
       
       finfo<-file.info(tmp.files)
       tryagain<-which(finfo$size<30000000 | is.na(finfo$size))
@@ -128,9 +133,7 @@ get.BARRA.weather <- function(Envs,
   }
 
   all.yrs.weather <- foreach::foreach(y = seq_along(years), .combine = rbind, .multicombine = T, .export = "nc.process") %how% {
-    if (verbose) {
-      cat("\nStarting", years[y])
-    }
+    if (verbose) { cat("\nStarting", years[y]) }
       all.mons.weather <- list()
       for (m in 1:length(mons)) {
         if (verbose) {
@@ -139,7 +142,11 @@ get.BARRA.weather <- function(Envs,
         nc.path <- paste(tmp.dir,"/",paste(vars[v], years[y], mons[m], sep="_"), ".nc", sep = "")
         nc.data <- try(nc.process(nc.path))
         if(class(nc.data)=="try-error"){
-          try(utils::download.file(url = addrs[y], destfile = nc.path, method = "libcurl", quiet = T, mode = "wb"))
+          adrs<-paste("https://thredds.nci.org.au/thredds/fileServer/ob53/output/reanalysis/AUS-11/BOM/ERA5/historical/hres/BARRA-R2/v1/day/",
+                      vars[v], "/latest/", vars[v], "_AUS-11_ERA5_historical_hres_BOM_BARRA-R2_v1_day_", years[y], mons[m], "-", years[y], mons[m], ".nc",
+                      sep = ""
+          )
+          try(utils::download.file(url = adrs, destfile = nc.path, method = "libcurl", quiet = T, mode = "wb"))
           nc.data <- try(nc.process(nc.path))
         }
         file.remove(nc.path)
