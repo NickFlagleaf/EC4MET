@@ -209,7 +209,7 @@ get.CMIP6.weather <- function(Envs,
         tmp.dir <- tempfile()
         tmp.dir <- gsub("\\", "/", tmp.dir, fixed = T)
         tmp.dir <- paste(tmp.dir, "_", Years, sep = "")
-        cat("\nDownloading .nc files...")
+        if (verbose) {cat("\nDownloading .nc files...")}
         options(timeout = max(80000, getOption("timeout")))
 
         try(utils::download.file(url = addrs, destfile = tmp.dir, method = "libcurl", quiet = T, mode = "wb"))
@@ -225,9 +225,7 @@ get.CMIP6.weather <- function(Envs,
         }
  
         if (isTRUE(ncores > 1)) { # Run in parallel
-          if (verbose) {
-            cat("\nRunning in parallel...")
-          }
+          if (verbose) { cat("\nRunning in parallel...") }
           suppressWarnings(file.remove("CMIP6_download_log.txt"))
           cl <- parallel::makeCluster(ncores, outfile = "CMIP6_download_log.txt")
           doParallel::registerDoParallel(cl)
@@ -235,17 +233,16 @@ get.CMIP6.weather <- function(Envs,
             cat(paste("\nProgress log output to:", getwd(), "/CMIP6_download_log.txt", sep = ""))
           }
           on.exit(closeAllConnections())
-          `%dopar%` <- foreach::`%dopar%`
+          `%how%` <- foreach::`%dopar%`
         }
 
         if (isTRUE(ncores == 1)) { # Run in series
           if (verbose) {
-            cat("\nRunning in series...")
-            `%dopar%` <- foreach::`%do%`
-          }
+            cat("\nRunning in series...")}
+            `%how%` <- foreach::`%do%`
         }
 
-        all.yrs.weather <- foreach::foreach(y = seq_along(tmp.dir), .combine = rbind, .multicombine = T, .export = "nc.process") %dopar% {
+        all.yrs.weather <- foreach::foreach(y = seq_along(tmp.dir), .combine = rbind, .multicombine = T, .export = "nc.process") %how% {
           if (verbose) {
             cat(Years[y], "|", sep = "")
           }

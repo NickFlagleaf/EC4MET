@@ -55,7 +55,7 @@ get.S.ECs <- function(Envs,
     if (verbose) {
       cat("\nRunning in series")
     }
-    `%dopar%` <- foreach::`%do%`
+    `%how%` <- foreach::`%do%`
   }
 
   if (isTRUE(ncores > 1)) { # Run in parallel
@@ -70,12 +70,12 @@ get.S.ECs <- function(Envs,
     }
     on.exit(closeAllConnections())
     on.exit(suppressWarnings(file.remove("SLGA_soil_download_log.txt")))
-    `%dopar%` <- foreach::`%dopar%`
+    `%how%` <- foreach::`%dopar%`
   }
 
   all.env.soil <- foreach::foreach(a = seq_along(atts), .combine = cbind, .multicombine = T,.export = c("tif.read",
                                                                                                         "api.extrct",
-                                                                                                        "dl.extrct.tifs")) %dopar% {
+                                                                                                        "dl.extrct.tifs")) %how% {
     if (verbose == TRUE) {
       cat("\nStarting", atts[a])
     }

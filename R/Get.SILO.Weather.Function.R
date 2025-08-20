@@ -133,16 +133,16 @@ get.SILO.weather <- function(Envs,
       if (verbose) {
         cat(paste("\nProgress log output to: ", getwd(), "/SILO_download_log.txt", sep = ""))
       }
-      `%dopar%` <- foreach::`%dopar%`
+      `%how%` <- foreach::`%dopar%`
       on.exit(closeAllConnections())
     }
 
     if (isTRUE(ncores == 1)) { # Run in series
       if (verbose) cat("\nRunning in series\n")
-      `%dopar%` <- foreach::`%do%`
+      `%how%` <- foreach::`%do%`
     }
 
-    all.vars.weather <- foreach::foreach(v = seq_along(vars), .combine = list, .multicombine = T, .export = "nc.process") %dopar% {
+    all.vars.weather <- foreach::foreach(v = seq_along(vars), .combine = list, .multicombine = T, .export = "nc.process") %how% {
       all.yrs.weather <- matrix(NA, nrow = length(Envs), ncol = 365, dimnames = list(Envs, 1:365))
       if (verbose) cat("Starting", vars[v])
       if (verbose) cat("\nDownloading .nc files...\n")

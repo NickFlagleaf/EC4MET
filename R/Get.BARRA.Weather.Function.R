@@ -109,7 +109,7 @@ get.BARRA.weather <- function(Envs,
       if (verbose) {
         cat("\nRunning in series...")
       }
-      `%dopar%` <- foreach::`%do%`
+      `%how%` <- foreach::`%do%`
     }
     
     
@@ -124,10 +124,10 @@ get.BARRA.weather <- function(Envs,
       cat(paste("\nProgress log output to:\n", getwd(), "/BARRA_download_log.txt", sep = ""))
     }
     on.exit(expr = closeAllConnections())
-    `%dopar%` <- foreach::`%dopar%`
+    `%how%` <- foreach::`%dopar%`
   }
 
-  all.yrs.weather <- foreach::foreach(y = seq_along(years), .combine = rbind, .multicombine = T, .export = "nc.process") %dopar% {
+  all.yrs.weather <- foreach::foreach(y = seq_along(years), .combine = rbind, .multicombine = T, .export = "nc.process") %how% {
     if (verbose) {
       cat("\nStarting", years[y])
     }
