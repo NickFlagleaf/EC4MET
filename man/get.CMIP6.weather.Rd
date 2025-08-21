@@ -98,7 +98,8 @@ with expected temperature increase range:
 
 For further details see \href{https://doi.org/10.1016/j.gloenvcha.2016.05.009}{Riahi et al. 2017}
 
-An internet connection with high download speed is suggested for downloading gridded data for many environments.
+An internet connection with high download speed is suggested for downloading gridded data for many environments. There may be problems with
+downloading files on a Mac OS.
 }
 \references{
 \itemize{
