@@ -6,6 +6,8 @@
 #' @param weather A list of length 2. Weather data as outputted from the [get.SILO.weather()]. Weather covariate names for list items should include:
 #' * `daily_rain`
 #' * `max_temp`
+#' @param tif.dir Directory path where SLGA TIFF files are saves from using the [dl.slga()] function. If left as the default (`NULL`), files 
+#' will be downloaded from the SLGA API which may be time consuming with slow internet download speeds.
 #' @param verbose Logical. Should progress be printed? Default if TRUE.
 #'
 #' @details
@@ -18,13 +20,18 @@
 #'
 #' @returns The same `weather` list object as inputted with the addition of a matrix of daily SMI values in `...$data$smi`.
 #
-#' @seealso [get.BARRA.weather()], [get.SILO.weather()], [get.CMIP6.weather()]
+#' @seealso [get.BARRA.weather()], [get.SILO.weather()], [get.CMIP6.weather()], [dl.slga()]
 #'
 #' @author Nick Fradgley
 #'
 #' @export
 
-add.SMI <- function(weather,verbose=TRUE) {
+add.SMI <- function(weather,verbose=TRUE,tif.dir = NULL) {
+  
+  if(!is.null(tif.dir)){
+    is.dir<-file.info(tif.dir)$isdir
+    if(!is.dir){ stop(tif.dir," is not a directory!") }
+  }
   
   rasters <- SLGACloud::getProductMetaData(
     Detail = "High", Attribute = "Available Water Capacity",
@@ -37,15 +44,19 @@ add.SMI <- function(weather,verbose=TRUE) {
   lonlats.full <- data.frame("Loc" = paste(Lons, Lats, sep = "_"), "longitude" = Lons, "latitude" = Lats)
   lonlats.sub <- lonlats.full[!duplicated(lonlats.full$Loc), ]
   
-  dl.n.limit<-500
-  if(nrow(lonlats.sub) < dl.n.limit){
-    AWCdata<-api.extrct(rasters = rasters,crds = lonlats.sub)
+  #If TIFF files are saved in directory read from there
+  if(!is.null(tif.dir)){
+    AWCdata<-tif.read(rasters = rasters,crds = lonlats.sub, tif.dir = tif.dir, verbose = verbose)
+  }else{ #otherwise download from API
+    dl.n.limit<-500
+    if(nrow(lonlats.sub) < dl.n.limit){
+      AWCdata<-api.extrct(rasters = rasters,crds = lonlats.sub)
+    } #Or large tifs again
+    if(nrow(lonlats.sub) > dl.n.limit){
+      AWCdata<-dl.extrct.tifs(addrs = rasters$StagingPath,crds = lonlats.sub)
+    }
   }
-  
-  if(nrow(lonlats.sub) > dl.n.limit){
-    AWCdata<-dl.extrct.tifs(addrs = rasters$StagingPath,crds = lonlats.sub)
-  }
-  
+
   colnames(AWCdata)<-paste(paste(rasters$LowerDepth_m,rasters$UpperDepth_m,sep = "-"),"m",sep="")
   AWCdata<-AWCdata[lonlats.full$Loc,]
   Envs <- weather$Env.info$Environment

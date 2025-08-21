@@ -4,7 +4,14 @@
 \alias{pred.env.effs}
 \title{Predict environmental effects}
 \usage{
-pred.env.effs(train.ECs, new.ECs, E.effs, verbose = TRUE, ntree = 500)
+pred.env.effs(
+  train.ECs,
+  new.ECs,
+  E.effs,
+  verbose = TRUE,
+  ntree = 1000,
+  ncores = NULL
+)
 }
 \arguments{
 \item{train.ECs}{A data frame of weather and/or soil ECs for observed environments as output from the \code{\link[=get.W.ECs]{get.W.ECs()}} or \code{\link[=get.S.ECs]{get.S.ECs()}} functions.}
@@ -16,13 +23,18 @@ Latent environmental effect factor loadings that decompose GxE can be defined as
 
 \item{verbose}{Logical. Should progress be printed? Default = TRUE.}
 
-\item{ntree}{Number of decision trees to use in random forest models.}
+\item{ntree}{Number of decision trees to use in random forest models. Default = 1000 trees.}
+
+\item{ncores}{Number (integer) of cores to use for parallel processing. The default (\code{NULL}) will use the one less than the maximum available.}
 }
 \value{
 A data frame of environmental effect predictions for the new environments with environments as rows and environmental effect variates as columns.
 }
 \description{
 A function to train a random forest model to predict environmental effects defined from a MET mixed model analysis with ECs as predictors.
+}
+\details{
+Random forest models are fitted with one 3rd of feature variables samples at each split and a minimum end node size of 5.
 }
 \references{
 Smith, A., Norman, A., Kuchel, H., & Cullis, B. (2021). Plant Variety Selection Using Interaction Classes Derived From Factor Analytic Linear Mixed Models:

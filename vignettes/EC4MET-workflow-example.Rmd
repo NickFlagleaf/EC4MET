@@ -90,7 +90,7 @@ dim(obs.weather.ECs$ECs)
 head(obs.weather.ECs$gs.dates)
 ```
 
-As well as weather related ECs, soil attribute covariates can be extracted using the `get.S.ECs` function from the [SLGA](https://www.clw.csiro.au/aclep/soilandlandscapegrid/GetData-R_package.html) data resource [@grundy2015].
+As well as weather related ECs, soil attribute covariates can be extracted using the `get.S.ECs()` function from the [SLGA](https://www.clw.csiro.au/aclep/soilandlandscapegrid/GetData-R_package.html) data resource [@grundy2015].
 
 ```{r Get SLGA ECs, message=FALSE, warning=FALSE}
 obs.soil.ECs <- get.S.ECs(
@@ -106,6 +106,8 @@ The soil EC data matrix is also in the same format with 36 environments as rows 
 ```{r Look at Soil EC dims}
 dim(obs.soil.ECs)
 ```
+
+The tiff files of soil maps from the SLGA can be downloaded to a local directory with the `dl.slga()` function. This directory of files can then be specified with the `tif.dir` argument of the `get.S.ECs()` rather downloading large files repeatedly.
 
 For more information on how ECs are calculated, see @fradgley2025 .
 

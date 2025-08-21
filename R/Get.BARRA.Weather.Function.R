@@ -65,6 +65,7 @@ get.BARRA.weather <- function(Envs,
   if (verbose & sum(!years %in% 1979:2023) > 0) stop("Years out of range of BARRA R2 data (Jan 1979 to Sept 2024)")
   if (verbose & sum(Lons < 88.48 | Lons > 207.39) > 0) stop("Lon out of range of BARRA data: 88.48 to 207.39")
   if (verbose & sum(Lats < -57.97 | Lats > 12.98) > 0) stop("Lats out of range of BARRA data: -57.97 to -12.98")
+  if(!capabilities("libcurl")){warning("libcurl is not supported!")}
 
   dl.size <- 40000000 * length(vars) * length(Years) * length(mons)
   if (verbose) download_data(dlprompt, dl.size)
@@ -74,8 +75,7 @@ get.BARRA.weather <- function(Envs,
   }
   ncores <- min(ncores, length(Years))
 
-
-  cat("\nDownloading .nc files...\n")
+  if (verbose) { cat("\nDownloading .nc files...\n") }
   #DL files in series
   all.vars.weather <- list()
   for (v in seq_along(vars)) {
@@ -102,6 +102,12 @@ get.BARRA.weather <- function(Envs,
         try(utils::download.file(url = addrs[tryagain], destfile = tmp.files[tryagain], method = "libcurl", quiet = T, mode = "wb"))
       }
       
+      finfo<-file.info(tmp.files)
+      tryagain<-which(finfo$size<30000000 | is.na(finfo$size))
+      if(length(tryagain)>0){
+        try(utils::download.file(url = addrs[tryagain], destfile = tmp.files[tryagain], method = "libcurl", quiet = T, mode = "wb"))
+      }
+      
     }
     
     
@@ -109,7 +115,7 @@ get.BARRA.weather <- function(Envs,
       if (verbose) {
         cat("\nRunning in series...")
       }
-      `%dopar%` <- foreach::`%do%`
+      `%how%` <- foreach::`%do%`
     }
     
     
@@ -124,13 +130,11 @@ get.BARRA.weather <- function(Envs,
       cat(paste("\nProgress log output to:\n", getwd(), "/BARRA_download_log.txt", sep = ""))
     }
     on.exit(expr = closeAllConnections())
-    `%dopar%` <- foreach::`%dopar%`
+    `%how%` <- foreach::`%dopar%`
   }
 
-  all.yrs.weather <- foreach::foreach(y = seq_along(years), .combine = rbind, .multicombine = T, .export = "nc.process") %dopar% {
-    if (verbose) {
-      cat("\nStarting", years[y])
-    }
+  all.yrs.weather <- foreach::foreach(y = seq_along(years), .combine = rbind, .multicombine = T, .export = "nc.process") %how% {
+    if (verbose) { cat("\nStarting", years[y]) }
       all.mons.weather <- list()
       for (m in 1:length(mons)) {
         if (verbose) {
@@ -139,7 +143,11 @@ get.BARRA.weather <- function(Envs,
         nc.path <- paste(tmp.dir,"/",paste(vars[v], years[y], mons[m], sep="_"), ".nc", sep = "")
         nc.data <- try(nc.process(nc.path))
         if(class(nc.data)=="try-error"){
-          try(utils::download.file(url = addrs[y], destfile = nc.path, method = "libcurl", quiet = T, mode = "wb"))
+          adrs<-paste("https://thredds.nci.org.au/thredds/fileServer/ob53/output/reanalysis/AUS-11/BOM/ERA5/historical/hres/BARRA-R2/v1/day/",
+                      vars[v], "/latest/", vars[v], "_AUS-11_ERA5_historical_hres_BOM_BARRA-R2_v1_day_", years[y], mons[m], "-", years[y], mons[m], ".nc",
+                      sep = ""
+          )
+          try(utils::download.file(url = adrs, destfile = nc.path, method = "libcurl", quiet = T, mode = "wb"))
           nc.data <- try(nc.process(nc.path))
         }
         file.remove(nc.path)
@@ -210,7 +218,7 @@ get.BARRA.weather <- function(Envs,
 
   all.vars.weather <- all.vars.weather[!names(all.vars.weather) == "relhumidity"]
 
-  DLs <- t(sapply(Lats, function(x) chillR::daylength(latitude = x, JDay = 1:370, notimes.as.na = FALSE)$Daylength))
+  DLs <- t(sapply(Lats, function(x) daylength(latitude = x, JDay = 1:370, notimes.as.na = FALSE)$Daylength))
   rownames(DLs) <- Envs
   all.vars.weather$day_length <- DLs
 

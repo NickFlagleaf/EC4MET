@@ -36,7 +36,7 @@ use the one less than the maximum available. If running in parallel, an output l
 
 \item{verbose}{Logical. Should progress be printed? Default = TRUE.}
 
-\item{dlprompt}{Logical. Should the user be prompted approve the total download size? Default = TRUE.}
+\item{dlprompt}{Logical. Should the user be prompted to approve the total download size? Default = TRUE.}
 }
 \value{
 A multi-level list of \verb{$data} and \verb{$Env.info} weather variables within SSPs within GCMs:
@@ -73,7 +73,7 @@ Weather variables returned include:
 VPD in hPa is calculated as \eqn{ VPD = 10(es - ea) }, where \eqn{ es = 0.6108 \times \exp(\frac{17.27 \times T_{ave}}{T_{ave} + 237.3}) },
 \eqn{T_{ave} } is the mean temperature in °C, \deqn{ ea = \frac{RH}{100} \times es }, and \eqn{RH} is the relative humidity (\%).
 
-Possible options for Global Climate Models (GCM):
+Possible options for \code{GCMs} (Global Climate Models):
 \itemize{
 \item \code{ACCESS-CM2} - A much hotter future, and drier in most regions except the southeast
 \item \code{ACCESS-ESM1-5} - A hotter and much drier future
@@ -87,7 +87,7 @@ Possible options for Global Climate Models (GCM):
 
 For further details see \href{https://doi.org/10.1016/j.cliser.2023.100368}{Grose et al. 2023}
 
-Possible options for Shared Socio-economic Pathways (SSP) and equivalent Representative Concentration Pathways (RCP)
+Possible options for \code{SSPs} (Shared Socio-economic Pathways) and equivalent Representative Concentration Pathways (RCP)
 with expected temperature increase range:
 \itemize{
 \item \code{ssp126} - Sustainability (RCP2.6; 1.0-1.8°C)

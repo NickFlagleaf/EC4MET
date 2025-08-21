@@ -127,22 +127,22 @@ get.SILO.weather <- function(Envs,
 
     if (isTRUE(ncores > 1)) { # Run in parallel
       if (verbose) cat("\nRunning in parallel...")
-      if("SILO_download_log.txt" %in% dir()){file.remove("SILO_download_log.txt", showWarnings = FALSE)}
+      if("SILO_download_log.txt" %in% dir()){suppressWarnings(file.remove("SILO_download_log.txt", showWarnings = FALSE))}
       cl <- parallel::makeCluster(ncores, outfile = "SILO_download_log.txt")
       doParallel::registerDoParallel(cl)
       if (verbose) {
         cat(paste("\nProgress log output to: ", getwd(), "/SILO_download_log.txt", sep = ""))
       }
-      `%dopar%` <- foreach::`%dopar%`
+      `%how%` <- foreach::`%dopar%`
       on.exit(closeAllConnections())
     }
 
     if (isTRUE(ncores == 1)) { # Run in series
       if (verbose) cat("\nRunning in series\n")
-      `%dopar%` <- foreach::`%do%`
+      `%how%` <- foreach::`%do%`
     }
 
-    all.vars.weather <- foreach::foreach(v = seq_along(vars), .combine = list, .multicombine = T, .export = "nc.process") %dopar% {
+    all.vars.weather <- foreach::foreach(v = seq_along(vars), .combine = list, .multicombine = T, .export = "nc.process") %how% {
       all.yrs.weather <- matrix(NA, nrow = length(Envs), ncol = 365, dimnames = list(Envs, 1:365))
       if (verbose) cat("Starting", vars[v])
       if (verbose) cat("\nDownloading .nc files...\n")
@@ -202,7 +202,7 @@ get.SILO.weather <- function(Envs,
 
   names(all.vars.weather) <- vars
 
-  DLs <- t(sapply(Lats, function(x) chillR::daylength(latitude = x, JDay = 1:370, notimes.as.na = FALSE)$Daylength))
+  DLs <- t(sapply(Lats, function(x) daylength(latitude = x, JDay = 1:370, notimes.as.na = FALSE)$Daylength))
   rownames(DLs) <- Envs
   all.vars.weather$day_length <- DLs
 

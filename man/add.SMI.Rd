@@ -4,7 +4,7 @@
 \alias{add.SMI}
 \title{Add estimated Soil Moisture Index (SMI) to weather data}
 \usage{
-add.SMI(weather, verbose = TRUE)
+add.SMI(weather, verbose = TRUE, tif.dir = NULL)
 }
 \arguments{
 \item{weather}{A list of length 2. Weather data as outputted from the \code{\link[=get.SILO.weather]{get.SILO.weather()}}. Weather covariate names for list items should include:
@@ -14,6 +14,9 @@ add.SMI(weather, verbose = TRUE)
 }}
 
 \item{verbose}{Logical. Should progress be printed? Default if TRUE.}
+
+\item{tif.dir}{Directory path where SLGA TIFF files are saves from using the \code{\link[=dl.slga]{dl.slga()}} function. If left as the default (\code{NULL}), files
+will be downloaded from the SLGA API which may be time consuming with slow internet download speeds.}
 }
 \value{
 The same \code{weather} list object as inputted with the addition of a matrix of daily SMI values in \code{...$data$smi}.
@@ -31,7 +34,7 @@ where \eqn{SMI_i} is the SMI for day \eqn{i}, \eqn{PET_i} is the potential evapo
 \href{https://www.tern.org.au/news-smips-soil-moisture/}{TERN}
 }
 \seealso{
-\code{\link[=get.BARRA.weather]{get.BARRA.weather()}}, \code{\link[=get.SILO.weather]{get.SILO.weather()}}, \code{\link[=get.CMIP6.weather]{get.CMIP6.weather()}}
+\code{\link[=get.BARRA.weather]{get.BARRA.weather()}}, \code{\link[=get.SILO.weather]{get.SILO.weather()}}, \code{\link[=get.CMIP6.weather]{get.CMIP6.weather()}}, \code{\link[=dl.slga]{dl.slga()}}
 }
 \author{
 Nick Fradgley
