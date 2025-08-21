@@ -4,7 +4,7 @@
 
 [![R-CMD-check](https://github.com/NickFlagleaf/EC4MET/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/NickFlagleaf/EC4MET/actions/workflows/R-CMD-check.yaml)
 
-[![DOI](https://zenodo.org/badge/938421607.svg)](https://doi.org/10.5281/zenodo.15400244)
+[![DOI](https://zenodo.org/badge/938421607.svg)]([https://doi.org/10.5281/zenodo.16917228])
 
 <!-- badges: end -->
 
