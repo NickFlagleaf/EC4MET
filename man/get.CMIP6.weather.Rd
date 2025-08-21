@@ -104,11 +104,11 @@ downloading files on a Mac OS.
 \references{
 \itemize{
 \item Grose, M. R., Narsey, S., Trancoso, R., Mackallah, C., Delage, F., Dowdy, A., Di Virgilio, G., Watterson, I., Dobrohotoff, P., Rashid, H. A., Rauniyar, S., Henley, B., Thatcher, M., Syktus, J., Abramowitz, G., Evans, J. P., Su, C.-H., & Takbash, A. (2023).
-\href{https://doi.org/10.1016/j.cliser.2023.100368}{A CMIP6-based multi-model downscaling ensemble to underpin climate change services in Australia}. Climate Services, 30, 100368.
+\href{https://doi.org/10.1016/j.cliser.2023.100368}{A CMIP6-based multi-model downscaling ensemble to underpin climate change services in Australia}. \emph{Climate Services}, 30, 100368.
 \item Irving, D., & Macadam, I. (2024). \href{https://doi.org/10.25919/03by-9y62}{Application-Ready Climate Projections from CMIP6 using the Quantile Delta Change method. CSIRO Climate Innovation Hub Technical Note 5}.
 Technical Note.
 \item Riahi, K., van Vuuren, D. P., Kriegler, E., Edmonds, J., O’Neill, B. C., Fujimori, S., Bauer, N., Calvin, K., Dellink, R., Fricko, O., Lutz, W., Popp, A., Cuaresma, J. C., Kc, S., Leimbach, M., Jiang, L., Kram, T., Rao, S., Emmerling, J., … Tavoni, M. (2017).
-\href{https://doi.org/10.1016/j.gloenvcha.2016.05.009}{The Shared Socioeconomic Pathways and their energy, land use, and greenhouse gas emissions implications: An overview}. Global Environmental Change, 42, 153–168.
+\href{https://doi.org/10.1016/j.gloenvcha.2016.05.009}{The Shared Socioeconomic Pathways and their energy, land use, and greenhouse gas emissions implications: An overview}. \emph{Global Environmental Change}, 42, 153–168.
 }
 }
 \seealso{

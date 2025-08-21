@@ -59,7 +59,7 @@ VPD in hPa is calculated as \eqn{ VPD = 10(es - ea) }, where \deqn{ es = 0.6108 
 \references{
 Su, C.H., Dharssi, I., Le Marshall, J., Le, T., Rennie, S., Smith, A., Stassen, C., Steinle, P., Torrance, J., Wang, C. and Warren, R.A., 2022.
 \href{http://www.bom.gov.au/research/publications/researchreports/BRR-067.pdf}{BARRA2: Development of the next-generation Australian regional atmospheric reanalysis}.
-Bureau of Meteorology.
+\emph{Bureau of Meteorology}.
 }
 \seealso{
 \code{\link[=get.SILO.weather]{get.SILO.weather()}}

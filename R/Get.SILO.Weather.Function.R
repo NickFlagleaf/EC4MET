@@ -35,8 +35,8 @@
 #'
 #' @references
 #' Jeffrey, S. J., Carter, J. O., Moodie, K. B., & Beswick, A. R. (2001).
-#'   [Using spatial interpolation to construct a comprehensive archive of Australian climate data. Environmental Modelling & Software](https://doi.org/10.1016/S1364-8152(01)00008-1),
-#'    16(4), 309–330.
+#'   [Using spatial interpolation to construct a comprehensive archive of Australian climate data](https://doi.org/10.1016/S1364-8152(01)00008-1).
+#'   \emph{Environmental Modelling & Software}, 16(4), 309–330.
 #'
 #' @author Nick Fradgley
 #'

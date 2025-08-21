@@ -35,7 +35,7 @@
 #' @references
 #' Su, C.H., Dharssi, I., Le Marshall, J., Le, T., Rennie, S., Smith, A., Stassen, C., Steinle, P., Torrance, J., Wang, C. and Warren, R.A., 2022.
 #'     [BARRA2: Development of the next-generation Australian regional atmospheric reanalysis](http://www.bom.gov.au/research/publications/researchreports/BRR-067.pdf).
-#'      Bureau of Meteorology.
+#'      \emph{Bureau of Meteorology}.
 #'
 #'
 #' @export
