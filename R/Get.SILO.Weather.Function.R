@@ -81,12 +81,12 @@ get.SILO.weather <- function(Envs,
     tmp.dir <- tempfile()
     tmp.dir <- gsub("\\", "/", tmp.dir, fixed = T)
     tmp.dir <- paste(tmp.dir, "_", 1:length(urls), sep = "")
-    try(utils::download.file(url = urls, destfile = tmp.dir, method = "libcurl", quiet = T, mode = "wb"))
+    try(.download_to(urls, tmp.dir))
 
     finfo<-file.info(tmp.dir)
     tryagain<-which(finfo$size<29000  | is.na(finfo$size))
-    if(length(tryagain)>0){
-      try(utils::download.file(url = urls[tryagain], destfile = tmp.dir[tryagain], method = "libcurl", quiet = T, mode = "wb"))
+    if (length(tryagain) > 0) {
+     try(.download_to(urls[tryagain], tmp.dir[tryagain]))
     }
     
     
@@ -127,13 +127,14 @@ get.SILO.weather <- function(Envs,
 
     if (isTRUE(ncores > 1)) { # Run in parallel
       if (verbose) cat("\nRunning in parallel...")
-      if("SILO_download_log.txt" %in% dir()){suppressWarnings(file.remove("SILO_download_log.txt", showWarnings = FALSE))}
+      if ("SILO_download_log.txt" %in% dir()) suppressWarnings(file.remove("SILO_download_log.txt"))
       cl <- parallel::makeCluster(ncores, outfile = "SILO_download_log.txt")
       doParallel::registerDoParallel(cl)
       if (verbose) {
         cat(paste("\nProgress log output to: ", getwd(), "/SILO_download_log.txt", sep = ""))
       }
       `%how%` <- foreach::`%dopar%`
+      parallel::clusterExport(cl, c("nc.process", ".download_to"), envir = environment())
       on.exit(closeAllConnections())
     }
 
@@ -142,7 +143,12 @@ get.SILO.weather <- function(Envs,
       `%how%` <- foreach::`%do%`
     }
 
-    all.vars.weather <- foreach::foreach(v = seq_along(vars), .combine = list, .multicombine = T, .export = "nc.process") %how% {
+    all.vars.weather <- foreach::foreach(
+      v = seq_along(vars),
+      .combine = list,
+      .multicombine = T, 
+      .export = c("nc.process", ".download_to")
+      ) %how% {
       all.yrs.weather <- matrix(NA, nrow = length(Envs), ncol = 365, dimnames = list(Envs, 1:365))
       if (verbose) cat("Starting", vars[v])
       if (verbose) cat("\nDownloading .nc files...\n")
@@ -151,13 +157,11 @@ get.SILO.weather <- function(Envs,
       tmp.dir <- gsub("\\", "/", tmp.dir, fixed = T)
       tmp.dir <- paste(tmp.dir, "_SILO", vars[v], "_", years, "_", sep = "")
       options(timeout = max(80000, getOption("timeout")))
-      utils::download.file(url = addrs, destfile = tmp.dir, method = "libcurl", quiet = T, mode = "wb")
+      .download_to(addrs, tmp.dir)
 
       finfo<-file.info(tmp.dir)
       tryagain<-which(finfo$size<40000000 | is.na(finfo$size))
-      if(length(tryagain)>0){
-        try(utils::download.file(url = addrs[tryagain], destfile = tmp.dir[tryagain], method = "libcurl", quiet = T, mode = "wb"))
-      }
+      if (length(tryagain) > 0) try(.download_to(addrs[tryagain], tmp.dir[tryagain]))
       
       for (y in seq_along(years)) {
         if (verbose) cat(years[y], "|", sep = "")
@@ -167,8 +171,8 @@ get.SILO.weather <- function(Envs,
           "Lon" = Lons[Years == years[y]]
         )
         nc.data <- try(nc.process(tmp.dir[y]))
-        if(class(nc.data)=="try-error"){
-          try(utils::download.file(url = addrs[y], destfile = tmp.dir[y], method = "libcurl", quiet = T, mode = "wb"))
+        if (inherits(nc.data, "try-error")) {
++          try(.download_to(addrs[y], tmp.dir[y]))
           nc.data <- try(nc.process(tmp.dir[y]))
         }
         file.remove(tmp.dir[y])
@@ -195,14 +199,14 @@ get.SILO.weather <- function(Envs,
       closeAllConnections()
       if (verbose) cat("\nFinished parallel :)")
       Sys.sleep(2)
-      if("SILO_download_log.txt" %in% dir()){ suppressWarnings(file.remove("SILO_download_log.txt"))}
+      if ("SILO_download_log.txt" %in% dir()) suppressWarnings(file.remove("SILO_download_log.txt"))
       gc(full = T)
     }
   }
 
   names(all.vars.weather) <- vars
 
-  DLs <- t(sapply(Lats, function(x) daylength(latitude = x, JDay = 1:370, notimes.as.na = FALSE)$Daylength))
+  DLs <- t(sapply(Lats, function(x) chillR::daylength(latitude = x, JDay = 1:370, notimes.as.na = FALSE)$Daylength))
   rownames(DLs) <- Envs
   all.vars.weather$day_length <- DLs
 
