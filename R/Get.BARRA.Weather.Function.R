@@ -65,6 +65,7 @@ get.BARRA.weather <- function(Envs,
   if (verbose & sum(!years %in% 1979:2023) > 0) stop("Years out of range of BARRA R2 data (Jan 1979 to Sept 2024)")
   if (verbose & sum(Lons < 88.48 | Lons > 207.39) > 0) stop("Lon out of range of BARRA data: 88.48 to 207.39")
   if (verbose & sum(Lats < -57.97 | Lats > 12.98) > 0) stop("Lats out of range of BARRA data: -57.97 to -12.98")
+  if(!capabilities("libcurl")){warning("libcurl is not supported!")}
 
   dl.size <- 40000000 * length(vars) * length(Years) * length(mons)
   if (verbose) download_data(dlprompt, dl.size)
