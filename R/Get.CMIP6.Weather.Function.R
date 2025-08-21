@@ -55,7 +55,8 @@
 #'
 #' For further details see [Riahi et al. 2017](https://doi.org/10.1016/j.gloenvcha.2016.05.009)
 #'
-#' An internet connection with high download speed is suggested for downloading gridded data for many environments.
+#' An internet connection with high download speed is suggested for downloading gridded data for many environments. There may be problems with 
+#' downloading files on a Mac OS.
 #'
 #' @returns A multi-level list of `$data` and `$Env.info` weather variables within SSPs within GCMs:
 #' * `$data` is a list of matrices of weather data for each weather variable.

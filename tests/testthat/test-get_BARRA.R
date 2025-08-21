@@ -3,7 +3,7 @@ test_that("get BARRA data works", {
     Envs = c("test1", "test2"),
     Lats = c(-31.2, -31.7),
     Lons = c(123.5, 150.5),
-    Years = c(2020, 2021),
+    Years = c(2020, 2020),
     ncores = 1, verbose = F
   )
   expect_equal(

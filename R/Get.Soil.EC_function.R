@@ -6,7 +6,7 @@
 #' @param Envs Vector of environment names character strings.
 #' @param Lats Vector of latitude numeric values for each environment.
 #' @param Lons Vector of longitude numeric values for each environment.
-#' @param tif.dir Directory path where SLGA TIFF files are saves from using the [dl.slga()] function. If left as the default (`NULL`), files 
+#' @param tif.dir Directory path where SLGA TIFF files are saved from using the [dl.slga()] function. If left as the default (`NULL`), files 
 #' will be downloaded from the SLGA API which may be time consuming with slow internet download speeds.   
 #' @param ncores Number (integer) of cores to use for parallel processing. Use `1` to run sequentially in series. The default (`NULL`) will
 #' use the maximum available cores. If running in parallel, an output log text file will be created in the working directory.
