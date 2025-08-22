@@ -90,7 +90,7 @@ dim(obs.weather.ECs$ECs)
 head(obs.weather.ECs$gs.dates)
 ```
 
-As well as weather related ECs, soil attribute covariates can be extracted using the `get.S.ECs()` function from the [SLGA](https://www.clw.csiro.au/aclep/soilandlandscapegrid/GetData-R_package.html) data resource [@grundy2015].
+As well as weather related ECs, soil attribute covariates can be extracted using the `get.S.ECs()` function from the [SLGA](https://esoil.io/TERNLandscapes/Public/Pages/SLGA/index.html) data resource [@grundy2015].
 
 ```{r Get SLGA ECs, message=FALSE, warning=FALSE}
 obs.soil.ECs <- get.S.ECs(

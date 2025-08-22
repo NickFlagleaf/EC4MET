@@ -25,3 +25,10 @@ devtools::install_github("NickFlagleaf/EC4MET",build_vignettes = T)
 ```
 
 ------------------------------------------------------------------------
+
+
+### Data licenses and use
+
+EC4MET uses freely available weather and soil data from multiple sources including [SILO](https://www.longpaddock.qld.gov.au/silo/),
+[BARRA-R2](https://opus.nci.org.au/spaces/NDP/pages/264241166/BOM+BARRA2+ob53), [SLGA](https://esoil.io/TERNLandscapes/Public/Pages/SLGA/index.html),
+and [CMIP6 QDC](https://doi.org/10.25919/03by-9y62) which are all licensed under Creative Commons Attribution 4.0 International ([CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)).
