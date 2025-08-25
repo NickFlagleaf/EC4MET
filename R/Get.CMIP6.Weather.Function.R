@@ -55,7 +55,8 @@
 #'
 #' For further details see [Riahi et al. 2017](https://doi.org/10.1016/j.gloenvcha.2016.05.009)
 #'
-#' An internet connection with high download speed is suggested for downloading gridded data for many environments.
+#' An internet connection with high download speed is suggested for downloading gridded data for many environments. There may be problems with 
+#' downloading files on a Mac OS.
 #'
 #' @returns A multi-level list of `$data` and `$Env.info` weather variables within SSPs within GCMs:
 #' * `$data` is a list of matrices of weather data for each weather variable.
@@ -69,11 +70,11 @@
 #'
 #' @references
 #' * Grose, M. R., Narsey, S., Trancoso, R., Mackallah, C., Delage, F., Dowdy, A., Di Virgilio, G., Watterson, I., Dobrohotoff, P., Rashid, H. A., Rauniyar, S., Henley, B., Thatcher, M., Syktus, J., Abramowitz, G., Evans, J. P., Su, C.-H., & Takbash, A. (2023).
-#'      [A CMIP6-based multi-model downscaling ensemble to underpin climate change services in Australia](https://doi.org/10.1016/j.cliser.2023.100368). Climate Services, 30, 100368.
+#'      [A CMIP6-based multi-model downscaling ensemble to underpin climate change services in Australia](https://doi.org/10.1016/j.cliser.2023.100368). \emph{Climate Services}, 30, 100368.
 #' * Irving, D., & Macadam, I. (2024). [Application-Ready Climate Projections from CMIP6 using the Quantile Delta Change method. CSIRO Climate Innovation Hub Technical Note 5](https://doi.org/10.25919/03by-9y62).
 #'     Technical Note.
 #' * Riahi, K., van Vuuren, D. P., Kriegler, E., Edmonds, J., O’Neill, B. C., Fujimori, S., Bauer, N., Calvin, K., Dellink, R., Fricko, O., Lutz, W., Popp, A., Cuaresma, J. C., Kc, S., Leimbach, M., Jiang, L., Kram, T., Rao, S., Emmerling, J., … Tavoni, M. (2017).
-#'     [The Shared Socioeconomic Pathways and their energy, land use, and greenhouse gas emissions implications: An overview](https://doi.org/10.1016/j.gloenvcha.2016.05.009). Global Environmental Change, 42, 153–168.
+#'     [The Shared Socioeconomic Pathways and their energy, land use, and greenhouse gas emissions implications: An overview](https://doi.org/10.1016/j.gloenvcha.2016.05.009). \emph{Global Environmental Change}, 42, 153–168.
 #'
 #' @author Nick Fradgley
 #'
@@ -293,7 +294,7 @@ get.CMIP6.weather <- function(Envs,
       all.vars.weather <- all.vars.weather[!names(all.vars.weather) == "relhumidity"]
 
       Lats.full <- as.numeric(sapply(rownames(all.vars.weather$radiation), function(x) stringr::str_split(x, pattern = "_")[[1]][3]))
-      DLs <- t(sapply(Lats.full, function(x) daylength(latitude = x, JDay = 1:370, notimes.as.na = FALSE)$Daylength))
+      DLs <- t(sapply(Lats, function(x) springpheno::daylength(daystop = 365,lat = x)))
       rownames(DLs) <- rownames(all.vars.weather$radiation)
       all.vars.weather$day_length <- DLs
 

@@ -1,6 +1,8 @@
+
 test_that("get.SILO.weather (point) is mocked and parsed correctly", {
   # this hits the little csv in tests/testthat/fixtures
   csv <- testthat::test_path("fixtures", "silo_small.csv")
+
 
   # this copies the .download_to approach but copies the local file
   fake_dl <- function(url, dest, method = "libcurl", quiet = TRUE, mode = "wb") {

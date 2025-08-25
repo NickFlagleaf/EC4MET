@@ -16,8 +16,8 @@
 #' @returns A data frame of environmental effect predictions for the new environments with environments as rows and environmental effect variates as columns.
 #'
 #' @references
-#' Smith, A., Norman, A., Kuchel, H., & Cullis, B. (2021). Plant Variety Selection Using Interaction Classes Derived From Factor Analytic Linear Mixed Models:
-#'      Models With Independent Variety Effects. Frontiers in Plant Science, 12. <https://doi.org/10.3389/fpls.2021.737462>
+#' Smith, A., Norman, A., Kuchel, H., & Cullis, B. (2021). [Plant Variety Selection Using Interaction Classes Derived From Factor Analytic Linear Mixed Models: Models With Independent Variety Effects](https://doi.org/10.3389/fpls.2021.737462).
+#' \emph{Frontiers in Plant Science}, 12.
 #'
 #' @author Nick Fradgley
 #'

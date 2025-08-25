@@ -35,7 +35,7 @@
 #' @references
 #' Su, C.H., Dharssi, I., Le Marshall, J., Le, T., Rennie, S., Smith, A., Stassen, C., Steinle, P., Torrance, J., Wang, C. and Warren, R.A., 2022.
 #'     [BARRA2: Development of the next-generation Australian regional atmospheric reanalysis](http://www.bom.gov.au/research/publications/researchreports/BRR-067.pdf).
-#'      Bureau of Meteorology.
+#'      \emph{Bureau of Meteorology}.
 #'
 #'
 #' @export
@@ -218,7 +218,7 @@ get.BARRA.weather <- function(Envs,
 
   all.vars.weather <- all.vars.weather[!names(all.vars.weather) == "relhumidity"]
 
-  DLs <- t(sapply(Lats, function(x) daylength(latitude = x, JDay = 1:370, notimes.as.na = FALSE)$Daylength))
+  DLs <- t(sapply(Lats, function(x) springpheno::daylength(daystop = 365,lat = x)))
   rownames(DLs) <- Envs
   all.vars.weather$day_length <- DLs
 

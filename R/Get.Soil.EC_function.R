@@ -6,7 +6,7 @@
 #' @param Envs Vector of environment names character strings.
 #' @param Lats Vector of latitude numeric values for each environment.
 #' @param Lons Vector of longitude numeric values for each environment.
-#' @param tif.dir Directory path where SLGA TIFF files are saves from using the [dl.slga()] function. If left as the default (`NULL`), files 
+#' @param tif.dir Directory path where SLGA TIFF files are saved from using the [dl.slga()] function. If left as the default (`NULL`), files 
 #' will be downloaded from the SLGA API which may be time consuming with slow internet download speeds.   
 #' @param ncores Number (integer) of cores to use for parallel processing. Use `1` to run sequentially in series. The default (`NULL`) will
 #' use the maximum available cores. If running in parallel, an output log text file will be created in the working directory.
@@ -20,7 +20,7 @@
 #' @references
 #' Grundy, M. J., Rossel, R. A. V., Searle, R. D., Wilson, P. L., Chen, C., Gregory, L. J., Grundy, M. J., Rossel,
 #'      R. A. V., Searle, R. D., Wilson, P. L., Chen, C., & Gregory, L. J. (2015).
-#'      [Soil and Landscape Grid of Australia. Soil Research](https://doi.org/10.1071/SR15191), 53(8), 835–844.
+#'      [Soil and Landscape Grid of Australia](https://doi.org/10.1071/SR15191). \emph{Soil Research}, 53(8), 835–844.
 #'
 #' @author Nick Fradgley
 #'

@@ -60,8 +60,8 @@ An internet connection with high download speed is suggested for downloading gri
 }
 \references{
 Jeffrey, S. J., Carter, J. O., Moodie, K. B., & Beswick, A. R. (2001).
-\href{https://doi.org/10.1016/S1364-8152(01)00008-1}{Using spatial interpolation to construct a comprehensive archive of Australian climate data. Environmental Modelling & Software},
-16(4), 309–330.
+\href{https://doi.org/10.1016/S1364-8152(01)00008-1}{Using spatial interpolation to construct a comprehensive archive of Australian climate data}.
+\emph{Environmental Modelling & Software}, 16(4), 309–330.
 }
 \seealso{
 \code{\link[=get.BARRA.weather]{get.BARRA.weather()}}
