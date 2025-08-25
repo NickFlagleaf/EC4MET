@@ -202,7 +202,7 @@ get.SILO.weather <- function(Envs,
 
   names(all.vars.weather) <- vars
 
-  DLs <- t(sapply(Lats, function(x) daylength(latitude = x, JDay = 1:370, notimes.as.na = FALSE)$Daylength))
+  DLs <- t(sapply(Lats, function(x) springpheno::daylength(daystop = 365,lat = x)))
   rownames(DLs) <- Envs
   all.vars.weather$day_length <- DLs
 
