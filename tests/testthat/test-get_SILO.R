@@ -53,7 +53,7 @@ expect_equal(obs.wthr$data$radiation[, 1:2],
 
     # day_length exists and is numeric; don’t assert exact values (depends on latitude)
     expect_true(is.matrix(obs.wthr$data$day_length))
-    expect_equal(dim(obs.wthr$data$day_length), c(2, 370)) 
+    expect_equal(dim(obs.wthr$data$day_length), c(2, 365)) 
     expect_true(all(is.finite(obs.wthr$data$day_length[, 1:10])))
   })
 })
