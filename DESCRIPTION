@@ -8,7 +8,7 @@ Description: Derive environmental covariates (ECs) for crop trial environments t
 License: file LICENSE
 Encoding: UTF-8
 LazyData: true
-Imports: terra, stringr, SLGACloud, abind, ncdf4, ranger, stats, utils, doParallel, parallel, foreach, oz, RCurl, rlang
+Imports: terra, stringr, SLGACloud, abind, ncdf4, ranger, stats, utils, doParallel, parallel, foreach, oz, RCurl, rlang, springpheno
 Remotes: AusSoilsDSM/SLGACloud
 RoxygenNote: 7.3.2
 Suggests: 

@@ -37,8 +37,8 @@ A function to train a random forest model to predict environmental effects defin
 Random forest models are fitted with one 3rd of feature variables samples at each split and a minimum end node size of 5.
 }
 \references{
-Smith, A., Norman, A., Kuchel, H., & Cullis, B. (2021). Plant Variety Selection Using Interaction Classes Derived From Factor Analytic Linear Mixed Models:
-Models With Independent Variety Effects. Frontiers in Plant Science, 12. \url{https://doi.org/10.3389/fpls.2021.737462}
+Smith, A., Norman, A., Kuchel, H., & Cullis, B. (2021). \href{https://doi.org/10.3389/fpls.2021.737462}{Plant Variety Selection Using Interaction Classes Derived From Factor Analytic Linear Mixed Models: Models With Independent Variety Effects}.
+\emph{Frontiers in Plant Science}, 12.
 }
 \author{
 Nick Fradgley
