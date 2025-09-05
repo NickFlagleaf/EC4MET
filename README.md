@@ -10,7 +10,9 @@
 
 ## Derive ECs for METs
 
-EC4MET derives environmental data and defines covariates (ECs) for crop trial environments in Australia to model environmental effects and genotype by environment interactions.
+EC4MET derives environmental data and defines covariates (ECs) for crop trial environments in Australia to model environmental effects and genotype by environment interactions. See 
+details published in [Prediction of Australian wheat genotype by environment interactions and mega-environments](https://doi.org/10.1007/s00122-025-05023-6).
+
 
 An example workflow is detailed in the [vignette](https://nickflagleaf.github.io/EC4MET/articles/EC4MET-workflow-example.html).
 
