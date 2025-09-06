@@ -109,7 +109,7 @@ dim(obs.soil.ECs)
 
 The tiff files of soil maps from the SLGA can be downloaded to a local directory with the `dl.slga()` function. This directory of files can then be specified with the `tif.dir` argument of the `get.S.ECs()` rather downloading large files repeatedly.
 
-For more information on how ECs are calculated, see @fradgley2025 .
+For more information on how ECs are calculated, see @fradgley2025.
 
 ## Get ECs for a wider set of unobserved environments
 
