@@ -97,7 +97,7 @@ obs.soil.ECs <- get.S.ECs(
   Envs = CAIGE20_22envs$Environment,
   Lats = CAIGE20_22envs$Lat,
   Lons = CAIGE20_22envs$Long,
-  verbose = F
+  verbose = T
 )
 ```
 
@@ -113,13 +113,12 @@ For more information on how ECs are calculated, see @fradgley2025.
 
 ## Get ECs for a wider set of unobserved environments
 
-An example dataset of gridded environment locations that cover the extend of the Australian wheat belt is also included in the package. This dataset includes 5,091 unique environments between 2018 and 2020.
-
-```{r load and look at wheat area envs dataset}
-data("wheat.area.envs")
-head(wheat.area.envs)
-dim(wheat.area.envs)
-unique(wheat.area.envs$Year)
+Make a set of location coordinates within the Australian cropping belt with the `crop.locs()` function and repeat the locations for a few years.
+```{r}
+wheat.area.envs <- crop.locs(res=0.2)
+yrs <- 2018:2020
+wheat.area.envs <- cbind(Year=rep(yrs,each=nrow(wheat.area.envs)), wheat.area.envs)
+wheat.area.envs$Env <- paste(wheat.area.envs$Year, wheat.area.envs$Loc, sep="_")
 ```
 
 ECs for all of these untested environments can be extracted and calculated in a similar way as for the observed data.
@@ -130,10 +129,12 @@ wheat.area.wthr <- get.SILO.weather(
   Lats = wheat.area.envs$Lat,
   Lons = wheat.area.envs$Lon,
   Years = wheat.area.envs$Year,
-  verbose = T
+  verbose = T, ncores = 1, plus.yr = T
 )
 
-wheat.area.wthr<-add.SMI(wheat.area.wthr)
+wheat.area.wthr <- add.SMI(wheat.area.wthr)
+
+wheat.area.envs$sow.dates <- paste0("15/05/",wheat.area.envs$Year)
 
 wheat.area.wthr.ECs <- get.W.ECs(
   weather = wheat.area.wthr,
@@ -145,7 +146,7 @@ wheat.area.soil.ECs <- get.S.ECs(
   Envs = wheat.area.envs$Env,
   Lats = wheat.area.envs$Lat,
   Lons = wheat.area.envs$Lon,
-  verbose = T
+  verbose = T, ncores = 1
 )
 ```
 
