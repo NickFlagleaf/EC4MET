@@ -129,8 +129,8 @@ get.S.ECs <- function(Envs,
   if (verbose & isnas>0) cat(crayon::red(isnas, "NAs returned"))
   
   if (verbose & isnas > 0) {
-    cat(crayon::red("\n NAs returned at:\n", paste(rownames(all.env.soil)[!complete.cases(as.matrix(all.env.soil))], collapse = ", ")))
-    cat(crayon::red("\n NAs returned for:\n", paste(colnames(all.env.soil)[!complete.cases(t(all.env.soil))], collapse = ", ")))
+    cat(crayon::red("\n NAs returned at:\n", paste(rownames(all.env.soil)[!stats::complete.cases(as.matrix(all.env.soil))], collapse = ", ")))
+    cat(crayon::red("\n NAs returned for:\n", paste(colnames(all.env.soil)[!stats::complete.cases(t(all.env.soil))], collapse = ", ")))
   }
   
   return(all.env.soil)

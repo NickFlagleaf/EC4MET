@@ -121,7 +121,7 @@ get.SILO.weather <- function(Envs,
       all.env.weather[[e]] <- pnt.data
 
       if (verbose & sum(is.na(pnt.data[, vars])) > 0) {
-        NAenvs <- Envs[!complete.cases(pnt.data[, vars])]
+        NAenvs <- Envs[!stats::complete.cases(pnt.data[, vars])]
         cat("\nNAs returned at ", paste(NAenvs, collapse = " "))
       }
       rm(pnt.data)
@@ -229,7 +229,7 @@ get.SILO.weather <- function(Envs,
           all.yrs.weather[rownames(env.weather), ] <- as.matrix(env.weather)
   
           if (verbose & sum(is.na(env.weather)) > 0) {
-            NAenvs <- Envs[!complete.cases(env.weather)]
+            NAenvs <- Envs[!stats::complete.cases(env.weather)]
             cat("\nNAs returned at ", paste(NAenvs, collapse = " "))
           }
           gc()

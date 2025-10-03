@@ -57,9 +57,9 @@ add.SMI <- function(weather,verbose=TRUE,tif.dir = NULL) {
     }
   }
 
-  missoil<-sum(!complete.cases(AWCdata))
+  missoil<-sum(!stats::complete.cases(AWCdata))
   if(verbose & missoil > 0) cat(crayon::yellow("Missing soil data for",missoil,"location(s). Imputing with median."))
-  AWCdata[!complete.cases(AWCdata),]<-apply(AWCdata,2,function(x) median(na.omit(x)))
+  AWCdata[!stats::complete.cases(AWCdata),]<-apply(AWCdata,2,function(x) median(na.omit(x)))
   
   colnames(AWCdata)<-paste(paste(rasters$LowerDepth_m,rasters$UpperDepth_m,sep = "-"),"m",sep="")
   AWCdata<-AWCdata[lonlats.full$Loc,]
