@@ -1,7 +1,8 @@
-#' @title Make a set of coordinates within the Australian cropping ranges
+#' @title Make a set of coordinates within the Australian cropping regions
 #'
-#' @description This function uses will generate a data frame of coordinates within a given boundary of lat and lon values as well
-#' as within Australian states that are within the Australian cropping ranges according to data from the Dept of Climate Change, Energy, the Environment & Water
+#' @description This function uses will generate a data frame of coordinates within a given range of lat and lon values as well
+#' as within Australian states that are within the Australian rangeland boundary according to the Collaborative Rangeland
+#' Information System [ACRIS](https://fed.dcceew.gov.au/datasets/erin::australian-rangeland-boundaries/about)
 #'
 #' @param min.lon Numeric. Minimum longitude value. Default value = `110`.
 #' @param max.lon Numeric. Maximum longitude value. Default value = `160`.
@@ -15,44 +16,54 @@
 #'
 #' @export
 
-range.locs <- function(min.lon = 110,
-                       max.lon = 160,
-                       min.lat = -40,
-                       max.lat = -20,
-                       res = 0.1,
-                       states= c("WA","SA","NSW","QLD","VIC"))
-  {
-  if(max.lon < min.lon) stop(crayon::red("Max lon greater than min lon"))
-  if(max.lat < min.lat) stop(crayon::red("Max lat greater than min lat"))
-  if(max.lon < 110) stop(crayon::red("Max lon is west of Australia"))
-  if(min.lon > 160) stop(crayon::red("Min lon is east of Australia"))
-  if(max.lat > -20) stop(crayon::red("Max lat is north of Australia"))
-  if(min.lat < -40) stop(crayon::red("Min lat is south of Australia"))
-  if(res < 0.01) warning(crayon::red("High resolution!"))
-  if(res > 1) warning(crayon::red("Low resolution!"))
-  if(sum(!states %in% c("WA","SA","NSW","QLD","VIC","TAS","NT"))>0) warning(crayon::red("State names are wrong!"))
-  
-  addrs<-"https://hub.arcgis.com/api/v3/datasets/bf09a05d02854dcd98caca1cc17b98f6_0/downloads/data?format=shp&spatialRefId=3857&where=1%3D1"
+crop.locs <- function(min.lon = 110,
+                      max.lon = 160,
+                      min.lat = -40,
+                      max.lat = -20,
+                      res = 0.1,
+                      states = c("WA", "SA", "NSW", "QLD", "VIC")) {
+  #Check inputs
+  if (max.lon < min.lon) stop(crayon::red("Max lon greater than min lon"))
+  if (max.lat < min.lat) stop(crayon::red("Max lat greater than min lat"))
+  if (max.lon < 110) stop(crayon::red("Max lon is west of Australia"))
+  if (min.lon > 160) stop(crayon::red("Min lon is east of Australia"))
+  if (max.lat > -20) stop(crayon::red("Max lat is north of Australia"))
+  if (min.lat < -40) stop(crayon::red("Min lat is south of Australia"))
+  if (res < 0.01) warning(crayon::red("High resolution!"))
+  if (res > 1) warning(crayon::red("Low resolution!"))
+  if (sum(!states %in% c("WA", "SA", "NSW", "QLD", "VIC", "TAS", "NT")) > 0) warning(crayon::red("State names are wrong!"))
+  #Download Aus ranges polygons
+  addrs <- "https://hub.arcgis.com/api/v3/datasets/bf09a05d02854dcd98caca1cc17b98f6_0/downloads/data?format=shp&spatialRefId=3857&where=1%3D1"
   tmp.f <- tempfile()
   tmp.f <- gsub("\\", "/", tmp.f, fixed = T)
   options(timeout = max(50000, getOption("timeout")))
   try(utils::download.file(url = addrs, destfile = tmp.f, method = "libcurl", quiet = T, mode = "wb"))
-  utils::unzip(zipfile = tmp.f, exdir = gsub("\\", "/",   tempdir(), fixed = T))
+  utils::unzip(zipfile = tmp.f, exdir = gsub("\\", "/", tempdir(), fixed = T))
   suppressWarnings(file.remove(tmp.f))
-  polygons_sf <- sf::st_read(paste(gsub("\\", "/",   tempdir(), fixed = T),"/Australian_Rangeland_Boundaries.shp",sep=""),quiet=T)
+  polygons_sf <- sf::st_read(paste(gsub("\\", "/", tempdir(), fixed = T), "/Australian_Rangeland_Boundaries.shp", sep = ""), quiet = T)
   polygons_sf <- sf::st_transform(polygons_sf, crs = 4326)
-  which.ranges <- which(polygons_sf$RANGELANDS==0 & polygons_sf$STATE%in%states) #Subset by states
-  polygons_sf <- polygons_sf[which.ranges,] 
-  
+  which.ranges <- which(polygons_sf$RANGELANDS == 0 & polygons_sf$STATE %in% states) # Subset by states
+  polygons_sf <- polygons_sf[which.ranges, ]
   polygons_st <- suppressWarnings(sf::st_cast(polygons_sf, "POLYGON"))
   polygon_areas <- sf::st_area(polygons_st)
-  polygons_st <- polygons_st[as.numeric(polygon_areas)>1e+10,]
+  polygons_st <- polygons_st[as.numeric(polygon_areas) > 1e+10, ]
+
+  #Download Aus mainland coastline polygon
+  coast_sf<-ozmaps::ozmap_country
+  coast_sf <- suppressWarnings(sf::st_cast(coast_sf, "POLYGON"))
+  coast_areas <- sf::st_area(coast_sf)
+  mainland_pol <- coast_sf[order(coast_areas, decreasing = T)[1:2], ] #Subset polygons to remove islands
   
-  loc.grid<-expand.grid(longitude=seq(min.lon,max.lon,res), latitude=seq(min.lat,max.lat,res))
-  coordinates_df <- cbind(ID=paste(loc.grid$longitude, loc.grid$latitude, sep="_"), loc.grid) 
+  #Make the full grid
+  loc.grid <- expand.grid(longitude = seq(min.lon, max.lon, res), latitude = seq(min.lat, max.lat, res))
+  coordinates_df <- cbind(ID = paste(loc.grid$longitude, loc.grid$latitude, sep = "_"), loc.grid)
   coordinates_sf <- sf::st_as_sf(coordinates_df, coords = c("longitude", "latitude"), crs = 4326)
-  points_in_polygons <- sf::st_join(coordinates_sf, polygons_st, join = st_intersects)
-  coordinates_df <- coordinates_df[!is.na(points_in_polygons$OBJECTID),]
-  colnames(coordinates_df)<-c("Loc","Lon","Lat")
+  in_ranges <- sf::st_join(coordinates_sf, polygons_st, join = sf::st_intersects)
+  in_land <- sf::st_join(coordinates_sf, polygons_st, join = sf::st_intersects)
+  points_in_polygons <- !is.na(in_ranges$OBJECTID) & !is.na(in_land$OBJECTID)
+  coordinates_df <- coordinates_df[points_in_polygons, ]
+  colnames(coordinates_df) <- c("Loc", "Lon", "Lat")
   return(coordinates_df)
-  }
+}
+
+
