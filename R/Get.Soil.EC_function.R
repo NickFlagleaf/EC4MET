@@ -122,14 +122,15 @@ get.S.ECs <- function(Envs,
   rownames(all.env.soil)<-Envs
   gc(full = T)
   all.env.soil <- all.env.soil[, !colnames(all.env.soil) == "Env"]
-  if(verbose & sum(is.na(all.env.soil))>0){ warning(sum(is.na(all.env.soil))," Missing data points inputed with median")}
+  if(verbose & sum(is.na(all.env.soil))>0) cat(crayon::yellow(sum(is.na(all.env.soil))," Missing data points inputed with median"))
   
   isnas <- sum(is.nan(unlist(as.matrix(all.env.soil))) | is.na(unlist(as.matrix(all.env.soil))))
-  if (verbose) cat(paste(isnas, "NAs returned"))
+  if (verbose & is.nas==0) cat(crayon::green(isnas, "NAs returned"))
+  if (verbose & is.nas>0) cat(crayon::red(isnas, "NAs returned"))
   
   if (verbose & isnas > 0) {
-    cat(paste("\n NAs returned at:\n", paste(rownames(all.env.soil)[!complete.cases(as.matrix(all.env.soil))], collapse = ", ")))
-    cat(paste("\n NAs returned for:\n", paste(colnames(all.env.soil)[!complete.cases(t(all.env.soil))], collapse = ", ")))
+    cat(crayon::red("\n NAs returned at:\n", paste(rownames(all.env.soil)[!complete.cases(as.matrix(all.env.soil))], collapse = ", ")))
+    cat(crayon::red("\n NAs returned for:\n", paste(colnames(all.env.soil)[!complete.cases(t(all.env.soil))], collapse = ", ")))
   }
   return(all.env.soil)
 }
