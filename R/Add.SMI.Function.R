@@ -57,12 +57,15 @@ add.SMI <- function(weather,verbose=TRUE,tif.dir = NULL) {
     }
   }
 
+  missoil<-sum(!complete.cases(AWCdata))
+  if(verbose & missoil > 0) cat(crayon::yellow("Missing soil data for",missoil,"location(s). Imputing with median."))
+  AWCdata[!complete.cases(AWCdata),]<-apply(AWCdata,2,function(x) median(na.omit(x)))
+  
   colnames(AWCdata)<-paste(paste(rasters$LowerDepth_m,rasters$UpperDepth_m,sep = "-"),"m",sep="")
   AWCdata<-AWCdata[lonlats.full$Loc,]
   Envs <- weather$Env.info$Environment
   rownames(AWCdata)<-Envs
-  ndays <- 100
-  dayrange <- 1:365
+  dayrange <- 1:ncol(weather$data$daily_rain)
   stps <- round(seq(1, length(Envs), length.out = 100))
   smips <- t(sapply(Envs, function(e) {
     if(verbose & e %in% Envs[stps]){

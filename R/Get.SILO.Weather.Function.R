@@ -7,6 +7,8 @@
 #' @param Lats Vector of latitude numeric values for each environment in the same order as `Envs`.
 #' @param Lons Vector of longitude numeric values for each environment in the same order as `Envs`.
 #' @param Years Vector of year integer values for each environment in the same order as `Envs`.
+#' @param plus.yr Logical. Should the subsequent years weather data also be downloaded? This may be needed if the estimated crop growth stages in the `get.W.ECs()`
+#' function extend after the same year of sowing. 
 #' @param ncores Number (integer) of cores to use for parallel processing of gridded data up to 5 cores. Use `1` to run in series. The default (`NULL`) will
 #' use the maximum available cores up to 5. If running in parallel, an output log text file will be created in the working directory.
 #' @param verbose Logical. Should progress be printed? Default = TRUE.
@@ -46,6 +48,7 @@ get.SILO.weather <- function(Envs,
                              Lats,
                              Lons,
                              Years,
+                             plus.yr = FALSE,
                              ncores = NULL,
                              verbose = TRUE,
                              dlprompt = FALSE) {
@@ -55,17 +58,21 @@ get.SILO.weather <- function(Envs,
   all.vars.weather <- list()
   vars <- c("daily_rain", "max_temp", "min_temp", "vp_deficit", "radiation")
 
-  if (verbose & length(unique(c(length(Envs), length(Lats), length(Lons), length(Years)))) > 1) {
+  if (length(unique(c(length(Envs), length(Lats), length(Lons), length(Years)))) > 1) {
     print(sapply(list("Envs" = Envs, "Lats" = Lats, "Lons" = Lons, "Years" = Years), length))
     stop("Lengths of Envs, Lats, Lons or Years differ")
   }
-  if (verbose & sum(!years %in% 1889:as.numeric(stringr::str_sub(Sys.Date(), 1, 4))) > 0) stop("Years out of range of SILO data (1889 to yesterday)")
-  if (verbose & !is.numeric(Lats)) stop("Lat values not numeric")
-  if (verbose & !is.numeric(Lons)) stop("Lon values not numeric")
-  if (verbose & sum(duplicated(Envs)) > 0) stop(paste("Duplicated Envs:", Envs[duplicated(Envs)]))
-  if (verbose & sum(Lons < 112 | Lons > 154) > 0) stop("Lon out of range of SILO data: 112 to 154")
-  if (verbose & sum(Lats < -44 | Lats > -10) > 0) stop("Lats out of range of SILO data: -44 to -10")
+  if (sum(!years %in% 1889:as.numeric(stringr::str_sub(Sys.Date(), 1, 4))) > 0) stop("Years out of range of SILO data (1889 to yesterday)")
+  if (!is.numeric(Lats)) stop("Lat values not numeric")
+  if (!is.numeric(Lons)) stop("Lon values not numeric")
+  if (sum(duplicated(Envs)) > 0) stop(paste("Duplicated Envs:", Envs[duplicated(Envs)]))
+  if (sum(Lons < 112 | Lons > 154) > 0) stop("Lon out of range of SILO data: 112 to 154")
+  if (sum(Lats < -44 | Lats > -10) > 0) stop("Lats out of range of SILO data: -44 to -10")
 
+  this.year<-as.numeric(stringr::str_sub(Sys.Date(),1,4))
+  if(plus.yr) this.year <- this.year - 1
+  if(sum(Years >= this.year)>0) cat(crayon::yellow("Downloading data from this year. May be incomplete.\n"))
+  
   if (length(Envs) < 500) {
     dl.size <- 29982 * length(Envs)
 
@@ -78,15 +85,28 @@ get.SILO.weather <- function(Envs,
       "1231&format=csv&comment=RXNDJ&username=xxx&password=apirequest",
       sep = ""
     )
-    tmp.dir <- tempfile()
-    tmp.dir <- gsub("\\", "/", tmp.dir, fixed = T)
-    tmp.dir <- paste(tmp.dir, "_", 1:length(urls), sep = "")
-    try(.download_to(urls, tmp.dir))
+    
+    if(plus.yr){
+    yr2urls <- paste("https://www.longpaddock.qld.gov.au/cgi-bin/silo/DataDrillDataset.php?lat=", Lats, "&lon=", Lons, "&start=", Years+1, "0101&finish=", Years+1,
+                            "1231&format=csv&comment=RXNDJ&username=xxx&password=apirequest",
+                            sep = "")
+    }
+  
+  
+    tmp.files <- paste0(gsub("\\", "/",tempdir(), fixed = T),"/",Envs,".csv")
+    if(plus.yr) tmp.files.plus <- paste0(gsub("\\", "/",tempdir(), fixed = T),"/",Envs,"_plus.csv")
+    
+    out<-try(.download_to(urls, tmp.files,quiet = T))
+    if(plus.yr) out<-try(.download_to(yr2urls, tmp.files.plus,quiet = T))
 
-    finfo<-file.info(tmp.dir)
+    finfo<-file.info(tmp.files)
     tryagain<-which(finfo$size<29000  | is.na(finfo$size))
-    if (length(tryagain) > 0) {
-     try(.download_to(urls[tryagain], tmp.dir[tryagain]))
+    if (length(tryagain) > 0) try(.download_to(urls[tryagain], tmp.files[tryagain]))
+    
+    if(plus.yr) {
+    finfo2<-file.info(tmp.files.plus)
+    tryagain2<-which(finfo2$size<29000  | is.na(finfo2$size))
+    if (length(tryagain2) > 0) try(.download_to(yr2urls[tryagain2], tmp.files.plus[tryagain2]))
     }
     
     
@@ -95,7 +115,9 @@ get.SILO.weather <- function(Envs,
       if (verbose == TRUE & e %in% round(seq(1, length(Envs), length.out = 100))) {
         cat("\r|", round(e / length(Envs) * 100), "%", sep = "")
       }
-      pnt.data <- utils::read.csv(tmp.dir[e])
+      pnt.data <- utils::read.csv(tmp.files[e])
+      if(plus.yr) pnt.data <- rbind(pnt.data,utils::read.csv(tmp.files.plus[e]))
+      
       all.env.weather[[e]] <- pnt.data
 
       if (verbose & sum(is.na(pnt.data[, vars])) > 0) {
@@ -103,16 +125,15 @@ get.SILO.weather <- function(Envs,
         cat("\nNAs returned at ", paste(NAenvs, collapse = " "))
       }
       rm(pnt.data)
-      file.remove(tmp.dir[e])
     }
+    file.remove(tmp.files)
     gc()
     names(all.env.weather) <- Envs
-    all.vars.weather <- lapply(vars, function(v) t(sapply(all.env.weather, function(e) e[1:365, v])))
+    if(plus.yr){ndays<-730}else{ndays<-365}
+    all.vars.weather <- lapply(vars, function(v) t(sapply(all.env.weather, function(e) e[1:ndays, v])))
     names(all.vars.weather) <- vars
-    if (verbose) {
-      cat(":)")
+    if (verbose) cat(crayon::green(" :)"))
     }
-  }
 
   if (length(Envs) > 499) {
     dl.size <- 419290699 * length(years) * length(vars)
@@ -149,48 +170,73 @@ get.SILO.weather <- function(Envs,
       .multicombine = T, 
       .export = c("nc.process", ".download_to")
       ) %how% {
-      all.yrs.weather <- matrix(NA, nrow = length(Envs), ncol = 365, dimnames = list(Envs, 1:365))
-      if (verbose) cat("Starting", vars[v])
-      if (verbose) cat("\nDownloading .nc files...\n")
-      addrs <- paste("https://s3-ap-southeast-2.amazonaws.com/silo-open-data/Official/annual/", vars[v], "/", years, ".", vars[v], ".nc", sep = "")
-      tmp.dir <- tempfile()
-      tmp.dir <- gsub("\\", "/", tmp.dir, fixed = T)
-      tmp.dir <- paste(tmp.dir, "_SILO", vars[v], "_", years, "_", sep = "")
-      options(timeout = max(80000, getOption("timeout")))
-      .download_to(addrs, tmp.dir)
-
-      finfo<-file.info(tmp.dir)
-      tryagain<-which(finfo$size<40000000 | is.na(finfo$size))
-      if (length(tryagain) > 0) try(.download_to(addrs[tryagain], tmp.dir[tryagain]))
-      
-      for (y in seq_along(years)) {
-        if (verbose) cat(years[y], "|", sep = "")
-        env.info.yr.sub <- data.frame(
-          "Environment" = Envs[Years == years[y]],
-          "Lat" = Lats[Years == years[y]],
-          "Lon" = Lons[Years == years[y]]
-        )
-        nc.data <- try(nc.process(tmp.dir[y]))
-        if (inherits(nc.data, "try-error")) {
-+          try(.download_to(addrs[y], tmp.dir[y]))
-          nc.data <- try(nc.process(tmp.dir[y]))
+        
+        if(plus.yr){ndays<-730}else{ndays<-365}
+        all.yrs.weather <- matrix(NA, nrow = length(Envs), ncol = ndays, dimnames = list(Envs, 1:ndays))
+        if (verbose) cat("Starting", vars[v])
+        if (verbose) cat("\nDownloading .nc files...\n")
+        addrs <- paste("https://s3-ap-southeast-2.amazonaws.com/silo-open-data/Official/annual/", vars[v], "/", years, ".", vars[v], ".nc", sep = "")
+        if(plus.yr) {
+          addrs.plus <- paste("https://s3-ap-southeast-2.amazonaws.com/silo-open-data/Official/annual/", vars[v], "/", years+1, ".", vars[v], ".nc", sep = "")
+          addrs<-unique(c(addrs,addrs.plus))
         }
-        file.remove(tmp.dir[y])
-        env.info.yr.sub$lon.ind <- sapply(env.info.yr.sub$Lon, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[1]]) - as.numeric(x))))
-        env.info.yr.sub$lat.ind <- sapply(env.info.yr.sub$Lat, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[2]]) - as.numeric(x))))
-        env.weather <- t(sapply(seq_len(nrow(env.info.yr.sub)), function(x) nc.data[env.info.yr.sub$lon.ind[x], env.info.yr.sub$lat.ind[x], ]))
-        rownames(env.weather) <- env.info.yr.sub$Environment
-        env.weather <- env.weather[, 1:365]
-        all.yrs.weather[rownames(env.weather), ] <- as.matrix(env.weather)
-
-        if (verbose & sum(is.na(env.weather)) > 0) {
-          NAenvs <- Envs[!complete.cases(env.weather)]
-          cat("\nNAs returned at ", paste(NAenvs, collapse = " "))
+        addrs<-addrs[order(addrs)]
+        
+        tmp.dir <- tempdir()
+        tmp.dir <- gsub("\\", "/", tmp.dir, fixed = T)
+        tmp.files <- paste(tmp.dir, "/SILO_", vars[v], "_", years, ".nc", sep = "")
+        if(plus.yr) {
+          tmp.files.plus <- paste(tmp.dir, "/SILO_", vars[v], "_", years+1, ".nc", sep = "")
+          tmp.files<-unique(c(tmp.files,tmp.files.plus))
         }
-        gc()
-      }
-      if (verbose) print(":)")
-      return(all.yrs.weather)
+        tmp.files<-tmp.files[order(tmp.files)]
+        
+        options(timeout = max(80000, getOption("timeout")))
+        .download_to(addrs, tmp.files)
+  
+        finfo<-file.info(tmp.files)
+        tryagain<-which(finfo$size<40000000 | is.na(finfo$size))
+        if (length(tryagain) > 0) try(.download_to(addrs[tryagain], tmp.files[tryagain]))
+        
+        for (y in seq_along(years)) {
+          if (verbose) cat(years[y], "|", sep = "")
+          env.info.yr.sub <- data.frame(
+            "Environment" = Envs[Years == years[y]],
+            "Lat" = Lats[Years == years[y]],
+            "Lon" = Lons[Years == years[y]]
+          )
+          nc.data <- try(nc.process(tmp.files[y]))
+          if (inherits(nc.data, "try-error")) {
+  +          try(.download_to(addrs[y], tmp.files[y]))
+            nc.data <- try(nc.process(tmp.files[y]))
+          }
+          if(plus.yr){
+            nc.data.plus <- try(nc.process(tmp.files[y+1]))
+            if (inherits(nc.data.plus, "try-error")) {
+              +          try(.download_to(addrs[y+1], tmp.files[y+1]))
+              nc.data.plus <- try(nc.process(tmp.files[y+1]))
+            }
+            nc.data<-abind::abind(nc.data, nc.data.plus, along = 3)
+          }
+          
+          
+         
+          env.info.yr.sub$lon.ind <- sapply(env.info.yr.sub$Lon, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[1]]) - as.numeric(x))))
+          env.info.yr.sub$lat.ind <- sapply(env.info.yr.sub$Lat, function(x) which.min(abs(as.numeric(dimnames(nc.data)[[2]]) - as.numeric(x))))
+          env.weather <- t(sapply(seq_len(nrow(env.info.yr.sub)), function(x) nc.data[env.info.yr.sub$lon.ind[x], env.info.yr.sub$lat.ind[x], ]))
+          rownames(env.weather) <- env.info.yr.sub$Environment
+          env.weather <- env.weather[, 1:ndays]
+          all.yrs.weather[rownames(env.weather), ] <- as.matrix(env.weather)
+  
+          if (verbose & sum(is.na(env.weather)) > 0) {
+            NAenvs <- Envs[!complete.cases(env.weather)]
+            cat("\nNAs returned at ", paste(NAenvs, collapse = " "))
+          }
+          gc()
+        }
+        if (verbose) print(":)")
+        suppressWarnings(file.remove(tmp.files[y]))
+        return(all.yrs.weather)
     }
 
     if (isTRUE(ncores > 1)) { # if running in parallel
@@ -205,8 +251,11 @@ get.SILO.weather <- function(Envs,
   }
 
   names(all.vars.weather) <- vars
-
-  DLs <- t(sapply(Lats, function(x) springpheno::daylength(daystop = 365,lat = x)))
+  if(plus.yr){ndays <- 730}else{ndays <- 365}
+  DLs <- t(sapply(Lats, function(x) {
+    dls<-springpheno::daylength(daystop = 365,lat = x)
+    dls<-c(dls,dls)[1:ndays]
+  }))
   rownames(DLs) <- Envs
   all.vars.weather$day_length <- DLs
 
